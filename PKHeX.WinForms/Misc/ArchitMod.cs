@@ -439,19 +439,25 @@ namespace PKHeX.WinForms.Controls
                     CB_MetLocation.SelectedIndex = 0;
                     UpdateRandomPID(BTN_RerollPID, null);
                     if (Set.Shiny) UpdateShiny(true);
-                    clickLegality1();
+                    bool ignoreLegality = false;
+                    if(clickLegality(ignoreLegality)) return;
                     UpdateLegality();
                     if (!Legality.Valid)
                     {
-                        CHK_Fateful.Checked = true;
-                        clickLegality1();
-                        UpdateLegality();
-                        if (!Legality.Valid)
+                        if (ignoreLegality == false)
                         {
-                            CHK_Fateful.Checked = false;
-                            CHK_AsEgg.Checked = true;
-                            CB_EggLocation.SelectedIndex = CHK_AsEgg.Checked ? 1 : 0; // daycare : none
+                            CHK_Fateful.Checked = true;
+                            if(clickLegality(ignoreLegality)) return;
+                            UpdateLegality();
+                            if (!Legality.Valid)
+                            {
+                                if (ignoreLegality == true) return;
+                                CHK_Fateful.Checked = false;
+                                CHK_AsEgg.Checked = true;
+                                CB_EggLocation.SelectedIndex = CHK_AsEgg.Checked ? 1 : 0; // daycare : none
+                            }
                         }
+                        else return;
                     }
                 }
 
@@ -465,19 +471,25 @@ namespace PKHeX.WinForms.Controls
                     CB_MetLocation.SelectedIndex = 0;
                     UpdateRandomPID(BTN_RerollPID, null);
                     if (Set.Shiny) UpdateShiny(true);
-                    clickLegality1();
+                    bool ignoreLegality = false;
+                    if(clickLegality(ignoreLegality)) return;
                     UpdateLegality();
                     if (!Legality.Valid)
                     {
-                        CHK_Fateful.Checked = true;
-                        clickLegality1();
-                        UpdateLegality();
-                        if (!Legality.Valid)
+                        if (ignoreLegality == false)
                         {
-                            CHK_Fateful.Checked = false;
-                            CHK_AsEgg.Checked = true;
-                            CB_EggLocation.SelectedIndex = CHK_AsEgg.Checked ? 1 : 0; // daycare : none
+                            CHK_Fateful.Checked = true;
+                            if(clickLegality(ignoreLegality)) return;
+                            UpdateLegality();
+                            if (!Legality.Valid)
+                            {
+                                if (ignoreLegality == true) return;
+                                CHK_Fateful.Checked = false;
+                                CHK_AsEgg.Checked = true;
+                                CB_EggLocation.SelectedIndex = CHK_AsEgg.Checked ? 1 : 0; // daycare : none
+                            }
                         }
+                        else return;
                     }
                 }
 
@@ -621,6 +633,7 @@ namespace PKHeX.WinForms.Controls
                     CB_MetLocation.SelectedIndex = 0;
                     UpdateRandomPID(BTN_RerollPID, null);
                     if (Set.Shiny) UpdateShiny(true);
+                    //bool ignoreLegality = false;
                     clickLegality1();
                     UpdateLegality();
                     if (!Legality.Valid)
@@ -744,7 +757,20 @@ namespace PKHeX.WinForms.Controls
             //ShowLegality(sender, e, pk);
         }
 
-        private void ShowLegality(PKM pk)
+        private bool clickLegality(bool ignoreLegality)
+        {
+            if (!VerifiedPKM())
+            { SystemSounds.Asterisk.Play(); return false; }
+
+            var pk = PreparePKM();
+
+            if (pk.Species == 0 || !pk.ChecksumValid)
+            { SystemSounds.Asterisk.Play(); return false; }
+
+            return ShowLegality(pk, ignoreLegality);
+        }
+
+        private bool ShowLegality(PKM pk, bool ignoreLegality)
         {
             LegalityAnalysis la = new LegalityAnalysis(pk);
             if (pk.Slot < 0)
@@ -757,8 +783,14 @@ namespace PKHeX.WinForms.Controls
                 if (dr == DialogResult.Yes)
                     Clipboard.SetText(report);
             }
-            else
+            else if(report.Equals("Invalid: Encounter Type PID mismatch."))
+            {
+                WinFormsUtil.Alert("Ignore this legality check");
+                return true;
+            }else
+
                 WinFormsUtil.Alert(report);
+                return false;
         }
 
         private void readPSData(ShowdownSet Set)
