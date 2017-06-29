@@ -17,11 +17,13 @@ The teambuilder for the Pokemon templates can be found on:
 - Legality for all legendary Pokemon from all generations
 - Auto Legality support for all Pokemon in all generations except Colosseum and XD
 - Mystery Gift Legality based on `mgdb` database provided
+- Supports HaX easter egg in PKHeX
+- Supports error handling for -Mega and -Busted pokemon (All megas and mimikyu)
 
 ## Known Issues
 
 - Issues with legalizing Shiny Groudon and Shiny Kyogre. This is because of PID mismatches in Gen 4 Games. (Its being resolved)
-- No proper error handling for -Mega or -Busted forms. (This should be added in the next commit)
+- ~~No proper error handling for -Mega or -Busted forms. (This should be added in the next commit)~~ [RESOLVED]
 
 (Requires a C# IDE such as Visual Studio 17 or Mono Develop)
 
@@ -73,6 +75,14 @@ $ git clone https://github.com/kwsch/PKHeX.git
             // Set Species & Nickname
             PKME_Tabs.LoadShowdownSetModded(Set);
 ```
+
+## Adding Priority to event searches.
+
+- If you would like to have certain events to be scanned first (eg Gen7 events or Gen6 events etc.) do the following:
+- Set an order of priority to your folders in the `mgdb` folder.
+- For example if you want `Gen7` folder to be scanned first, you can rename the folder as `01_Gen7` to set its priority as 1 so it will be scanned first. You can do the same for any folder you wish to have second/third/fourth priority and so on.
+- This will help reduce time in event scanning since with all events in the folder, a full top to bottom scan can take upto a good five minutes.
+- The time complexity right now is O(n) and is planned on being reduced for faster searches, but this is a nifty trick for now.
 
 ## Maintainers
 
