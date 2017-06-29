@@ -25,6 +25,10 @@ namespace PKHeX.WinForms.Controls
         {
             try
             {
+                if (Main.HaX)
+                {
+                    WinFormsUtil.Alert("NOTE: PKHaX enabled, auto legality usage is not necessary for Hackmons.");
+                }
                 openQuickMod(System.IO.Path.GetDirectoryName(Application.ExecutablePath) + "\\DONOTTOUCH\\reset.pk7");
                 TB_OT.Text = "Archit (TCD)";
                 TB_TID.Text = "24521";
@@ -58,6 +62,12 @@ namespace PKHeX.WinForms.Controls
                     if (formStrings[i].Contains(Set.Form ?? ""))
                     { form = i; break; }
                 CB_Form.SelectedIndex = Math.Min(CB_Form.Items.Count - 1, form);
+
+                // Error Checking for Mega/Busted
+                if(CB_Form.Text.Contains("Mega") || CB_Form.Text == "Busted")
+                {
+                    CB_Form.SelectedIndex = 0;
+                }
 
                 // Set Ability and Moves
                 CB_Ability.SelectedIndex = Math.Max(0, Array.IndexOf(pkm.PersonalInfo.Abilities, Set.Ability));
@@ -663,7 +673,7 @@ namespace PKHeX.WinForms.Controls
                 string move4 = CB_Move4.Text;
                 if (!Legality.Valid)
                 {
-                    string folderpath = System.IO.Path.GetDirectoryName(Application.ExecutablePath) + "\\events";
+                    string folderpath = System.IO.Path.GetDirectoryName(Application.ExecutablePath) + "\\mgdb";
                     foreach (string file in Directory.GetFiles(folderpath, "*.*", SearchOption.AllDirectories))
                     {
                         openQuickMod(file);
