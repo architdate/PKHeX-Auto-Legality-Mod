@@ -64,7 +64,7 @@ namespace PKHeX.WinForms.Controls
                 CB_Form.SelectedIndex = Math.Min(CB_Form.Items.Count - 1, form);
 
                 // Error Checking for Mega/Busted
-                if(CB_Form.Text.Contains("Mega") || CB_Form.Text == "Busted")
+                if (CB_Form.Text.Contains("Mega") || CB_Form.Text == "Busted")
                 {
                     CB_Form.SelectedIndex = 0;
                 }
@@ -124,6 +124,7 @@ namespace PKHeX.WinForms.Controls
                     UpdateLegality();
                     if (!Legality.Valid)
                     {
+                        int abindex = CB_Ability.SelectedIndex;
                         CB_Ability.SelectedIndex = 1;
                         clickLegality1();
                         UpdateLegality();
@@ -132,6 +133,7 @@ namespace PKHeX.WinForms.Controls
                         UpdateLegality();
                         if (!Legality.Valid)
                         {
+                            CB_Ability.SelectedIndex = abindex;
                             CHK_AsEgg.Checked = true;
                             CB_EggLocation.SelectedIndex = CHK_AsEgg.Checked ? 1 : 0;
                         } // daycare : none
@@ -149,6 +151,7 @@ namespace PKHeX.WinForms.Controls
                     UpdateLegality();
                     if (!Legality.Valid)
                     {
+                        int abindex = CB_Ability.SelectedIndex;
                         CB_Ability.SelectedIndex = 1;
                         clickLegality1();
                         UpdateLegality();
@@ -157,6 +160,7 @@ namespace PKHeX.WinForms.Controls
                         UpdateLegality();
                         if (!Legality.Valid)
                         {
+                            CB_Ability.SelectedIndex = abindex;
                             CHK_AsEgg.Checked = true;
                             CB_EggLocation.SelectedIndex = CHK_AsEgg.Checked ? 1 : 0;
                         } // daycare : none
@@ -679,24 +683,23 @@ namespace PKHeX.WinForms.Controls
                         openQuickMod(file);
                         if (pkmnName == CB_Species.Text)
                         {
-                            string[] moveList = { CB_Move1.Text, CB_Move2.Text, CB_Move3.Text, CB_Move4.Text };
-                            if (moveList.Contains(move1) || moveList.Contains(move2) || moveList.Contains(move3) || moveList.Contains(move4))
-                            {
+
                                 Console.WriteLine("In here for pokemon: " + CB_Species.Text);
                                 readPSData(Set);
                                 //UpdateRandomPID(BTN_RerollPID, null);
                                 clickLegality1();
                                 UpdateLegality();
-                            }
-                            //if (Legality.Valid) break;
+
+
                         }
                         if (Legality.Valid && pkmnName == CB_Species.Text) break;
                     }
                     readPSData(Set);
                 }
-            } catch(Exception e)
+            }
+            catch (Exception e)
             {
-                WinFormsUtil.Alert("Decoded data not a valid PKM. (Make sure -Mega or -Busted is not in the showdown set)");
+                WinFormsUtil.Alert("Decoded data not a valid PKM. If you believe it is a valid Pokemon, Open an issue in the GitHub repository or contact thecommondude on Discord");
             }
         }
 
@@ -900,7 +903,7 @@ namespace PKHeX.WinForms.Controls
             PKM pk = PKMConverter.ConvertToType(temp, type, out string c);
             if (pk == null)
             {
-                WinFormsUtil.Alert("Conversion failed.", c);
+                //WinFormsUtil.Alert("Conversion failed.", c);
                 return false;
             }
             if (SAV.Generation < 3 && ((pk as PK1)?.Japanese ?? ((PK2)pk).Japanese) != SAV.Japanese)
@@ -923,7 +926,7 @@ namespace PKHeX.WinForms.Controls
                 return false;
             if (!tg.IsPokémon)
             {
-                WinFormsUtil.Alert("Mystery Gift is not a Pokémon.", path);
+                //WinFormsUtil.Alert("Mystery Gift is not a Pokémon.", path);
                 return true;
             }
 
@@ -932,7 +935,7 @@ namespace PKHeX.WinForms.Controls
 
             if (pk == null)
             {
-                WinFormsUtil.Alert("Conversion failed.", c);
+                //WinFormsUtil.Alert("Conversion failed.", c);
                 return true;
             }
 
