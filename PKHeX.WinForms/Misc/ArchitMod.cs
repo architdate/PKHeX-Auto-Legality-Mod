@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Diagnostics;
@@ -438,7 +438,7 @@ namespace PKHeX.WinForms.Controls
                     clickMetLocationMod(null, null);
                     CB_MetLocation.SelectedIndex = 0;
                     UpdateRandomPID(BTN_RerollPID, null);
-                    if (Set.Shiny) UpdateShiny(true);
+                    if (Set.Shiny) UpdateShinyPID(null,null);
                     bool ignoreLegality = false;
                     if (clickLegality(ignoreLegality)) return;
                     UpdateLegality();
@@ -470,7 +470,7 @@ namespace PKHeX.WinForms.Controls
                     clickMetLocationMod(null, null);
                     CB_MetLocation.SelectedIndex = 0;
                     UpdateRandomPID(BTN_RerollPID, null);
-                    if (Set.Shiny) UpdateShiny(true);
+                    if (Set.Shiny) UpdateShinyPID(null,null);
                     bool ignoreLegality = false;
                     if (clickLegality(ignoreLegality)) return;
                     UpdateLegality();
