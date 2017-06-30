@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Diagnostics;
@@ -438,16 +438,16 @@ namespace PKHeX.WinForms.Controls
                     clickMetLocationMod(null, null);
                     CB_MetLocation.SelectedIndex = 0;
                     UpdateRandomPID(BTN_RerollPID, null);
-                    if (Set.Shiny) UpdateShiny(true);
+                    if (Set.Shiny) UpdateShinyPID(null,null);
                     bool ignoreLegality = false;
-                    if(clickLegality(ignoreLegality)) return;
+                    if (clickLegality(ignoreLegality)) return;
                     UpdateLegality();
                     if (!Legality.Valid)
                     {
                         if (ignoreLegality == false)
                         {
                             CHK_Fateful.Checked = true;
-                            if(clickLegality(ignoreLegality)) return;
+                            if (clickLegality(ignoreLegality)) return;
                             UpdateLegality();
                             if (!Legality.Valid)
                             {
@@ -470,16 +470,16 @@ namespace PKHeX.WinForms.Controls
                     clickMetLocationMod(null, null);
                     CB_MetLocation.SelectedIndex = 0;
                     UpdateRandomPID(BTN_RerollPID, null);
-                    if (Set.Shiny) UpdateShiny(true);
+                    if (Set.Shiny) UpdateShinyPID(null,null);
                     bool ignoreLegality = false;
-                    if(clickLegality(ignoreLegality)) return;
+                    if (clickLegality(ignoreLegality)) return;
                     UpdateLegality();
                     if (!Legality.Valid)
                     {
                         if (ignoreLegality == false)
                         {
                             CHK_Fateful.Checked = true;
-                            if(clickLegality(ignoreLegality)) return;
+                            if (clickLegality(ignoreLegality)) return;
                             UpdateLegality();
                             if (!Legality.Valid)
                             {
@@ -693,19 +693,19 @@ namespace PKHeX.WinForms.Controls
                     string folderpath = System.IO.Path.GetDirectoryName(Application.ExecutablePath) + "\\mgdb";
                     foreach (string file in Directory.GetFiles(folderpath, "*.*", SearchOption.AllDirectories))
                     {
-                        openQuickMod(file);
-                        if (pkmnName == CB_Species.Text)
+                        try // Hopefully a fix for bad event files
                         {
-
+                            openQuickMod(file);
+                            if (pkmnName == CB_Species.Text)
+                            {
                                 Console.WriteLine("In here for pokemon: " + CB_Species.Text);
                                 readPSData(Set);
-                                //UpdateRandomPID(BTN_RerollPID, null);
                                 clickLegality1();
                                 UpdateLegality();
-
-
+                            }
+                            if (Legality.Valid && pkmnName == CB_Species.Text) break;
                         }
-                        if (Legality.Valid && pkmnName == CB_Species.Text) break;
+                        catch { }
                     }
                     readPSData(Set);
                 }
@@ -782,12 +782,14 @@ namespace PKHeX.WinForms.Controls
                 var dr = WinFormsUtil.Prompt(MessageBoxButtons.YesNo, report, "Copy report to Clipboard?");
                 if (dr == DialogResult.Yes)
                     Clipboard.SetText(report);
+                return false;
             }
-            else if(report.Equals("Invalid: Encounter Type PID mismatch."))
+            else if (report.Equals("Invalid: Encounter Type PID mismatch."))
             {
                 WinFormsUtil.Alert("Ignore this legality check");
                 return true;
-            }else
+            }
+            else
 
                 //WinFormsUtil.Alert(report);
                 return false;
