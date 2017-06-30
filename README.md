@@ -22,7 +22,7 @@ The teambuilder for the Pokemon templates can be found on:
 
 ## Known Issues
 
-- Issues with legalizing Shiny Groudon and Shiny Kyogre. This is because of PID mismatches in Gen 4 Games. (Its being resolved)
+- ~~Issues with legalizing Shiny Groudon and Shiny Kyogre. This is because of PID mismatches in Gen 4 Games. (Its being resolved)~~ [RESOLVED]
 - ~~No proper error handling for -Mega or -Busted forms. (This should be added in the next commit)~~ [RESOLVED]
 
 (Requires a C# IDE such as Visual Studio 17 or Mono Develop)
