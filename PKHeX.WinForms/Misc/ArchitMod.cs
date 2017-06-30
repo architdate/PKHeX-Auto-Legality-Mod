@@ -789,7 +789,7 @@ namespace PKHeX.WinForms.Controls
                 return true;
             }else
 
-                WinFormsUtil.Alert(report);
+                //WinFormsUtil.Alert(report);
                 return false;
         }
 
