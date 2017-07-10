@@ -1,933 +1,273 @@
 using System;
-using System.Collections.Generic;
-using System.Configuration;
-using System.Diagnostics;
-using System.Drawing;
-using System.Globalization;
-using System.IO;
 using System.Linq;
 using System.Media;
-using System.Threading;
-using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Collections.Generic;
 
 using PKHeX.Core;
-using PKHeX.WinForms.Controls;
-using PKHeX.WinForms.Properties;
 
 namespace PKHeX.WinForms.Controls
 {
     public partial class PKMEditor : UserControl
     {
-        private Controls.SAVEditor C_SAV;
+        private Controls.SAVEditor CurrentSAV;
 
         public void LoadShowdownSetModded(ShowdownSet Set)
         {
-            try
+            OpenEvent(System.IO.Path.GetDirectoryName(Application.ExecutablePath) + "\\DONOTTOUCH\\reset.pk7");
+            bool legendary = false;
+            string[] legendaryList = new string[] { "Articuno", "Zapdos", "Moltres", "Mewtwo", "Mew", "Raikou", "Suicuine",
+                                                    "Entei", "Lugia", "Celebi", "Regirock", "Regice", "Registeel", "Latias",
+                                                    "Latios", "Kyogre", "Groudon", "Rayquaza", "Jirachi", "Deoxys", "Uxie",
+                                                    "Mesprit", "Azelf", "Dialga", "Palkia", "Heatran", "Regigigas", "Giratina",
+                                                    "Cresellia", "Phione", "Manaphy", "Darkrai", "Shaymin", "Arceus", "Victini",
+                                                    "Cobalion", "Terrakion", "Virizion", "Thundurus", "Tornadus", "Landorus",
+                                                    "Reshiram", "Zekrom", "Kyurem", "Keldeo", "Meloetta", "Genesect", "Xerneas",
+                                                    "Yveltal", "Zygarde", "Diancie", "Hoopa", "Volcanion", "Tapu Koko",
+                                                    "Tapu Lele", "Tapu Bulu", "Tapu Fini", "Cosmog", "Cosmoem", "Solgaleo",
+                                                    "Lunala", "Nihilego", "Buzzwole", "Pheromosa", "Xurkitree", "Celesteela",
+                                                    "Kartana", "Guzzlord", "Necrozma", "Magearna"};
+
+            CB_Species.SelectedValue = Set.Species;
+
+            // Checking for Legendary to save time in egg iterations
+            foreach (string mon in legendaryList)
             {
-                if (Main.HaX)
+                if (CB_Species.Text == mon)
                 {
-                    WinFormsUtil.Alert("NOTE: PKHaX enabled, auto legality usage is not necessary for Hackmons.");
+                    legendary = true;
                 }
-                openQuickMod(System.IO.Path.GetDirectoryName(Application.ExecutablePath) + "\\DONOTTOUCH\\reset.pk7");
-                TB_OT.Text = "Archit (TCD)";
-                TB_TID.Text = "24521";
-                TB_SID.Text = "42312";
-                CB_Species.SelectedValue = Set.Species;
-                CHK_Fateful.Checked = false;
-                CB_Ball.SelectedIndex = 0;
-                CB_GameOrigin.SelectedIndex = 0;
-                CB_MetLocation.SelectedIndex = 4;
-                TB_MetLevel.Text = "1";
-                CB_3DSReg.SelectedIndex = 2;
-                CHK_Nicknamed.Checked = Set.Nickname != null;
-                CHK_AsEgg.Checked = true;
-                eggMovesUpdate(null);
-                GB_EggConditions.Visible = true;
-                CB_EggLocation.SelectedIndex = CHK_AsEgg.Checked ? 1 : 0; // daycare : none
-                if (Set.Nickname != null)
-                    TB_Nickname.Text = Set.Nickname;
-                if (Set.Gender != null)
+            }
+
+            CHK_Nicknamed.Checked = Set.Nickname != null;
+            if (Set.Nickname != null)
+                TB_Nickname.Text = Set.Nickname;
+            if (Set.Gender != null)
+            {
+                int Gender = PKX.GetGender(Set.Gender);
+                Label_Gender.Text = gendersymbols[Gender];
+                Label_Gender.ForeColor = GetGenderColor(Gender);
+            }
+
+            // Set Form
+            string[] formStrings = PKX.GetFormList(Set.Species,
+                Util.GetTypesList("en"),
+                Util.GetFormsList("en"), gendersymbols, pkm.Format);
+            int form = 0;
+            for (int i = 0; i < formStrings.Length; i++)
+                if (formStrings[i].Contains(Set.Form ?? ""))
+                { form = i; break; }
+            CB_Form.SelectedIndex = Math.Min(CB_Form.Items.Count - 1, form);
+
+            // Error Handling for Mega and Busted forms
+            if (CB_Form.Text.Contains("Mega") || CB_Form.Text == "Busted")
+            {
+                CB_Form.SelectedIndex = 0;
+            }
+
+            // Set Ability and Moves
+            CB_Ability.SelectedIndex = Math.Max(0, Array.IndexOf(pkm.PersonalInfo.Abilities, Set.Ability));
+            ComboBox[] m = { CB_Move1, CB_Move2, CB_Move3, CB_Move4 };
+            for (int i = 0; i < 4; i++) m[i].SelectedValue = Set.Moves[i];
+
+            // Set Item and Nature
+            CB_HeldItem.SelectedValue = Set.HeldItem < 0 ? 0 : Set.HeldItem;
+            CB_Nature.SelectedValue = Set.Nature < 0 ? 0 : Set.Nature;
+
+            // Set IVs
+            TB_HPIV.Text = Set.IVs[0].ToString();
+            TB_ATKIV.Text = Set.IVs[1].ToString();
+            TB_DEFIV.Text = Set.IVs[2].ToString();
+            TB_SPAIV.Text = Set.IVs[4].ToString();
+            TB_SPDIV.Text = Set.IVs[5].ToString();
+            TB_SPEIV.Text = Set.IVs[3].ToString();
+
+            // Set EVs
+            TB_HPEV.Text = Set.EVs[0].ToString();
+            TB_ATKEV.Text = Set.EVs[1].ToString();
+            TB_DEFEV.Text = Set.EVs[2].ToString();
+            TB_SPAEV.Text = Set.EVs[4].ToString();
+            TB_SPDEV.Text = Set.EVs[5].ToString();
+            TB_SPEEV.Text = Set.EVs[3].ToString();
+
+            // Set Level and Friendship
+            TB_Level.Text = Set.Level.ToString();
+            TB_Friendship.Text = Set.Friendship.ToString();
+
+            // Reset IV/EVs
+            UpdateRandomPID(null, null);
+            UpdateRandomEC(null, null);
+            ComboBox[] p = { CB_PPu1, CB_PPu2, CB_PPu3, CB_PPu4 };
+            for (int i = 0; i < 4; i++)
+                p[i].SelectedIndex = m[i].SelectedIndex != 0 ? 3 : 0; // max PP
+
+            if (Set.Shiny) UpdateShiny(true);
+            pkm = PreparePKM();
+            UpdateLegality();
+
+            // Egg based pokemon
+            if (!legendary)
+            {
+                for (int i = 0; i < CB_GameOrigin.Items.Count - 1; i++)
                 {
-                    int Gender = PKX.GetGender(Set.Gender);
-                    Label_Gender.Text = gendersymbols[Gender];
-                    Label_Gender.ForeColor = GetGenderColor(Gender);
-                }
-
-                // Set Form
-                string[] formStrings = PKX.GetFormList(Set.Species,
-                    Util.GetTypesList("en"),
-                    Util.GetFormsList("en"), gendersymbols, pkm.Format);
-                int form = 0;
-                for (int i = 0; i < formStrings.Length; i++)
-                    if (formStrings[i].Contains(Set.Form ?? ""))
-                    { form = i; break; }
-                CB_Form.SelectedIndex = Math.Min(CB_Form.Items.Count - 1, form);
-
-                // Error Checking for Mega/Busted
-                if (CB_Form.Text.Contains("Mega") || CB_Form.Text == "Busted")
-                {
-                    CB_Form.SelectedIndex = 0;
-                }
-
-                // Set Ability and Moves
-                CB_Ability.SelectedIndex = Math.Max(0, Array.IndexOf(pkm.PersonalInfo.Abilities, Set.Ability));
-                ComboBox[] m = { CB_Move1, CB_Move2, CB_Move3, CB_Move4 };
-                for (int i = 0; i < 4; i++) m[i].SelectedValue = Set.Moves[i];
-
-                // Set Item and Nature
-                CB_HeldItem.SelectedValue = Set.HeldItem < 0 ? 0 : Set.HeldItem;
-                CB_Nature.SelectedValue = Set.Nature < 0 ? 0 : Set.Nature;
-
-                // Set IVs
-                TB_HPIV.Text = Set.IVs[0].ToString();
-                TB_ATKIV.Text = Set.IVs[1].ToString();
-                TB_DEFIV.Text = Set.IVs[2].ToString();
-                TB_SPAIV.Text = Set.IVs[4].ToString();
-                TB_SPDIV.Text = Set.IVs[5].ToString();
-                TB_SPEIV.Text = Set.IVs[3].ToString();
-
-                // Set EVs
-                TB_HPEV.Text = Set.EVs[0].ToString();
-                TB_ATKEV.Text = Set.EVs[1].ToString();
-                TB_DEFEV.Text = Set.EVs[2].ToString();
-                TB_SPAEV.Text = Set.EVs[4].ToString();
-                TB_SPDEV.Text = Set.EVs[5].ToString();
-                TB_SPEEV.Text = Set.EVs[3].ToString();
-
-                // Set Level and Friendship
-                TB_Level.Text = Set.Level.ToString();
-                TB_Friendship.Text = Set.Friendship.ToString();
-
-                // Reset IV/EVs
-                UpdateRandomPID(null, null);
-                UpdateRandomEC(null, null);
-                ComboBox[] p = { CB_PPu1, CB_PPu2, CB_PPu3, CB_PPu4 };
-                for (int i = 0; i < 4; i++)
-                    p[i].SelectedIndex = m[i].SelectedIndex != 0 ? 3 : 0; // max PP
-
-                if (Set.Shiny) UpdateShiny(true);
-                eggMovesUpdate(null);
-                pkm = PreparePKM();
-                UpdateLegality();
-
-                if (Legality.Info.Relearn.Any(z => !z.Valid))
-                    SetSuggestedRelearnMoves(silent: true);
-
-                // DEBUG GAME: Moon
-                if (!Legality.Valid)
-                {
-                    CB_Ball.SelectedIndex = 0;
-                    CHK_AsEgg.Checked = false;
-                    eggMovesUpdate(null);
-                    CB_EggLocation.SelectedIndex = CHK_AsEgg.Checked ? 1 : 0; // daycare : none
-                    clickMetLocationMod(null, null);
-                    clickLegality1();
-                    UpdateLegality();
-                    if (!Legality.Valid)
-                    {
-                        int abindex = CB_Ability.SelectedIndex;
-                        CB_Ability.SelectedIndex = 1;
-                        clickLegality1();
-                        UpdateLegality();
-                        CB_Ability.SelectedIndex = 0;
-                        clickLegality1();
-                        UpdateLegality();
-                        if (!Legality.Valid)
-                        {
-                            CB_Ability.SelectedIndex = abindex;
-                            CHK_AsEgg.Checked = true;
-                            eggMovesUpdate(null);
-                            CB_EggLocation.SelectedIndex = CHK_AsEgg.Checked ? 1 : 0;
-                        } // daycare : none
-                    }
-                }
-
-                // DEBUG GAME: Sun
-                if (!Legality.Valid)
-                {
-                    CB_Ball.SelectedIndex = 0;
-                    CHK_AsEgg.Checked = false;
-                    eggMovesUpdate(null);
-                    CB_EggLocation.SelectedIndex = CHK_AsEgg.Checked ? 1 : 0; // daycare : none
-                    CB_GameOrigin.SelectedIndex = 1;
-                    clickMetLocationMod(null, null);
-                    clickLegality1();
-                    UpdateLegality();
-                    if (!Legality.Valid)
-                    {
-                        int abindex = CB_Ability.SelectedIndex;
-                        CB_Ability.SelectedIndex = 1;
-                        clickLegality1();
-                        UpdateLegality();
-                        CB_Ability.SelectedIndex = 0;
-                        clickLegality1();
-                        UpdateLegality();
-                        if (!Legality.Valid)
-                        {
-                            CB_Ability.SelectedIndex = abindex;
-                            CHK_AsEgg.Checked = true;
-                            eggMovesUpdate(null);
-                            CB_EggLocation.SelectedIndex = CHK_AsEgg.Checked ? 1 : 0;
-                        } // daycare : none
-                    }
-                }
-
-                // DEBUG GAME: Alpha Sapphire
-                if (!Legality.Valid)
-                {
-                    CB_Ball.SelectedIndex = 0;
+                    CB_GameOrigin.SelectedIndex = i;
+                    TB_OT.Text = "Archit (TCD)";
+                    TB_TID.Text = "24521";
+                    TB_SID.Text = "42312";
                     CHK_AsEgg.Checked = true;
-                    eggMovesUpdate(null);
-                    CB_EggLocation.SelectedIndex = CHK_AsEgg.Checked ? 1 : 0; // daycare : none
                     TB_MetLevel.Text = "1";
-                    CB_GameOrigin.SelectedIndex = 2;
                     CB_MetLocation.SelectedIndex = 5;
-                    CB_RelearnMove1.SelectedIndex = 0;
-                    CB_RelearnMove2.SelectedIndex = 0;
-                    CB_RelearnMove3.SelectedIndex = 0;
-                    CB_RelearnMove4.SelectedIndex = 0;
-                    eggMovesUpdate(null);
-                    pkm = PreparePKM();
-                    pkm.CurrentHandler = 1;
-                    TB_OTt2.Text = "Archit";
-                    UpdateRandomPID(BTN_RerollPID, null);
-                    if (Set.Shiny) UpdateShiny(true);
-                    clickLegality1();
-                    UpdateLegality();
-                }
-
-                // DEBUG GAME: Alpha Sapphire Legendaries
-                if (!Legality.Valid)
-                {
-                    CB_Ball.SelectedIndex = 0;
-                    CHK_AsEgg.Checked = false;
-                    eggMovesUpdate(null);
+                    CB_3DSReg.SelectedIndex = 2;
+                    GB_EggConditions.Visible = true;
                     CB_EggLocation.SelectedIndex = CHK_AsEgg.Checked ? 1 : 0; // daycare : none
-                    clickMetLocationMod(null, null);
-                    clickLegality1();
-                    UpdateLegality();
-                    if (!Legality.Valid)
+                    try
                     {
-                        CHK_AsEgg.Checked = true;
-                        eggMovesUpdate(null);
-                        CB_EggLocation.SelectedIndex = CHK_AsEgg.Checked ? 1 : 0; // daycare : none
-                    }
-                }
-
-                // DEBUG GAME: Omega Ruby Legends
-                if (!Legality.Valid)
-                {
-                    CB_Ball.SelectedIndex = 0;
-                    CHK_AsEgg.Checked = false;
-                    eggMovesUpdate(null);
-                    CB_EggLocation.SelectedIndex = CHK_AsEgg.Checked ? 1 : 0; // daycare : none
-                    CB_GameOrigin.SelectedIndex = 3;
-                    clickMetLocationMod(null, null);
-                    clickLegality1();
-                    UpdateLegality();
-                    if (!Legality.Valid)
-                    {
-                        CHK_AsEgg.Checked = true;
-                        eggMovesUpdate(null);
-                        CB_EggLocation.SelectedIndex = CHK_AsEgg.Checked ? 1 : 0; // daycare : none
-                    }
-                }
-
-                // DEBUG GAME: X
-                if (!Legality.Valid)
-                {
-                    CB_Ball.SelectedIndex = 0;
-                    CHK_AsEgg.Checked = false;
-                    eggMovesUpdate(null);
-                    CB_EggLocation.SelectedIndex = CHK_AsEgg.Checked ? 1 : 0; // daycare : none
-                    CB_GameOrigin.SelectedIndex = 4;
-                    clickMetLocationMod(null, null);
-                    clickLegality1();
-                    UpdateLegality();
-                    if (!Legality.Valid)
-                    {
-                        CHK_AsEgg.Checked = true;
-                        eggMovesUpdate(null);
-                        CB_EggLocation.SelectedIndex = CHK_AsEgg.Checked ? 1 : 0; // daycare : none
-                    }
-                }
-
-                // DEBUG GAME: Y
-                if (!Legality.Valid)
-                {
-                    CB_Ball.SelectedIndex = 0;
-                    CHK_AsEgg.Checked = false;
-                    eggMovesUpdate(null);
-                    CB_EggLocation.SelectedIndex = CHK_AsEgg.Checked ? 1 : 0; // daycare : none
-                    CB_GameOrigin.SelectedIndex = 5;
-                    clickMetLocationMod(null, null);
-                    clickLegality1();
-                    UpdateLegality();
-                    if (!Legality.Valid)
-                    {
-                        CHK_AsEgg.Checked = true;
-                        eggMovesUpdate(null);
-                        CB_EggLocation.SelectedIndex = CHK_AsEgg.Checked ? 1 : 0; // daycare : none
-                    }
-                }
-
-                // DEBUG GAME: Black
-                if (!Legality.Valid)
-                {
-                    CB_Ball.SelectedIndex = 0;
-                    CHK_AsEgg.Checked = false;
-                    eggMovesUpdate(null);
-                    CB_EggLocation.SelectedIndex = CHK_AsEgg.Checked ? 1 : 0; // daycare : none
-                    CB_GameOrigin.SelectedIndex = 6;
-                    clickMetLocationMod(null, null);
-                    bool ignoreLegality = false;
-                    clickLegality1();
-                    UpdateLegality();
-                    if (!Legality.Valid)
-                    {
-                        CHK_AsEgg.Checked = true;
-                        eggMovesUpdate(null);
-                        CB_EggLocation.SelectedIndex = CHK_AsEgg.Checked ? 1 : 0; // daycare : none
-                    }
-                }
-
-                // DEBUG GAME: Black 2
-                if (!Legality.Valid)
-                {
-                    CB_Ball.SelectedIndex = 0;
-                    CHK_AsEgg.Checked = false;
-                    eggMovesUpdate(null);
-                    CB_EggLocation.SelectedIndex = CHK_AsEgg.Checked ? 1 : 0; // daycare : none
-                    CB_GameOrigin.SelectedIndex = 7;
-                    clickMetLocationMod(null, null);
-                    bool ignoreLegality = false;
-                    if (clickLegality(ignoreLegality)) return;
-                    UpdateLegality();
-                    if (!Legality.Valid)
-                    {
-                        CB_Ball.SelectedIndex = 6;
-                        if (clickLegality(ignoreLegality)) return;
+                        CB_RelearnMove1.SelectedIndex = 0;
+                        CB_RelearnMove2.SelectedIndex = 0;
+                        CB_RelearnMove3.SelectedIndex = 0;
+                        CB_RelearnMove4.SelectedIndex = 0;
+                        pkm = PreparePKM();
+                        pkm.CurrentHandler = 1;
+                        TB_OTt2.Text = "Archit";
+                        if (Legality.Info.Relearn.Any(z => !z.Valid))
+                            SetSuggestedRelearnMoves(silent: true);
+                        CheckSumVerify();
                         UpdateLegality();
-                        if (!Legality.Valid)
+                        if (TB_PID.Text == "00000000")
                         {
-                            CHK_AsEgg.Checked = true;
-                            eggMovesUpdate(null);
-                            CB_EggLocation.SelectedIndex = CHK_AsEgg.Checked ? 1 : 0; // daycare : none
+                            UpdateRandomPID(BTN_RerollPID, null);
+                            if (Set.Shiny) UpdateShiny(true);
+                        }
+                        if (CommonErrorHandling(pkm))
+                        {
+                            WinFormsUtil.Alert("Ignore this legality");
+                            return;
+                        }
+                        if (Legality.Valid)
+                        {
+                            break;
                         }
                     }
+                    catch { continue; }
                 }
+            }
 
-                // DEBUG GAME: White
-                if (!Legality.Valid)
+            // Legendary / Wild Pokemon
+            if (!Legality.Valid)
+            {
+                for (int i = 0; i < CB_GameOrigin.Items.Count - 1; i++)
                 {
-                    CB_Ball.SelectedIndex = 0;
                     CHK_AsEgg.Checked = false;
-                    eggMovesUpdate(null);
                     CB_EggLocation.SelectedIndex = CHK_AsEgg.Checked ? 1 : 0; // daycare : none
-                    CB_GameOrigin.SelectedIndex = 8;
-                    clickMetLocationMod(null, null);
-                    bool ignoreLegality = false;
-                    if (clickLegality(ignoreLegality)) return;
-                    UpdateLegality();
-                    if (!Legality.Valid)
+                    CB_GameOrigin.SelectedIndex = i;
+                    CB_3DSReg.SelectedIndex = 2;
+                    TB_OT.Text = "Archit (TCD)";
+                    TB_TID.Text = "24521";
+                    TB_SID.Text = "42312";
+                    try
                     {
-                        CHK_AsEgg.Checked = true;
-                        eggMovesUpdate(null);
-                        CB_EggLocation.SelectedIndex = CHK_AsEgg.Checked ? 1 : 0; // daycare : none
-                    }
-                }
-
-                // DEBUG GAME: White 2
-                if (!Legality.Valid)
-                {
-                    CB_Ball.SelectedIndex = 0;
-                    CHK_AsEgg.Checked = false;
-                    eggMovesUpdate(null);
-                    CB_EggLocation.SelectedIndex = CHK_AsEgg.Checked ? 1 : 0; // daycare : none
-                    CB_GameOrigin.SelectedIndex = 9;
-                    clickMetLocationMod(null, null);
-                    bool ignoreLegality = false;
-                    if (clickLegality(ignoreLegality)) return;
-                    UpdateLegality();
-                    if (!Legality.Valid)
-                    {
-                        CB_Ball.SelectedIndex = 6;
-                        if (clickLegality(ignoreLegality)) return;
+                        CB_RelearnMove1.SelectedIndex = 0;
+                        CB_RelearnMove2.SelectedIndex = 0;
+                        CB_RelearnMove3.SelectedIndex = 0;
+                        CB_RelearnMove4.SelectedIndex = 0;
+                        clickMetLocationMod(null, null);
+                        pkm = PreparePKM();
+                        pkm.CurrentHandler = 1;
+                        TB_OTt2.Text = "Archit";
+                        CheckSumVerify();
                         UpdateLegality();
-                        if (!Legality.Valid)
+                        UpdateRandomPID(BTN_RerollPID, null);
+                        if (Set.Shiny) UpdateShiny(true);
+                        if (TB_PID.Text == "00000000")
                         {
-                            CHK_AsEgg.Checked = true;
-                            eggMovesUpdate(null);
-                            CB_EggLocation.SelectedIndex = CHK_AsEgg.Checked ? 1 : 0; // daycare : none
+                            UpdateRandomPID(BTN_RerollPID, null);
+                            if (Set.Shiny) UpdateShiny(true);
+                        }
+                        CheckSumVerify();
+                        if (CommonErrorHandling(PreparePKM()))
+                        {
+                            WinFormsUtil.Alert("Ignore this legality");
+                            return;
+                        }
+                        if (Legality.Valid)
+                        {
+                            break;
                         }
                     }
+                    catch { continue; }
                 }
+            }
 
-                // DEBUG GAME: Diamond
-                if (!Legality.Valid)
-                {
-                    CB_Ball.SelectedIndex = 0;
-                    CHK_AsEgg.Checked = true;
-                    eggMovesUpdate(null);
-                    CB_EggLocation.SelectedIndex = CHK_AsEgg.Checked ? 1 : 0; // daycare : none
-                    CB_GameOrigin.SelectedIndex = 10;
-                    CB_MetLocation.SelectedIndex = 0;
-                    CB_RelearnMove1.SelectedIndex = 0;
-                    CB_RelearnMove2.SelectedIndex = 0;
-                    CB_RelearnMove3.SelectedIndex = 0;
-                    CB_RelearnMove4.SelectedIndex = 0;
-                    eggMovesUpdate(null);
-                    pkm = PreparePKM();
-                    pkm.CurrentHandler = 1;
-                    TB_OTt2.Text = "Archit";
-                    UpdateRandomPID(BTN_RerollPID, null);
-                    if (Set.Shiny) UpdateShiny(true);
-                    bool ignoreLegality = false;
-                    if (clickLegality(ignoreLegality)) return;
-                    UpdateLegality();
-                }
-
-                // DEBUG GAME: Diamond
-                if (!Legality.Valid)
-                {
-                    CB_Ball.SelectedIndex = 0;
-                    CHK_AsEgg.Checked = false;
-                    eggMovesUpdate(null);
-                    CB_EggLocation.SelectedIndex = CHK_AsEgg.Checked ? 1 : 0; // daycare : none
-                    CB_GameOrigin.SelectedIndex = 10;
-                    clickMetLocationMod(null, null);
-                    CB_MetLocation.SelectedIndex = 0;
-                    UpdateRandomPID(BTN_RerollPID, null);
-                    if (Set.Shiny) UpdateShiny(true);
-                    bool ignoreLegality = false;
-                    if (clickLegality(ignoreLegality)) return;
-                    UpdateLegality();
-                    if (!Legality.Valid)
-                    {
-                        CHK_Fateful.Checked = true;
-                        if (clickLegality(ignoreLegality)) return;
-                        UpdateLegality();
-                        if (!Legality.Valid)
-                        {
-                            CHK_Fateful.Checked = false;
-                            CHK_AsEgg.Checked = true;
-                            eggMovesUpdate(null);
-                            CB_EggLocation.SelectedIndex = CHK_AsEgg.Checked ? 1 : 0; // daycare : none
-                        }
-                    }
-                }
-
-                // DEBUG GAME: Pearl
-                if (!Legality.Valid)
-                {
-                    CB_Ball.SelectedIndex = 0;
-                    CHK_AsEgg.Checked = false;
-                    eggMovesUpdate(null);
-                    CB_EggLocation.SelectedIndex = CHK_AsEgg.Checked ? 1 : 0; // daycare : none
-                    CB_GameOrigin.SelectedIndex = 11;
-                    clickMetLocationMod(null, null);
-                    CB_MetLocation.SelectedIndex = 0;
-                    UpdateRandomPID(BTN_RerollPID, null);
-                    if (Set.Shiny) UpdateShiny(true);
-                    bool ignoreLegality = false;
-                    if (clickLegality(ignoreLegality)) return;
-                    UpdateLegality();
-                    if (!Legality.Valid)
-                    {
-                        CHK_Fateful.Checked = true;
-                        if (clickLegality(ignoreLegality)) return;
-                        UpdateLegality();
-                        if (!Legality.Valid)
-                        {
-                            CHK_Fateful.Checked = false;
-                            CHK_AsEgg.Checked = true;
-                            eggMovesUpdate(null);
-                            CB_EggLocation.SelectedIndex = CHK_AsEgg.Checked ? 1 : 0; // daycare : none
-                        }
-                    }
-                }
-
-                // DEBUG GAME: Platinum
-                if (!Legality.Valid)
-                {
-                    CB_Ball.SelectedIndex = 0;
-                    CHK_AsEgg.Checked = false;
-                    eggMovesUpdate(null);
-                    CB_EggLocation.SelectedIndex = CHK_AsEgg.Checked ? 1 : 0; // daycare : none
-                    CB_GameOrigin.SelectedIndex = 12;
-                    clickMetLocationMod(null, null);
-                    CB_MetLocation.SelectedIndex = 0;
-                    UpdateRandomPID(BTN_RerollPID, null);
-                    if (Set.Shiny) UpdateShiny(true);
-                    bool ignoreLegality = false;
-                    if (clickLegality(ignoreLegality)) return;
-                    UpdateLegality();
-                    if (!Legality.Valid)
-                    {
-                        CHK_Fateful.Checked = true;
-                        if (clickLegality(ignoreLegality)) return;
-                        UpdateLegality();
-                        if (!Legality.Valid)
-                        {
-                            CHK_Fateful.Checked = false;
-                            CHK_AsEgg.Checked = true;
-                            eggMovesUpdate(null);
-                            CB_EggLocation.SelectedIndex = CHK_AsEgg.Checked ? 1 : 0; // daycare : none
-                        }
-                    }
-                }
-
-                // DEBUG GAME: Heart Gold
-                if (!Legality.Valid)
-                {
-                    CB_Ball.SelectedIndex = 0;
-                    CHK_AsEgg.Checked = false;
-                    eggMovesUpdate(null);
-                    CB_EggLocation.SelectedIndex = CHK_AsEgg.Checked ? 1 : 0; // daycare : none
-                    CB_GameOrigin.SelectedIndex = 13;
-                    clickMetLocationMod(null, null);
-                    CB_MetLocation.SelectedIndex = 0;
-                    UpdateRandomPID(BTN_RerollPID, null);
-                    if (Set.Shiny) UpdateShinyPID(null, null);
-                    bool ignoreLegality = false;
-                    if (clickLegality(ignoreLegality)) return;
-                    UpdateLegality();
-                    if (!Legality.Valid)
-                    {
-                        if (ignoreLegality == false)
-                        {
-                            CHK_Fateful.Checked = true;
-                            if (clickLegality(ignoreLegality)) return;
-                            UpdateLegality();
-                            if (!Legality.Valid)
-                            {
-                                if (ignoreLegality == true) return;
-                                CHK_Fateful.Checked = false;
-                                CHK_AsEgg.Checked = true;
-                                eggMovesUpdate(null);
-                                CB_EggLocation.SelectedIndex = CHK_AsEgg.Checked ? 1 : 0; // daycare : none
-                            }
-                        }
-                        else return;
-                    }
-                }
-
-                // DEBUG GAME Soul Silver
-                if (!Legality.Valid)
-                {
-                    CB_Ball.SelectedIndex = 0;
-                    CHK_AsEgg.Checked = false;
-                    eggMovesUpdate(null);
-                    CB_EggLocation.SelectedIndex = CHK_AsEgg.Checked ? 1 : 0; // daycare : none
-                    CB_GameOrigin.SelectedIndex = 14;
-                    clickMetLocationMod(null, null);
-                    CB_MetLocation.SelectedIndex = 0;
-                    UpdateRandomPID(BTN_RerollPID, null);
-                    if (Set.Shiny) UpdateShinyPID(null, null);
-                    bool ignoreLegality = false;
-                    if (clickLegality(ignoreLegality)) return;
-                    UpdateLegality();
-                    if (!Legality.Valid)
-                    {
-                        if (ignoreLegality == false)
-                        {
-                            CHK_Fateful.Checked = true;
-                            if (clickLegality(ignoreLegality)) return;
-                            UpdateLegality();
-                            if (!Legality.Valid)
-                            {
-                                if (ignoreLegality == true) return;
-                                CHK_Fateful.Checked = false;
-                                CHK_AsEgg.Checked = true;
-                                eggMovesUpdate(null);
-                                CB_EggLocation.SelectedIndex = CHK_AsEgg.Checked ? 1 : 0; // daycare : none
-                            }
-                        }
-                        else return;
-                    }
-                }
-
-                if (!Legality.Valid)
-                    CHK_Fateful.Checked = false;
-
-                if (!Legality.Valid)
-                {
-                    CB_Ball.SelectedIndex = 0;
-                    CHK_AsEgg.Checked = true;
-                    eggMovesUpdate(null);
-                    CB_EggLocation.SelectedIndex = CHK_AsEgg.Checked ? 1 : 0; // daycare : none
-                    CB_GameOrigin.SelectedIndex = 15;
-                    CB_MetLocation.SelectedIndex = 0;
-                    CB_RelearnMove1.SelectedIndex = 0;
-                    CB_RelearnMove2.SelectedIndex = 0;
-                    CB_RelearnMove3.SelectedIndex = 0;
-                    CB_RelearnMove4.SelectedIndex = 0;
-                    TB_MetLevel.Text = "5";
-                    CHK_AsEgg.Checked = false;
-                    eggMovesUpdate(null);
-                    eggMovesUpdate(null);
-                    pkm = PreparePKM();
-                    pkm.CurrentHandler = 1;
-                    TB_OTt2.Text = "Archit";
-                    UpdateRandomPID(BTN_RerollPID, null);
-                    if (Set.Shiny) UpdateShiny(true);
-                    bool ignoreLegality = false;
-                    if (clickLegality(ignoreLegality)) return;
-                    UpdateLegality();
-                }
-
-                if (!Legality.Valid)
-                {
-                    CB_Ball.SelectedIndex = 0;
-                    CHK_AsEgg.Checked = false;
-                    eggMovesUpdate(null);
-                    CB_EggLocation.SelectedIndex = CHK_AsEgg.Checked ? 1 : 0; // daycare : none
-                    CB_GameOrigin.SelectedIndex = 15;
-                    clickMetLocationMod(null, null);
-                    CB_MetLocation.SelectedIndex = 0;
-                    UpdateRandomPID(BTN_RerollPID, null);
-                    if (Set.Shiny) UpdateShiny(true);
-                    bool ignoreLegality = false;
-                    if (clickLegality(ignoreLegality)) return;
-                    UpdateLegality();
-                    if (!Legality.Valid)
-                    {
-                        CHK_Fateful.Checked = true;
-                        if (clickLegality(ignoreLegality)) return;
-                        UpdateLegality();
-                        if (!Legality.Valid)
-                        {
-                            CHK_Fateful.Checked = false;
-                            CHK_AsEgg.Checked = true;
-                            eggMovesUpdate(null);
-                            CB_EggLocation.SelectedIndex = CHK_AsEgg.Checked ? 1 : 0; // daycare : none
-                        }
-                    }
-                }
-
-                if (!Legality.Valid)
-                {
-                    CB_Ball.SelectedIndex = 0;
-                    CHK_AsEgg.Checked = false;
-                    eggMovesUpdate(null);
-                    CB_EggLocation.SelectedIndex = CHK_AsEgg.Checked ? 1 : 0; // daycare : none
-                    CB_GameOrigin.SelectedIndex = 16;
-                    clickMetLocationMod(null, null);
-                    CB_MetLocation.SelectedIndex = 0;
-                    UpdateRandomPID(BTN_RerollPID, null);
-                    if (Set.Shiny) UpdateShiny(true);
-                    bool ignoreLegality = false;
-                    if (clickLegality(ignoreLegality)) return;
-                    UpdateLegality();
-                    if (!Legality.Valid)
-                    {
-                        CHK_Fateful.Checked = true;
-                        if (clickLegality(ignoreLegality)) return;
-                        UpdateLegality();
-                        if (!Legality.Valid)
-                        {
-                            CHK_Fateful.Checked = false;
-                            CHK_AsEgg.Checked = true;
-                            eggMovesUpdate(null);
-                            CB_EggLocation.SelectedIndex = CHK_AsEgg.Checked ? 1 : 0; // daycare : none
-                        }
-                    }
-                }
-
-                if (!Legality.Valid)
-                {
-                    CB_Ball.SelectedIndex = 0;
-                    CHK_AsEgg.Checked = false;
-                    eggMovesUpdate(null);
-                    CB_EggLocation.SelectedIndex = CHK_AsEgg.Checked ? 1 : 0; // daycare : none
-                    CB_GameOrigin.SelectedIndex = 17;
-                    clickMetLocationMod(null, null);
-                    CB_MetLocation.SelectedIndex = 0;
-                    UpdateRandomPID(BTN_RerollPID, null);
-                    if (Set.Shiny) UpdateShiny(true);
-                    bool ignoreLegality = false;
-                    if (clickLegality(ignoreLegality)) return;
-                    UpdateLegality();
-                    if (!Legality.Valid)
-                    {
-                        CHK_Fateful.Checked = true;
-                        if (clickLegality(ignoreLegality)) return;
-                        UpdateLegality();
-                        if (!Legality.Valid)
-                        {
-                            CHK_Fateful.Checked = false;
-                            CHK_AsEgg.Checked = true;
-                            eggMovesUpdate(null);
-                            CB_EggLocation.SelectedIndex = CHK_AsEgg.Checked ? 1 : 0; // daycare : none
-                        }
-                    }
-                }
-
-                if (!Legality.Valid)
-                {
-                    CB_Ball.SelectedIndex = 0;
-                    CHK_AsEgg.Checked = false;
-                    eggMovesUpdate(null);
-                    CB_EggLocation.SelectedIndex = CHK_AsEgg.Checked ? 1 : 0; // daycare : none
-                    CB_GameOrigin.SelectedIndex = 18;
-                    clickMetLocationMod(null, null);
-                    CB_MetLocation.SelectedIndex = 0;
-                    UpdateRandomPID(BTN_RerollPID, null);
-                    if (Set.Shiny) UpdateShiny(true);
-                    bool ignoreLegality = false;
-                    if (clickLegality(ignoreLegality)) return;
-                    UpdateLegality();
-                    if (!Legality.Valid)
-                    {
-                        CHK_Fateful.Checked = true;
-                        if (clickLegality(ignoreLegality)) return;
-                        UpdateLegality();
-                        if (!Legality.Valid)
-                        {
-                            CHK_Fateful.Checked = false;
-                            CHK_AsEgg.Checked = true;
-                            eggMovesUpdate(null);
-                            CB_EggLocation.SelectedIndex = CHK_AsEgg.Checked ? 1 : 0; // daycare : none
-                        }
-                    }
-                }
-
-                if (!Legality.Valid)
-                {
-                    CB_Ball.SelectedIndex = 0;
-                    CHK_AsEgg.Checked = false;
-                    eggMovesUpdate(null);
-                    CB_EggLocation.SelectedIndex = CHK_AsEgg.Checked ? 1 : 0; // daycare : none
-                    CB_GameOrigin.SelectedIndex = 19;
-                    clickMetLocationMod(null, null);
-                    CB_MetLocation.SelectedIndex = 0;
-                    UpdateRandomPID(BTN_RerollPID, null);
-                    if (Set.Shiny) UpdateShiny(true);
-                    bool ignoreLegality = false;
-                    if (clickLegality(ignoreLegality)) return;
-                    UpdateLegality();
-                    if (!Legality.Valid)
-                    {
-                        CHK_Fateful.Checked = true;
-                        if (clickLegality(ignoreLegality)) return;
-                        UpdateLegality();
-                        if (!Legality.Valid)
-                        {
-                            CHK_Fateful.Checked = false;
-                            CHK_AsEgg.Checked = true;
-                            eggMovesUpdate(null);
-                            CB_EggLocation.SelectedIndex = CHK_AsEgg.Checked ? 1 : 0; // daycare : none
-                        }
-                    }
-                }
-
-                if (!Legality.Valid) CHK_Fateful.Checked = false;
-
-                if (!Legality.Valid)
-                {
-                    CB_Ball.SelectedIndex = 0;
-                    CHK_AsEgg.Checked = true;
-                    eggMovesUpdate(null);
-                    CB_EggLocation.SelectedIndex = CHK_AsEgg.Checked ? 1 : 0; // daycare : none
-                    CB_GameOrigin.SelectedIndex = 24;
-                    CB_MetLocation.SelectedIndex = 107;
-                    CB_RelearnMove1.SelectedIndex = 0;
-                    CB_RelearnMove2.SelectedIndex = 0;
-                    CB_RelearnMove3.SelectedIndex = 0;
-                    CB_RelearnMove4.SelectedIndex = 0;
-                    TB_MetLevel.Text = "100";
-                    CHK_AsEgg.Checked = false;
-                    eggMovesUpdate(null);
-                    eggMovesUpdate(null);
-                    pkm = PreparePKM();
-                    pkm.CurrentHandler = 1;
-                    TB_OTt2.Text = "Archit";
-                    TB_SID.Text = "00000";
-                    pkm.Geo1_Country = 64;
-                    UpdateRandomPID(BTN_RerollPID, null);
-                    if (Set.Shiny) UpdateShiny(true);
-                    bool ignoreLegality = false;
-                    if (clickLegality(ignoreLegality)) return;
-                    UpdateLegality();
-                }
-
-                if (TB_PID.Text == "00000000")
-                {
-                    UpdateRandomPID(BTN_RerollPID, null);
-                    if (Set.Shiny) UpdateShiny(true);
-                }
-
+            // Event Pokemon
+            if (!Legality.Valid)
+            {
                 string pkmnName = CB_Species.Text;
                 string move1 = CB_Move1.Text;
                 string move2 = CB_Move2.Text;
                 string move3 = CB_Move3.Text;
                 string move4 = CB_Move4.Text;
-                if (!Legality.Valid)
+                OpenEvent(System.IO.Path.GetDirectoryName(Application.ExecutablePath) + "\\DONOTTOUCH\\reset.pk7");
+
+                bool fastSearch = true;
+                if (fastSearch)
                 {
-                    bool fastSearch = true;
-                    if (fastSearch)
+                    List<string> fileList = new List<string>();
+                    string fpath = System.IO.Path.GetDirectoryName(Application.ExecutablePath) + "\\mgdb";
+                    foreach (string file in System.IO.Directory.GetFiles(fpath, "*.*", System.IO.SearchOption.AllDirectories))
                     {
-                        List<string> fileList = new List<string>();
-                        string fpath = System.IO.Path.GetDirectoryName(Application.ExecutablePath) + "\\mgdb";
-                        foreach (string file in Directory.GetFiles(fpath, "*.*", SearchOption.AllDirectories))
+                        if (file.Contains(pkmnName))
                         {
-                            if (file.Contains(pkmnName))
-                            {
-                                fileList.Add(file);
-                                Console.WriteLine(file);
-                            }
+                            fileList.Add(file);
+                            Console.WriteLine(file);
                         }
-                        foreach (string eventfile in fileList)
+                    }
+                    foreach (string eventfile in fileList)
+                    {
+                        try
                         {
-                            try
+                            OpenEvent(eventfile);
+                            ShowdownData(Set);
+                            bool ignoreLegality = false;
+                            if (clickLegality(ignoreLegality)) return;
+                            UpdateLegality();
+                            if (Legality.Valid) break;
+                        }
+                        catch { }
+                    }
+                    ShowdownData(Set);
+                }
+                else
+                {
+                    string folderpath = System.IO.Path.GetDirectoryName(Application.ExecutablePath) + "\\mgdb";
+                    foreach (string file in System.IO.Directory.GetFiles(folderpath, "*.*", System.IO.SearchOption.AllDirectories))
+                    {
+                        try // Hopefully a fix for bad event files
+                        {
+                            OpenEvent(file);
+                            if (pkmnName == CB_Species.Text)
                             {
-                                openQuickMod(eventfile);
-                                readPSData(Set);
+                                Console.WriteLine("In here for pokemon: " + CB_Species.Text);
+                                ShowdownData(Set);
                                 bool ignoreLegality = false;
                                 if (clickLegality(ignoreLegality)) return;
                                 UpdateLegality();
-                                if (Legality.Valid) break;
                             }
-                            catch { }
+                            if (Legality.Valid && pkmnName == CB_Species.Text) break;
                         }
-                        readPSData(Set);
+                        catch { }
                     }
-                    else
-                    {
-                        string folderpath = System.IO.Path.GetDirectoryName(Application.ExecutablePath) + "\\mgdb";
-                        foreach (string file in Directory.GetFiles(folderpath, "*.*", SearchOption.AllDirectories))
-                        {
-                            try // Hopefully a fix for bad event files
-                            {
-                                openQuickMod(file);
-                                if (pkmnName == CB_Species.Text)
-                                {
-                                    Console.WriteLine("In here for pokemon: " + CB_Species.Text);
-                                    readPSData(Set);
-                                    bool ignoreLegality = false;
-                                    if (clickLegality(ignoreLegality)) return;
-                                    UpdateLegality();
-                                }
-                                if (Legality.Valid && pkmnName == CB_Species.Text) break;
-                            }
-                            catch { }
-                        }
-                        readPSData(Set);
-                    }
+                    ShowdownData(Set);
                 }
             }
-            catch (Exception e)
+
+            if (!Legality.Valid)
             {
-                WinFormsUtil.Alert("Decoded data not a valid PKM. If you believe it is a valid Pokemon, Open an issue in the GitHub repository or contact thecommondude on Discord");
-            }
-        }
-
-        private void eggMovesUpdate(EventArgs e)
-        {
-            UpdateLegality(skipMoveRepop: true);
-
-
-            int[] m = Legality.GetSuggestedRelearn();
-            if (!pkm.WasEgg && !pkm.WasEvent && !pkm.WasEventEgg && !pkm.WasLink)
-            {
-                var encounter = Legality.GetSuggestedMetInfo();
-                if (encounter != null)
-                    m = encounter.Relearn;
+                WinFormsUtil.Alert("Set Not supported for autolegality yet, please DM thecommondude with the set details");
             }
 
-            if (pkm.RelearnMoves.SequenceEqual(m))
-                return;
-
-            string r = string.Join(Environment.NewLine, m.Select(v => v >= GameInfo.Strings.movelist.Length ? "ERROR" : GameInfo.Strings.movelist[v]));
-
-
-            CB_RelearnMove1.SelectedValue = m[0];
-            CB_RelearnMove2.SelectedValue = m[1];
-            CB_RelearnMove3.SelectedValue = m[2];
-            CB_RelearnMove4.SelectedValue = m[3];
-
-
-            UpdateLegality();
         }
 
-        private void clickLegality1()
-        {
-            if (!VerifiedPKM())
-            { SystemSounds.Asterisk.Play(); return; }
-
-            var pk = PreparePKM();
-
-            if (pk.Species == 0 || !pk.ChecksumValid)
-            { SystemSounds.Asterisk.Play(); return; }
-
-            //DebugLegality(pk);
-        }
-
-        private bool clickLegality(bool ignoreLegality)
-        {
-            if (!VerifiedPKM())
-            { SystemSounds.Asterisk.Play(); return false; }
-
-            var pk = PreparePKM();
-
-            if (pk.Species == 0 || !pk.ChecksumValid)
-            { SystemSounds.Asterisk.Play(); return false; }
-
-            return ShowLegality(pk, ignoreLegality);
-        }
-
-        private bool ShowLegality(PKM pk, bool ignoreLegality)
-        {
-            LegalityAnalysis la = new LegalityAnalysis(pk);
-            if (pk.Slot < 0)
-                UpdateLegality(la);
-            bool verbose = ModifierKeys == Keys.Control;
-            var report = la.Report(verbose);
-            if (verbose)
-            {
-                var dr = WinFormsUtil.Prompt(MessageBoxButtons.YesNo, report, "Copy report to Clipboard?");
-                if (dr == DialogResult.Yes)
-                    Clipboard.SetText(report);
-                return false;
-            }
-            else if (report.Equals("Invalid: Encounter Type PID mismatch."))
-            {
-                WinFormsUtil.Alert("Ignore this legality check");
-                return true;
-            }
-            else
-
-                //WinFormsUtil.Alert(report);
-                return false;
-        }
-
-        private void DebugLegality(PKM pk)
-        {
-            LegalityAnalysis la = new LegalityAnalysis(pk);
-            if (pk.Slot < 0)
-                UpdateLegality(la);
-            bool verbose = ModifierKeys == Keys.Control;
-            var report = la.Report(verbose);
-            if (verbose)
-            {
-                var dr = WinFormsUtil.Prompt(MessageBoxButtons.YesNo, report, "Copy report to Clipboard?");
-                if (dr == DialogResult.Yes)
-                    Clipboard.SetText(report);
-                //return false;
-            }
-            else if (report.Equals("Invalid: Encounter Type PID mismatch."))
-            {
-                WinFormsUtil.Alert("Ignore this legality check");
-                //return true;
-            }
-            else
-
-                WinFormsUtil.Alert(report);
-            //return false;
-        }
-
-        private void readPSData(ShowdownSet Set)
+        private void ShowdownData(ShowdownSet Set)
         {
             if (Set.Nickname != null)
                 TB_Nickname.Text = Set.Nickname;
@@ -985,6 +325,106 @@ namespace PKHeX.WinForms.Controls
                 p[i].SelectedIndex = m[i].SelectedIndex != 0 ? 3 : 0; // max PP
 
             if (Set.Shiny) UpdateShiny(true);
+        }
+
+        private bool CommonErrorHandling(PKM pk)
+        {
+            LegalityAnalysis la = new LegalityAnalysis(pk);
+            if (pk.Slot < 0)
+                UpdateLegality(la);
+            var report = la.Report(false);
+            PKM pknew;
+            var updatedReport = report;
+
+            if (report.Contains("Ability mismatch for encounter"))
+            {
+                bool legalized = false;
+                int abilityIndex = CB_Ability.SelectedIndex;
+                int legalizedIndex = abilityIndex;
+
+                for (int i = 0; i < CB_Ability.Items.Count; i++)
+                {
+                    CB_Ability.SelectedIndex = i;
+                    pknew = PreparePKM();
+                    LegalityAnalysis updatedLA = new LegalityAnalysis(pknew);
+                    updatedReport = updatedLA.Report(false);
+                    if (!updatedReport.Contains("Ability mismatch for encounter"))
+                    {
+                        UpdateLegality();
+                        report = updatedReport;
+                        //legalized = true;
+                        legalizedIndex = i;
+                        break;
+                    }
+                }
+                CB_Ability.SelectedIndex = abilityIndex;
+                pknew = PreparePKM();
+                LegalityAnalysis recheckLA = new LegalityAnalysis(pknew);
+                updatedReport = recheckLA.Report(false);
+                if (!updatedReport.Contains("Ability mismatch for encounter"))
+                {
+                    UpdateLegality();
+                    report = updatedReport;
+                }
+                else if (legalized)
+                {
+                    CB_Ability.SelectedIndex = legalizedIndex;
+                    UpdateLegality();
+                }
+                CheckSumVerify();
+                UpdateLegality();
+            }
+            if (report.Contains("Invalid Met Location, expected Transporter."))
+            {
+                CB_MetLocation.SelectedIndex = 0;
+                pknew = PreparePKM();
+                LegalityAnalysis recheckLA = new LegalityAnalysis(pknew);
+                updatedReport = recheckLA.Report(false);
+                report = updatedReport;
+                CheckSumVerify();
+                UpdateLegality();
+            }
+            if (report.Contains("Can't have ball for encounter type."))
+            {
+                CB_Ball.SelectedIndex = 6;
+                pknew = PreparePKM();
+                LegalityAnalysis recheckLA = new LegalityAnalysis(pknew);
+                updatedReport = recheckLA.Report(false);
+                report = updatedReport;
+                CheckSumVerify();
+                UpdateLegality();
+            }
+            if (report.Contains("Non japanese Mew from Faraway Island. Unreleased event."))
+            {
+                CB_Language.SelectedIndex = 0;
+                CHK_Fateful.Checked = true;
+                UpdateRandomPID(BTN_RerollPID, null);
+                UpdateLegality();
+                pknew = PreparePKM();
+                LegalityAnalysis recheckLA = new LegalityAnalysis(pknew);
+                updatedReport = recheckLA.Report(false);
+                report = updatedReport;
+                CheckSumVerify();
+                UpdateLegality();
+            }
+            if (report.Equals("Invalid: Encounter Type PID mismatch."))
+            {
+                return true;
+            }
+            CheckSumVerify();
+            UpdateLegality();
+            return false;
+        }
+
+        private void CheckSumVerify()
+        {
+            if (!VerifiedPKM())
+            { SystemSounds.Asterisk.Play(); return; }
+
+            var pk = PreparePKM();
+
+            if (pk.Species == 0 || !pk.ChecksumValid)
+            { SystemSounds.Asterisk.Play(); return; }
         }
 
         private void clickMetLocationMod(object sender, EventArgs e)
@@ -1110,15 +550,53 @@ namespace PKHeX.WinForms.Controls
             return true;
         }
 
-        private void openQuickMod(string path, bool force = false)
+        private bool clickLegality(bool ignoreLegality)
         {
-            this.C_SAV = new PKHeX.WinForms.Controls.SAVEditor();
-            this.C_SAV.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+            if (!VerifiedPKM())
+            { SystemSounds.Asterisk.Play(); return false; }
+
+            var pk = PreparePKM();
+
+            if (pk.Species == 0 || !pk.ChecksumValid)
+            { SystemSounds.Asterisk.Play(); return false; }
+
+            return ShowLegality(pk, ignoreLegality);
+        }
+
+        private bool ShowLegality(PKM pk, bool ignoreLegality)
+        {
+            LegalityAnalysis la = new LegalityAnalysis(pk);
+            if (pk.Slot < 0)
+                UpdateLegality(la);
+            bool verbose = ModifierKeys == Keys.Control;
+            var report = la.Report(verbose);
+            if (verbose)
+            {
+                var dr = WinFormsUtil.Prompt(MessageBoxButtons.YesNo, report, "Copy report to Clipboard?");
+                if (dr == DialogResult.Yes)
+                    Clipboard.SetText(report);
+                return false;
+            }
+            else if (report.Equals("Invalid: Encounter Type PID mismatch."))
+            {
+                WinFormsUtil.Alert("Ignore this legality check");
+                return true;
+            }
+            else
+
+                //WinFormsUtil.Alert(report);
+                return false;
+        }
+
+        private void OpenEvent(string path, bool force = false)
+        {
+            this.CurrentSAV = new PKHeX.WinForms.Controls.SAVEditor();
+            this.CurrentSAV.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.C_SAV.Location = new System.Drawing.Point(292, 26);
-            this.C_SAV.Name = "C_SAV";
-            this.C_SAV.Size = new System.Drawing.Size(310, 326);
-            this.C_SAV.TabIndex = 104;
+            this.CurrentSAV.Location = new System.Drawing.Point(292, 26);
+            this.CurrentSAV.Name = "C_SAV";
+            this.CurrentSAV.Size = new System.Drawing.Size(310, 326);
+            this.CurrentSAV.TabIndex = 104;
 
             if (!(CanFocus || force))
             {
@@ -1126,19 +604,19 @@ namespace PKHeX.WinForms.Controls
                 return;
             }
 
-            string ext = Path.GetExtension(path);
-            FileInfo fi = new FileInfo(path);
+            string ext = System.IO.Path.GetExtension(path);
+            System.IO.FileInfo fi = new System.IO.FileInfo(path);
             if (fi.Length > 0x10009C && fi.Length != 0x380000 && !SAV3GCMemoryCard.IsMemoryCardSize(fi.Length))
                 WinFormsUtil.Error("Input file is too large." + Environment.NewLine + $"Size: {fi.Length} bytes", path);
             else if (fi.Length < 32)
                 WinFormsUtil.Error("Input file is too small." + Environment.NewLine + $"Size: {fi.Length} bytes", path);
             else
             {
-                byte[] input; try { input = File.ReadAllBytes(path); }
+                byte[] input; try { input = System.IO.File.ReadAllBytes(path); }
                 catch (Exception e) { WinFormsUtil.Error("Unable to load file.  It could be in use by another program.\nPath: " + path, e); return; }
 
 #if DEBUG
-                OpenFile(input, path, ext, C_SAV.SAV);
+                OpenFile(input, path, ext, CurrentSAV.SAV);
 #else
                 try { openFile(input, path, ext); }
                 catch (Exception e) { WinFormsUtil.Error("Unable to load file.\nPath: " + path, e); }
@@ -1147,6 +625,5 @@ namespace PKHeX.WinForms.Controls
         }
 
     }
-
 
 }
