@@ -133,6 +133,8 @@ namespace PKHeX.WinForms.Controls
                             SetSuggestedRelearnMoves(silent: true);
                         CheckSumVerify();
                         UpdateLegality();
+                        UpdateRandomPID(BTN_RerollPID, null);
+                        if (Set.Shiny) UpdateShiny(true);
                         if (TB_PID.Text == "00000000")
                         {
                             UpdateRandomPID(BTN_RerollPID, null);
@@ -140,6 +142,8 @@ namespace PKHeX.WinForms.Controls
                         }
                         if (CommonErrorHandling(pkm))
                         {
+                            PKM pkmfinal = PreparePKM();
+                            if (Set.Shiny && !pkmfinal.IsShiny) UpdateShiny(true);
                             WinFormsUtil.Alert("Ignore this legality");
                             return;
                         }
@@ -186,6 +190,8 @@ namespace PKHeX.WinForms.Controls
                         CheckSumVerify();
                         if (CommonErrorHandling(PreparePKM()))
                         {
+                            PKM pkmfinal = PreparePKM();
+                            if (Set.Shiny && !pkmfinal.IsShiny) UpdateShiny(true);
                             WinFormsUtil.Alert("Ignore this legality");
                             return;
                         }
