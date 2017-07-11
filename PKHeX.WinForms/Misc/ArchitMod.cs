@@ -60,7 +60,7 @@ namespace PKHeX.WinForms.Controls
             CB_Form.SelectedIndex = Math.Min(CB_Form.Items.Count - 1, form);
 
             // Error Handling for Mega and Busted forms
-            if (CB_Form.Text.Contains("Mega") || CB_Form.Text == "Busted")
+            if (CB_Form.Text.Contains("Mega") || CB_Form.Text == "Busted" || CB_Form.Text.Contains("Primal") || CB_Form.Text.Contains("Resolute"))
             {
                 CB_Form.SelectedIndex = 0;
             }
@@ -416,9 +416,20 @@ namespace PKHeX.WinForms.Controls
                 CheckSumVerify();
                 UpdateLegality();
             }
+            if (report.Contains("PID should be equal to EC [with top bit flipped]!"))
+            {
+                UpdateRandomPID(BTN_RerollPID, null);
+                if (pk.IsShiny) UpdateShiny(false);
+                pknew = PreparePKM();
+                LegalityAnalysis recheckLA = new LegalityAnalysis(pknew);
+                updatedReport = recheckLA.Report(false);
+                report = updatedReport;
+                CheckSumVerify();
+                UpdateLegality();
+            }
             if (report.Equals("Invalid: Encounter Type PID mismatch."))
             {
-                setPIDSID();
+                setPIDSID(pk.IsShiny);
                 if (Legality.Valid)
                 {
                     return false;
@@ -640,7 +651,7 @@ namespace PKHeX.WinForms.Controls
             }
         }
 
-        private void setPIDSID()
+        private void setPIDSID(bool shiny)
         {
             uint hp = uint.Parse(TB_HPIV.Text);
             uint atk = uint.Parse(TB_ATKIV.Text);
@@ -679,12 +690,67 @@ namespace PKHeX.WinForms.Controls
             string[] pidsid = Misc.IVtoPIDGenerator.M1PID(hp, atk, def, spa, spd, spe, nature, 0);
             TB_PID.Text = pidsid[0];
             TB_SID.Text = pidsid[1];
-            if(pidsid[0]=="0" && pidsid[1] == "0")
-            {
-                UpdateRandomPID(BTN_RerollPID, null);
-            }
+            if (shiny) UpdateShiny(false);
             CheckSumVerify();
             UpdateLegality();
+            if (!Legality.Valid) { 
+                List<List<string>> ivspreads = new List<List<string>>();
+                ivspreads.Add(new List<string> { "0", "0", "0", "0", "0", "7" }); // Hardy
+                ivspreads.Add(new List<string> { "0", "0", "0", "0", "1", "1" }); // Lonely
+                ivspreads.Add(new List<string> { "0", "0", "0", "0", "1", "3" }); // Brave
+                ivspreads.Add(new List<string> { "0", "0", "0", "0", "0", "2" }); // Adamant
+                ivspreads.Add(new List<string> { "0", "0", "0", "0", "0", "7" }); // Naughty
+                ivspreads.Add(new List<string> { "0", "0", "0", "0", "0", "19" }); // Bold
+                ivspreads.Add(new List<string> { "0", "0", "0", "0", "0", "0" }); // Docile
+                ivspreads.Add(new List<string> { "0", "0", "0", "0", "0", "0" }); // Relaxed
+                ivspreads.Add(new List<string> { "0", "0", "0", "0", "0", "3" }); // Impish
+                ivspreads.Add(new List<string> { "0", "0", "0", "0", "1", "8" }); // Lax
+                ivspreads.Add(new List<string> { "0", "0", "0", "0", "1", "10" }); // Timid
+                ivspreads.Add(new List<string> { "0", "0", "0", "0", "0", "1" }); // Hasty
+                ivspreads.Add(new List<string> { "0", "0", "0", "0", "0", "1" }); // Serious
+                ivspreads.Add(new List<string> { "0", "0", "0", "0", "0", "16" }); // Jolly
+                ivspreads.Add(new List<string> { "0", "0", "0", "0", "1", "8" }); // Naive
+                ivspreads.Add(new List<string> { "0", "0", "0", "0", "0", "0" }); // Modest
+                ivspreads.Add(new List<string> { "0", "0", "0", "0", "0", "0" }); // Mild
+                ivspreads.Add(new List<string> { "0", "0", "0", "0", "0", "22" }); // Quiet
+                ivspreads.Add(new List<string> { "0", "0", "0", "0", "1", "5" }); // Bashful
+                ivspreads.Add(new List<string> { "0", "0", "0", "0", "0", "5" }); // Rash
+                ivspreads.Add(new List<string> { "0", "0", "0", "0", "0", "1" }); // Calm
+                ivspreads.Add(new List<string> { "0", "0", "0", "0", "0", "1" }); // Gentle
+                ivspreads.Add(new List<string> { "0", "0", "0", "0", "1", "14" }); // Sassy
+                ivspreads.Add(new List<string> { "0", "0", "0", "0", "0", "2" }); // Careful
+                ivspreads.Add(new List<string> { "0", "0", "0", "0", "0", "6" }); // Quirky
+                TB_HPIV.Text = ivspreads[Convert.ToInt32(nature)][0];
+                TB_ATKIV.Text = ivspreads[Convert.ToInt32(nature)][1];
+                TB_DEFIV.Text = ivspreads[Convert.ToInt32(nature)][2];
+                TB_SPAIV.Text = ivspreads[Convert.ToInt32(nature)][3];
+                TB_SPDIV.Text = ivspreads[Convert.ToInt32(nature)][4];
+                TB_SPEIV.Text = ivspreads[Convert.ToInt32(nature)][5];
+                pidsid = Misc.IVtoPIDGenerator.M1PID(uint.Parse(TB_HPIV.Text), uint.Parse(TB_ATKIV.Text), uint.Parse(TB_DEFIV.Text), uint.Parse(TB_SPAIV.Text), uint.Parse(TB_SPDIV.Text), uint.Parse(TB_SPEIV.Text), nature, 0);
+                TB_PID.Text = pidsid[0];
+                TB_SID.Text = pidsid[1];
+                if (pidsid[0] == "0" && pidsid[1] == "0")
+                {
+                    UpdateRandomPID(BTN_RerollPID, null);
+                    TB_HPIV.Text = hp.ToString();
+                    TB_ATKIV.Text = hp.ToString();
+                    TB_DEFIV.Text = hp.ToString();
+                    TB_SPAIV.Text = hp.ToString();
+                    TB_SPDIV.Text = hp.ToString();
+                    TB_SPEIV.Text = hp.ToString();
+                }
+                PKM pknew = PreparePKM();
+                pknew.HT_HP = true;
+                pknew.HT_ATK = true;
+                pknew.HT_DEF = true;
+                pknew.HT_SPA = true;
+                pknew.HT_SPD = true;
+                pknew.HT_SPE = true;
+                PopulateFields(pknew);
+                if (shiny) UpdateShiny(false);
+                CheckSumVerify();
+                UpdateLegality();
+            }
         }
 
     }
