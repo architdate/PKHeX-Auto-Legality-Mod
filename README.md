@@ -40,41 +40,13 @@ $ git clone https://github.com/kwsch/PKHeX.git
 - To do this, right click on the main PKHeX project and click on Rebuild all. Wait for the whole process to finish.
 - Right click on the `Misc` folder in `PKHeX.WinForms` sub-project and in the `Add` menu select `Existing Item`.
 - Add the `ArchitMod.cs` file from the `PKHeX.WinForms/Misc` directory to the `Misc` folder.
+- Add the `IVtoPIDGenerator.cs` file from the `PKHeX.WinForms/Misc` directory to the `Misc` folder.
 - Go to `MainWindow` folder and expand `Main.cs` and open the `Main` code section.
 - Search for the function `ClickShowdownImportPKM` using `Ctrl + F`.
 - Replace `PKME_Tabs.LoadShowdownSet(Set);` in that function with `PKME_Tabs.LoadShowdownSetModded(Set);`
 - Right click on the main PKHeX project and click Rebuild all.
 - The output of the PKHeX file should be in `PKHeX\PKHeX.WinForms\bin\Debug` folder.
 
-## [OPTIONAL] Adding a separate menu item for Modded Imports
-
-- Open the `Main.cs` file in the PKHeX project (Ignore and continue if there are errors)
-- On the `Main.cs[Design]` WinForm, click on Tools, then Showdown
-- Add a new menu option below called `Modded Import` and double click the option to get redirected to the code.
-- Inside the code block, copy the following code:
-
-```
-            if (!Clipboard.ContainsText())
-            { WinFormsUtil.Alert("Clipboard does not contain text."); return; }
-
-            // Get Simulator Data
-            ShowdownSet Set = new ShowdownSet(Clipboard.GetText());
-
-            if (Set.Species < 0)
-            { WinFormsUtil.Alert("Set data not found in clipboard."); return; }
-
-            if (Set.Nickname?.Length > C_SAV.SAV.NickLength)
-                Set.Nickname = Set.Nickname.Substring(0, C_SAV.SAV.NickLength);
-
-            if (DialogResult.Yes != WinFormsUtil.Prompt(MessageBoxButtons.YesNo, "Import this set?", Set.Text))
-                return;
-
-            if (Set.InvalidLines.Any())
-                WinFormsUtil.Alert("Invalid lines detected:", string.Join(Environment.NewLine, Set.InvalidLines));
-
-            // Set Species & Nickname
-            PKME_Tabs.LoadShowdownSetModded(Set);
-```
 
 ## Adding Priority to event searches.
 
@@ -87,3 +59,7 @@ $ git clone https://github.com/kwsch/PKHeX.git
 ## Maintainers
 
 Just me right now, but if you want to contribute, feel free to contact me on Discord at thecommondude#8240
+
+## Credits
+- IV to PID conversion code taken [RNGReporter](https://github.com/Admiral-Fish/RNGReporter) by [Admiral-Fish](https://github.com/Admiral-Fish) which is under the GNU General Public License v2.0.
+- kwsch for the original PKHeX repository.

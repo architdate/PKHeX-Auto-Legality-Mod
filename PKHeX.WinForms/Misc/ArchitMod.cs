@@ -191,7 +191,10 @@ namespace PKHeX.WinForms.Controls
                         if (CommonErrorHandling(PreparePKM()))
                         {
                             PKM pkmfinal = PreparePKM();
-                            if (Set.Shiny && !pkmfinal.IsShiny) UpdateShiny(true);
+                            if (Set.Shiny && !pkmfinal.IsShiny)
+                            {
+                                UpdateShiny(false);
+                            }
                             WinFormsUtil.Alert("Ignore this legality");
                             return;
                         }
@@ -415,6 +418,13 @@ namespace PKHeX.WinForms.Controls
             }
             if (report.Equals("Invalid: Encounter Type PID mismatch."))
             {
+                setPIDSID();
+                if (Legality.Valid)
+                {
+                    return false;
+                }
+                CheckSumVerify();
+                UpdateLegality();
                 return true;
             }
             CheckSumVerify();
@@ -628,6 +638,53 @@ namespace PKHeX.WinForms.Controls
                 catch (Exception e) { WinFormsUtil.Error("Unable to load file.\nPath: " + path, e); }
 #endif
             }
+        }
+
+        private void setPIDSID()
+        {
+            uint hp = uint.Parse(TB_HPIV.Text);
+            uint atk = uint.Parse(TB_ATKIV.Text);
+            uint def = uint.Parse(TB_DEFIV.Text);
+            uint spa = uint.Parse(TB_SPAIV.Text);
+            uint spd = uint.Parse(TB_SPDIV.Text);
+            uint spe = uint.Parse(TB_SPEIV.Text);
+            string natText = CB_Nature.Text;
+            uint nature = 0;
+            if(natText == "Adamant") { nature = 3; }
+            else if (natText == "Bold") { nature = 5; }
+            else if (natText == "Brave") { nature = 2; }
+            else if (natText == "Calm") { nature = 20; }
+            else if (natText == "Careful") { nature = 23; }
+            else if (natText == "Hasty") { nature = 11; }
+            else if (natText == "Impish") { nature = 8; }
+            else if (natText == "Jolly") { nature = 13; }
+            else if (natText == "Lonely") { nature = 1; }
+            else if (natText == "Mild") { nature = 16; }
+            else if (natText == "Modest") { nature = 15; }
+            else if (natText == "Naive") { nature = 14; }
+            else if (natText == "Naughty") { nature = 4; }
+            else if (natText == "Quiet") { nature = 17; }
+            else if (natText == "Rash") { nature = 19; }
+            else if (natText == "Relaxed") { nature = 7; }
+            else if (natText == "Sassy") { nature = 22; }
+            else if (natText == "Timid") { nature = 10; }
+            else if (natText == "Gentle") { nature = 21; }
+            else if (natText == "Lax") { nature = 9; }
+            else if (natText == "Bashful") { nature = 18; }
+            else if (natText == "Docile") { nature = 6; }
+            else if (natText == "Hardy") { nature = 0; }
+            else if (natText == "Quirky") { nature = 24; }
+            else { nature = 12; }
+            uint tid = uint.Parse(TB_TID.Text);
+            string[] pidsid = Misc.IVtoPIDGenerator.M1PID(hp, atk, def, spa, spd, spe, nature, 0);
+            TB_PID.Text = pidsid[0];
+            TB_SID.Text = pidsid[1];
+            if(pidsid[0]=="0" && pidsid[1] == "0")
+            {
+                UpdateRandomPID(BTN_RerollPID, null);
+            }
+            CheckSumVerify();
+            UpdateLegality();
         }
 
     }
