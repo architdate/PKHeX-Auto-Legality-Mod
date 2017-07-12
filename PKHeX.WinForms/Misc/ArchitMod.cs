@@ -361,6 +361,12 @@ namespace PKHeX.WinForms.Controls
 
         private bool CommonErrorHandling(PKM pk)
         {
+            string hp = TB_HPIV.Text;
+            string atk = TB_ATKIV.Text;
+            string def = TB_DEFIV.Text;
+            string spa = TB_SPAIV.Text;
+            string spd = TB_SPDIV.Text;
+            string spe = TB_SPEIV.Text;
             LegalityAnalysis la = new LegalityAnalysis(pk);
             if (pk.Slot < 0)
                 UpdateLegality(la);
@@ -450,17 +456,86 @@ namespace PKHeX.WinForms.Controls
                 CheckSumVerify();
                 UpdateLegality();
             }
-            if (report.Equals("Invalid: Encounter Type PID mismatch."))
+            if (report.Contains("PID-Gender mismatch."))
             {
-                setPIDSID(pk.IsShiny);
+                ClickGender(null, null);
+                pknew = PreparePKM();
+                LegalityAnalysis recheckLA = new LegalityAnalysis(pknew);
+                updatedReport = recheckLA.Report(false);
+                report = updatedReport;
+                CheckSumVerify();
+                UpdateLegality();
+            }
+            if (report.Contains("Missing Ribbons: National"))
+            {
+                pknew = PreparePKM();
+                ReflectUtil.SetValue(pknew, "RibbonNational", -1);
+                PopulateFields(pknew);
+                pknew = PreparePKM();
+                LegalityAnalysis recheckLA = new LegalityAnalysis(pknew);
+                updatedReport = recheckLA.Report(false);
+                report = updatedReport;
+                CheckSumVerify();
+                UpdateLegality();
+            }
+            if (report.Contains("Special ingame Fateful Encounter flag missing"))
+            {
+                CHK_Fateful.Checked = true;
+                pknew = PreparePKM();
+                LegalityAnalysis recheckLA = new LegalityAnalysis(pknew);
+                updatedReport = recheckLA.Report(false);
+                report = updatedReport;
+                CheckSumVerify();
+                UpdateLegality();
+            }
+            if (report.Contains("Invalid: Encounter Type PID mismatch."))
+            {
+                if(CB_GameOrigin.Text == "Colosseum/XD")
+                { setPIDSID(pk.IsShiny, true); }
+                else setPIDSID(pk.IsShiny);
                 if (Legality.Valid)
                 {
                     return false;
                 }
                 CheckSumVerify();
                 UpdateLegality();
-                return true;
+                pknew = PreparePKM();
+                LegalityAnalysis recheckLA = new LegalityAnalysis(pknew);
+                updatedReport = recheckLA.Report(false);
+                report = updatedReport;
+                if (report.Equals("Invalid: Encounter Type PID mismatch."))
+                {
+                    return true;
+                }
+                else if(report.Contains("PID-Gender mismatch."))
+                {
+                    ClickGender(null, null);
+                    pknew = PreparePKM();
+                    recheckLA = new LegalityAnalysis(pknew);
+                    updatedReport = recheckLA.Report(false);
+                    report = updatedReport;
+                    CheckSumVerify();
+                    UpdateLegality();
+                    if (Legality.Valid)
+                    {
+                        return false;
+                    }
+                }
             }
+            pknew = PreparePKM();
+            pknew.HT_HP = false;
+            pknew.HT_ATK = false;
+            pknew.HT_DEF = false;
+            pknew.HT_SPA = false;
+            pknew.HT_SPD = false;
+            pknew.HT_SPE = false;
+            PopulateFields(pk);
+            TB_HPIV.Text = hp;
+            TB_ATKIV.Text = atk;
+            TB_DEFIV.Text = def;
+            TB_SPAIV.Text = spa;
+            TB_SPDIV.Text = spd;
+            TB_SPEIV.Text = spe;
             CheckSumVerify();
             UpdateLegality();
             return false;
@@ -703,7 +778,7 @@ namespace PKHeX.WinForms.Controls
             return evoList;
         }
 
-        private void setPIDSID(bool shiny)
+        private void setPIDSID(bool shiny, bool XD = false)
         {
             uint hp = uint.Parse(TB_HPIV.Text);
             uint atk = uint.Parse(TB_ATKIV.Text);
@@ -739,13 +814,20 @@ namespace PKHeX.WinForms.Controls
             else if (natText == "Quirky") { nature = 24; }
             else { nature = 12; }
             uint tid = uint.Parse(TB_TID.Text);
-            string[] pidsid = Misc.IVtoPIDGenerator.M1PID(hp, atk, def, spa, spd, spe, nature, 0);
+            string[] pidsid = { "", "" };
+            if (XD) {
+                pidsid = Misc.IVtoPIDGenerator.XDPID(hp, atk, def, spa, spd, spe, nature, 0);
+            }
+            else { pidsid = Misc.IVtoPIDGenerator.M1PID(hp, atk, def, spa, spd, spe, nature, 0); }
             TB_PID.Text = pidsid[0];
             TB_SID.Text = pidsid[1];
             if (shiny) UpdateShiny(false);
+            PKM pk = PreparePKM();
+            LegalityAnalysis recheckLA = new LegalityAnalysis(pk);
+            string updatedReport = recheckLA.Report(false);
             CheckSumVerify();
             UpdateLegality();
-            if (!Legality.Valid)
+            if (updatedReport.Contains("Invalid: Encounter Type PID mismatch."))
             {
                 List<List<string>> ivspreads = new List<List<string>>();
                 ivspreads.Add(new List<string> { "0", "0", "0", "0", "0", "7" }); // Hardy
@@ -786,11 +868,11 @@ namespace PKHeX.WinForms.Controls
                 {
                     UpdateRandomPID(BTN_RerollPID, null);
                     TB_HPIV.Text = hp.ToString();
-                    TB_ATKIV.Text = hp.ToString();
-                    TB_DEFIV.Text = hp.ToString();
-                    TB_SPAIV.Text = hp.ToString();
-                    TB_SPDIV.Text = hp.ToString();
-                    TB_SPEIV.Text = hp.ToString();
+                    TB_ATKIV.Text = atk.ToString();
+                    TB_DEFIV.Text = def.ToString();
+                    TB_SPAIV.Text = spa.ToString();
+                    TB_SPDIV.Text = spd.ToString();
+                    TB_SPEIV.Text = spe.ToString();
                 }
                 PKM pknew = PreparePKM();
                 pknew.HT_HP = true;
@@ -801,8 +883,28 @@ namespace PKHeX.WinForms.Controls
                 pknew.HT_SPE = true;
                 PopulateFields(pknew);
                 if (shiny) UpdateShiny(false);
+                pknew = PreparePKM();
+                recheckLA = new LegalityAnalysis(pknew);
+                updatedReport = recheckLA.Report(false);
                 CheckSumVerify();
                 UpdateLegality();
+                if (updatedReport.Contains("Invalid: Encounter Type PID mismatch."))
+                {
+                    pknew = PreparePKM();
+                    pknew.HT_HP = true;
+                    pknew.HT_ATK = true;
+                    pknew.HT_DEF = true;
+                    pknew.HT_SPA = true;
+                    pknew.HT_SPD = true;
+                    pknew.HT_SPE = true;
+                    PopulateFields(pknew);
+                    TB_HPIV.Text = hp.ToString();
+                    TB_ATKIV.Text = atk.ToString();
+                    TB_DEFIV.Text = def.ToString();
+                    TB_SPAIV.Text = spa.ToString();
+                    TB_SPDIV.Text = spd.ToString();
+                    TB_SPEIV.Text = spe.ToString();
+                }
             }
         }
 

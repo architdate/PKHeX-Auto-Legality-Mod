@@ -1105,14 +1105,13 @@ namespace PKHeX.WinForms.Misc
                     spe,
                     nature,
                     tid);
-            Console.WriteLine(hp + " " + atk + " " + def + " " + spa + " " + spd + " " + spe + " " + nature + " " + tid);
+            //Console.WriteLine(hp + " " + atk + " " + def + " " + spa + " " + spd + " " + spe + " " + nature + " " + tid);
             Seed chosenOne = new Seed();
             foreach(Seed s in seeds)
             {
-                Console.WriteLine(s.Method);
+                //Console.WriteLine(s.Method);
                 if(s.Method == "Method 1")
                 {
-                    Console.WriteLine("here");
                     chosenOne = s;
                     break;
                 }
@@ -1122,6 +1121,36 @@ namespace PKHeX.WinForms.Misc
             ans[1] = chosenOne.Sid.ToString();
             return ans;
         }
-        
+
+        public static string[] XDPID(uint hp, uint atk, uint def, uint spa, uint spd, uint spe, uint nature, uint tid)
+        {
+            List<Seed> seeds =
+                IVtoSeed.GetSeeds(
+                    hp,
+                    atk,
+                    def,
+                    spa,
+                    spd,
+                    spe,
+                    nature,
+                    tid);
+            //Console.WriteLine("Colo IVS " + hp + " " + atk + " " + def + " " + spa + " " + spd + " " + spe + " " + nature + " " + tid);
+            Seed chosenOne = new Seed();
+            foreach (Seed s in seeds)
+            {
+                //Console.WriteLine(s.Method);
+                if (s.Method == "Colosseum/XD")
+                {
+                    //Console.WriteLine("ColoXD");
+                    chosenOne = s;
+                    break;
+                }
+            }
+            string[] ans = new string[2];
+            ans[0] = chosenOne.Pid.ToString("X");
+            ans[1] = chosenOne.Sid.ToString();
+            return ans;
+        }
+
     }
 }
