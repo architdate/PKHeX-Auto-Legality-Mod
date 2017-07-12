@@ -118,6 +118,7 @@ namespace PKHeX.WinForms.Controls
                     CHK_AsEgg.Checked = true;
                     TB_MetLevel.Text = "1";
                     CB_MetLocation.SelectedIndex = 5;
+                    clickMetLocationMod(null, null);
                     CB_3DSReg.SelectedIndex = 2;
                     GB_EggConditions.Visible = true;
                     CB_EggLocation.SelectedIndex = CHK_AsEgg.Checked ? 1 : 0; // daycare : none
