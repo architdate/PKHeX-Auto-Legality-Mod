@@ -14,6 +14,7 @@ namespace PKHeX.WinForms.Controls
 
         public void LoadShowdownSetModded(ShowdownSet Set)
         {
+            List<List<string>> evoChart = generateEvoLists();
             OpenEvent(System.IO.Path.GetDirectoryName(Application.ExecutablePath) + "\\DONOTTOUCH\\reset.pk7");
             bool legendary = false;
             string[] legendaryList = new string[] { "Articuno", "Zapdos", "Moltres", "Mewtwo", "Mew", "Raikou", "Suicuine",
@@ -217,8 +218,8 @@ namespace PKHeX.WinForms.Controls
                 string move4 = CB_Move4.Text;
                 OpenEvent(System.IO.Path.GetDirectoryName(Application.ExecutablePath) + "\\DONOTTOUCH\\reset.pk7");
 
-                bool fastSearch = true;
-                if (fastSearch)
+                //bool fastSearch = true;
+                if (legendary)
                 {
                     List<string> fileList = new List<string>();
                     string fpath = System.IO.Path.GetDirectoryName(Application.ExecutablePath) + "\\mgdb";
@@ -247,21 +248,42 @@ namespace PKHeX.WinForms.Controls
                 }
                 else
                 {
-                    string folderpath = System.IO.Path.GetDirectoryName(Application.ExecutablePath) + "\\mgdb";
-                    foreach (string file in System.IO.Directory.GetFiles(folderpath, "*.*", System.IO.SearchOption.AllDirectories))
+                    List<string> chain = new List<string>();
+                    foreach(List<string> a in evoChart)
                     {
-                        try // Hopefully a fix for bad event files
+                        foreach(string b  in a)
                         {
-                            OpenEvent(file);
-                            if (pkmnName == CB_Species.Text)
+                            if (b == pkmnName)
                             {
-                                Console.WriteLine("In here for pokemon: " + CB_Species.Text);
-                                ShowdownData(Set);
-                                bool ignoreLegality = false;
-                                if (clickLegality(ignoreLegality)) return;
-                                UpdateLegality();
+                                chain = a;
                             }
-                            if (Legality.Valid && pkmnName == CB_Species.Text) break;
+                        }
+                    }
+                    List<string> fileList = new List<string>();
+                    string fpath = System.IO.Path.GetDirectoryName(Application.ExecutablePath) + "\\mgdb";
+                    foreach (string file in System.IO.Directory.GetFiles(fpath, "*.*", System.IO.SearchOption.AllDirectories))
+                    {
+                        foreach (string mon in chain)
+                        {
+                            if (file.Contains(mon))
+                            {
+                                fileList.Add(file);
+                                Console.WriteLine(file);
+                            }
+                        }
+                    }
+                    foreach (string eventfile in fileList)
+                    {
+                        try
+                        {
+                            OpenEvent(eventfile);
+                            ShowdownData(Set);
+                            if (Legality.Info.Relearn.Any(z => !z.Valid))
+                                SetSuggestedRelearnMoves(silent: true);
+                            CheckSumVerify();
+                            UpdateLegality();
+                            
+                            if (Legality.Valid) break;
                         }
                         catch { }
                     }
@@ -278,6 +300,7 @@ namespace PKHeX.WinForms.Controls
 
         private void ShowdownData(ShowdownSet Set)
         {
+            CB_Species.SelectedValue = Set.Species;
             if (Set.Nickname != null)
                 TB_Nickname.Text = Set.Nickname;
             if (Set.Gender != null)
@@ -651,6 +674,35 @@ namespace PKHeX.WinForms.Controls
             }
         }
 
+        private List<List<string>> generateEvoLists()
+        {
+            int counter = 0;
+            string line;
+            List<List<string>> evoList = new List<List<string>>();
+
+            List<string> blankList = new List<string>();
+            // Read the file and display it line by line.
+            System.IO.StreamReader file =
+               new System.IO.StreamReader(System.IO.Path.GetDirectoryName(Application.ExecutablePath) + "\\DONOTTOUCH\\evolutions.txt");
+            while ((line = file.ReadLine()) != null)
+            {
+                if (line.Trim() == "")
+                {
+                    evoList.Add(blankList);
+                    blankList = new List<string>();
+                }
+                else
+                {
+                    blankList.Add(line.Trim());
+                }
+                //Console.WriteLine(line);
+                counter++;
+            }
+
+            file.Close();
+            return evoList;
+        }
+
         private void setPIDSID(bool shiny)
         {
             uint hp = uint.Parse(TB_HPIV.Text);
@@ -661,7 +713,7 @@ namespace PKHeX.WinForms.Controls
             uint spe = uint.Parse(TB_SPEIV.Text);
             string natText = CB_Nature.Text;
             uint nature = 0;
-            if(natText == "Adamant") { nature = 3; }
+            if (natText == "Adamant") { nature = 3; }
             else if (natText == "Bold") { nature = 5; }
             else if (natText == "Brave") { nature = 2; }
             else if (natText == "Calm") { nature = 20; }
@@ -693,7 +745,8 @@ namespace PKHeX.WinForms.Controls
             if (shiny) UpdateShiny(false);
             CheckSumVerify();
             UpdateLegality();
-            if (!Legality.Valid) { 
+            if (!Legality.Valid)
+            {
                 List<List<string>> ivspreads = new List<List<string>>();
                 ivspreads.Add(new List<string> { "0", "0", "0", "0", "0", "7" }); // Hardy
                 ivspreads.Add(new List<string> { "0", "0", "0", "0", "1", "1" }); // Lonely
