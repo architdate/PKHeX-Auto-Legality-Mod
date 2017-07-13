@@ -428,13 +428,26 @@ namespace PKHeX.WinForms.Controls
             }
             if (report.Contains("Can't have ball for encounter type."))
             {
-                CB_Ball.SelectedIndex = 6;
-                pknew = PreparePKM();
-                LegalityAnalysis recheckLA = new LegalityAnalysis(pknew);
-                updatedReport = recheckLA.Report(false);
-                report = updatedReport;
-                CheckSumVerify();
-                UpdateLegality();
+                if (CB_GameOrigin.Text == "Black 2" || CB_GameOrigin.Text == "White 2")
+                {
+                    CB_Ball.SelectedIndex = 6;
+                    pknew = PreparePKM();
+                    LegalityAnalysis recheckLA = new LegalityAnalysis(pknew);
+                    updatedReport = recheckLA.Report(false);
+                    report = updatedReport;
+                    CheckSumVerify();
+                    UpdateLegality();
+                }
+                else
+                {
+                    CB_Ball.SelectedIndex = 0;
+                    pknew = PreparePKM();
+                    LegalityAnalysis recheckLA = new LegalityAnalysis(pknew);
+                    updatedReport = recheckLA.Report(false);
+                    report = updatedReport;
+                    CheckSumVerify();
+                    UpdateLegality();
+                }
             }
             if (report.Contains("Non japanese Mew from Faraway Island. Unreleased event."))
             {
