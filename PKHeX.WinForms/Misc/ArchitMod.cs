@@ -368,6 +368,7 @@ namespace PKHeX.WinForms.Controls
             string spa = TB_SPAIV.Text;
             string spd = TB_SPDIV.Text;
             string spe = TB_SPEIV.Text;
+            bool HTworkaround = false;
             LegalityAnalysis la = new LegalityAnalysis(pk);
             if (pk.Slot < 0)
                 UpdateLegality(la);
@@ -402,12 +403,14 @@ namespace PKHeX.WinForms.Controls
                 updatedReport = recheckLA.Report(false);
                 if (!updatedReport.Contains("Ability mismatch for encounter"))
                 {
+                    CheckSumVerify();
                     UpdateLegality();
                     report = updatedReport;
                 }
                 else if (legalized)
                 {
                     CB_Ability.SelectedIndex = legalizedIndex;
+                    CheckSumVerify();
                     UpdateLegality();
                 }
                 CheckSumVerify();
@@ -501,6 +504,7 @@ namespace PKHeX.WinForms.Controls
                 CheckSumVerify();
                 UpdateLegality();
                 pknew = PreparePKM();
+                if(pknew.HT_HP) { HTworkaround = true; }
                 LegalityAnalysis recheckLA = new LegalityAnalysis(pknew);
                 updatedReport = recheckLA.Report(false);
                 report = updatedReport;
@@ -523,20 +527,23 @@ namespace PKHeX.WinForms.Controls
                     }
                 }
             }
-            pknew = PreparePKM();
-            pknew.HT_HP = false;
-            pknew.HT_ATK = false;
-            pknew.HT_DEF = false;
-            pknew.HT_SPA = false;
-            pknew.HT_SPD = false;
-            pknew.HT_SPE = false;
-            PopulateFields(pk);
-            TB_HPIV.Text = hp;
-            TB_ATKIV.Text = atk;
-            TB_DEFIV.Text = def;
-            TB_SPAIV.Text = spa;
-            TB_SPDIV.Text = spd;
-            TB_SPEIV.Text = spe;
+            if (HTworkaround)
+            {
+                pknew = PreparePKM();
+                pknew.HT_HP = false;
+                pknew.HT_ATK = false;
+                pknew.HT_DEF = false;
+                pknew.HT_SPA = false;
+                pknew.HT_SPD = false;
+                pknew.HT_SPE = false;
+                PopulateFields(pk);
+                TB_HPIV.Text = hp;
+                TB_ATKIV.Text = atk;
+                TB_DEFIV.Text = def;
+                TB_SPAIV.Text = spa;
+                TB_SPDIV.Text = spd;
+                TB_SPEIV.Text = spe;
+            }
             CheckSumVerify();
             UpdateLegality();
             return false;
