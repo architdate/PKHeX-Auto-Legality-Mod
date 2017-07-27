@@ -31,10 +31,6 @@ namespace PKHeX.WinForms.Controls
         public void LoadShowdownSetModded(ShowdownSet Set)
         {
             List<List<string>> evoChart = generateEvoLists();
-            foreach(string a in Assembly.GetExecutingAssembly().GetManifestResourceNames())
-            {
-                Console.WriteLine(a);
-            }
             hardReset();
             bool legendary = false;
             string[] legendaryList = new string[] { "Articuno", "Zapdos", "Moltres", "Mewtwo", "Mew", "Raikou", "Suicuine",
@@ -717,7 +713,7 @@ namespace PKHeX.WinForms.Controls
         private void hardReset()
         {
             var assembly = Assembly.GetExecutingAssembly();
-            var resourceName = "PKHeX.WinForms.Resources.text.evolutions.txt";
+            var resourceName = "PKHeX.WinForms.Resources.byte.reset.pk7";
             System.IO.Stream stream = assembly.GetManifestResourceStream(resourceName);
             System.IO.StreamReader filestr = new System.IO.StreamReader(stream);
             System.IO.MemoryStream ms = new System.IO.MemoryStream();
@@ -730,7 +726,10 @@ namespace PKHeX.WinForms.Controls
             this.CurrentSAV.Name = "C_SAV";
             this.CurrentSAV.Size = new System.Drawing.Size(310, 326);
             this.CurrentSAV.TabIndex = 104;
-            TryLoadPKM(pk7reset, "", "pk7", CurrentSAV.SAV);
+            if (TryLoadPKM(pk7reset, "", "pk7", CurrentSAV.SAV))
+            {
+                return;
+            }
         }
 
         private bool clickLegality(bool ignoreLegality)
