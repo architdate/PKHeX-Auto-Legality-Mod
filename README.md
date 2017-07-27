@@ -41,6 +41,10 @@ $ git clone https://github.com/kwsch/PKHeX.git
 - Right click on the `Misc` folder in `PKHeX.WinForms` sub-project and in the `Add` menu select `Existing Item`.
 - Add the `ArchitMod.cs` file from the `PKHeX.WinForms/Misc` directory to the `Misc` folder.
 - Add the `IVtoPIDGenerator.cs` file from the `PKHeX.WinForms/Misc` directory to the `Misc` folder.
+- Similarly add `reset.pk7` file from `PKHeX.Winforms/Resources/byte` directory to the `Resources/byte` folder.
+- Click on `reset.pk7` file and set it as an `Embedded Resource` in the property box below.
+- Similarly add `evolutions.txt` file from `PKHeX.Winforms/Resources/text` directory to the `Resources/text` folder.
+- Click on `evolutions.txt` file and set it as an `Embedded Resource` in the property box below.
 - Go to `MainWindow` folder and expand `Main.cs` and open the `Main` code section.
 - Search for the function `ClickShowdownImportPKM` using `Ctrl + F`.
 - Replace `PKME_Tabs.LoadShowdownSet(Set);` in that function with `PKME_Tabs.LoadShowdownSetModded(Set);`

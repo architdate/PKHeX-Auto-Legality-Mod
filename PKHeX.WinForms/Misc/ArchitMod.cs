@@ -3,6 +3,7 @@ using System.Linq;
 using System.Media;
 using System.Windows.Forms;
 using System.Collections.Generic;
+using System.Reflection;
 
 using PKHeX.Core;
 
@@ -12,10 +13,29 @@ namespace PKHeX.WinForms.Controls
     {
         private Controls.SAVEditor CurrentSAV;
 
+        public void GenerateFolders()
+        {
+            if (DialogResult.Yes != WinFormsUtil.Prompt(MessageBoxButtons.YesNo,
+                $"thecommondude's (Archit Date's) mod event legality will only work if mgdb folder is in the same folder as the executable.",
+                "Would you like to create the required folders now?")) return;
+
+            try
+            {
+                System.IO.Directory.CreateDirectory(System.IO.Path.Combine(Main.WorkingDirectory, "mgdb"));
+                WinFormsUtil.Alert("mgdb folder created. Remember to add event files to it");
+            }
+            catch (Exception ex) { WinFormsUtil.Error($"Unable to create necessary folders", ex); }
+        }
+
+
         public void LoadShowdownSetModded(ShowdownSet Set)
         {
             List<List<string>> evoChart = generateEvoLists();
-            OpenEvent(System.IO.Path.GetDirectoryName(Application.ExecutablePath) + "\\DONOTTOUCH\\reset.pk7");
+            foreach(string a in Assembly.GetExecutingAssembly().GetManifestResourceNames())
+            {
+                Console.WriteLine(a);
+            }
+            hardReset();
             bool legendary = false;
             string[] legendaryList = new string[] { "Articuno", "Zapdos", "Moltres", "Mewtwo", "Mew", "Raikou", "Suicuine",
                                                     "Entei", "Lugia", "Celebi", "Regirock", "Regice", "Registeel", "Latias",
@@ -217,7 +237,7 @@ namespace PKHeX.WinForms.Controls
                 string move2 = CB_Move2.Text;
                 string move3 = CB_Move3.Text;
                 string move4 = CB_Move4.Text;
-                OpenEvent(System.IO.Path.GetDirectoryName(Application.ExecutablePath) + "\\DONOTTOUCH\\reset.pk7");
+                hardReset();
 
                 //bool fastSearch = true;
                 if (legendary)
@@ -351,8 +371,6 @@ namespace PKHeX.WinForms.Controls
             TB_Friendship.Text = Set.Friendship.ToString();
 
             // Reset IV/EVs
-            UpdateRandomPID(null, null);
-            UpdateRandomEC(null, null);
             ComboBox[] p = { CB_PPu1, CB_PPu2, CB_PPu3, CB_PPu4 };
             for (int i = 0; i < 4; i++)
                 p[i].SelectedIndex = m[i].SelectedIndex != 0 ? 3 : 0; // max PP
@@ -696,6 +714,25 @@ namespace PKHeX.WinForms.Controls
             return true;
         }
 
+        private void hardReset()
+        {
+            var assembly = Assembly.GetExecutingAssembly();
+            var resourceName = "PKHeX.WinForms.Resources.text.evolutions.txt";
+            System.IO.Stream stream = assembly.GetManifestResourceStream(resourceName);
+            System.IO.StreamReader filestr = new System.IO.StreamReader(stream);
+            System.IO.MemoryStream ms = new System.IO.MemoryStream();
+            stream.CopyTo(ms);
+            byte[] pk7reset = ms.ToArray();
+            this.CurrentSAV = new PKHeX.WinForms.Controls.SAVEditor();
+            this.CurrentSAV.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.CurrentSAV.Location = new System.Drawing.Point(292, 26);
+            this.CurrentSAV.Name = "C_SAV";
+            this.CurrentSAV.Size = new System.Drawing.Size(310, 326);
+            this.CurrentSAV.TabIndex = 104;
+            TryLoadPKM(pk7reset, "", "pk7", CurrentSAV.SAV);
+        }
+
         private bool clickLegality(bool ignoreLegality)
         {
             if (!VerifiedPKM())
@@ -778,8 +815,11 @@ namespace PKHeX.WinForms.Controls
 
             List<string> blankList = new List<string>();
             // Read the file and display it line by line.
-            System.IO.StreamReader file =
-               new System.IO.StreamReader(System.IO.Path.GetDirectoryName(Application.ExecutablePath) + "\\DONOTTOUCH\\evolutions.txt");
+            var assembly = Assembly.GetExecutingAssembly();
+            var resourceName = "PKHeX.WinForms.Resources.text.evolutions.txt";
+            System.IO.Stream stream = assembly.GetManifestResourceStream(resourceName);
+            System.IO.StreamReader file = new System.IO.StreamReader(stream);
+
             while ((line = file.ReadLine()) != null)
             {
                 if (line.Trim() == "")
@@ -896,12 +936,12 @@ namespace PKHeX.WinForms.Controls
                     TB_SPEIV.Text = spe.ToString();
                 }
                 PKM pknew = PreparePKM();
-                pknew.HT_HP = true;
-                pknew.HT_ATK = true;
-                pknew.HT_DEF = true;
-                pknew.HT_SPA = true;
-                pknew.HT_SPD = true;
-                pknew.HT_SPE = true;
+                if (hp >= 30) pknew.HT_HP = true;
+                if (atk >= 30) pknew.HT_ATK = true;
+                if (def >= 30) pknew.HT_DEF = true;
+                if (spa >= 30) pknew.HT_SPA = true;
+                if (spd >= 30) pknew.HT_SPD = true;
+                if (spe >= 30) pknew.HT_SPE = true;
                 PopulateFields(pknew);
                 if (shiny) UpdateShiny(false);
                 pknew = PreparePKM();
@@ -912,12 +952,12 @@ namespace PKHeX.WinForms.Controls
                 if (updatedReport.Contains("Invalid: Encounter Type PID mismatch."))
                 {
                     pknew = PreparePKM();
-                    pknew.HT_HP = true;
-                    pknew.HT_ATK = true;
-                    pknew.HT_DEF = true;
-                    pknew.HT_SPA = true;
-                    pknew.HT_SPD = true;
-                    pknew.HT_SPE = true;
+                    pknew.HT_HP = false;
+                    pknew.HT_ATK = false;
+                    pknew.HT_DEF = false;
+                    pknew.HT_SPA = false;
+                    pknew.HT_SPD = false;
+                    pknew.HT_SPE = false;
                     PopulateFields(pknew);
                     TB_HPIV.Text = hp.ToString();
                     TB_ATKIV.Text = atk.ToString();
