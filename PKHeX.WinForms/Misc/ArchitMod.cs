@@ -77,7 +77,7 @@ namespace PKHeX.WinForms.Controls
             CB_Form.SelectedIndex = Math.Min(CB_Form.Items.Count - 1, form);
 
             // Error Handling for Mega and Busted forms
-            if (CB_Form.Text.Contains("Mega") || CB_Form.Text == "Busted" || CB_Form.Text.Contains("Primal") || CB_Form.Text.Contains("Resolute"))
+            if (CB_Form.Text.Contains("Mega") || CB_Form.Text == "Busted" || CB_Form.Text.Contains("Primal"))
             {
                 CB_Form.SelectedIndex = 0;
             }
@@ -86,6 +86,19 @@ namespace PKHeX.WinForms.Controls
             CB_Ability.SelectedIndex = Math.Max(0, Array.IndexOf(pkm.PersonalInfo.Abilities, Set.Ability));
             ComboBox[] m = { CB_Move1, CB_Move2, CB_Move3, CB_Move4 };
             for (int i = 0; i < 4; i++) m[i].SelectedValue = Set.Moves[i];
+
+            // Set Keldeo Form
+            if (CB_Species.Text == "Keldeo")
+            {
+                if (CB_Move1.Text == "Secret Sword" || CB_Move2.Text == "Secret Sword" || CB_Move3.Text == "Secret Sword" || CB_Move4.Text == "Secret Sword")
+                {
+                    CB_Form.SelectedIndex = 1;
+                }
+                else
+                {
+                    CB_Form.SelectedIndex = 0;
+                }
+            }
 
             // Set Item and Nature
             CB_HeldItem.SelectedValue = Set.HeldItem < 0 ? 0 : Set.HeldItem;
@@ -235,7 +248,6 @@ namespace PKHeX.WinForms.Controls
                 string move4 = CB_Move4.Text;
                 hardReset();
 
-                //bool fastSearch = true;
                 if (legendary)
                 {
                     List<string> fileList = new List<string>();
@@ -342,6 +354,19 @@ namespace PKHeX.WinForms.Controls
             ComboBox[] m = { CB_Move1, CB_Move2, CB_Move3, CB_Move4 };
             for (int i = 0; i < 4; i++) m[i].SelectedValue = Set.Moves[i];
 
+            // Keldeo Form
+            if (CB_Species.Text == "Keldeo")
+            {
+                if (CB_Move1.Text == "Secret Sword" || CB_Move2.Text == "Secret Sword" || CB_Move3.Text == "Secret Sword" || CB_Move4.Text == "Secret Sword")
+                {
+                    CB_Form.SelectedIndex = 1;
+                }
+                else
+                {
+                    CB_Form.SelectedIndex = 0;
+                }
+            }
+
             // Set Item and Nature
             CB_HeldItem.SelectedValue = Set.HeldItem < 0 ? 0 : Set.HeldItem;
             CB_Nature.SelectedValue = Set.Nature < 0 ? 0 : Set.Nature;
@@ -361,6 +386,17 @@ namespace PKHeX.WinForms.Controls
             TB_SPAEV.Text = Set.EVs[4].ToString();
             TB_SPDEV.Text = Set.EVs[5].ToString();
             TB_SPEEV.Text = Set.EVs[3].ToString();
+
+            // Ash Greninja IV fix
+            if (CB_Species.Text == "Greninja" && CB_Form.SelectedIndex == 1)
+            {
+                TB_HPIV.Text = "20";
+                TB_ATKIV.Text = "31";
+                TB_DEFIV.Text = "20";
+                TB_SPAIV.Text = "31";
+                TB_SPDIV.Text = "20";
+                TB_SPEIV.Text = "31";
+            }
 
             // Set Level and Friendship
             TB_Level.Text = Set.Level.ToString();
@@ -406,7 +442,6 @@ namespace PKHeX.WinForms.Controls
                     {
                         UpdateLegality();
                         report = updatedReport;
-                        //legalized = true;
                         legalizedIndex = i;
                         break;
                     }
@@ -600,7 +635,6 @@ namespace PKHeX.WinForms.Controls
             var encounter = Legality.GetSuggestedMetInfo();
             if (encounter == null || (pkm.Format >= 3 && encounter.Location < 0))
             {
-                //WinFormsUtil.Alert("Unable to provide a suggestion.");
                 return;
             }
 
@@ -630,8 +664,6 @@ namespace PKHeX.WinForms.Controls
                 return;
 
             string suggest = string.Join(Environment.NewLine, suggestion);
-            //if (WinFormsUtil.Prompt(MessageBoxButtons.YesNo, suggest) != DialogResult.Yes)
-            //return;
 
             if (pkm.Format >= 3)
             {
@@ -653,10 +685,6 @@ namespace PKHeX.WinForms.Controls
                 return;
             if (TryLoadMysteryGift(input, path, ext, currentSaveFile))
                 return;
-
-            //WinFormsUtil.Error("Attempted to load an unsupported file type/size.",
-            //  $"File Loaded:{Environment.NewLine}{path}",
-            //$"File Size:{Environment.NewLine}{input.Length} bytes (0x{input.Length:X4})");
         }
 
         private bool TryLoadPKM(byte[] input, string path, string ext, SaveFile SAV)
@@ -692,7 +720,6 @@ namespace PKHeX.WinForms.Controls
                 return false;
             if (!tg.IsPokémon)
             {
-                //WinFormsUtil.Alert("Mystery Gift is not a Pokémon.", path);
                 return true;
             }
 
@@ -701,7 +728,6 @@ namespace PKHeX.WinForms.Controls
 
             if (pk == null)
             {
-                //WinFormsUtil.Alert("Conversion failed.", c);
                 return true;
             }
 
@@ -719,13 +745,13 @@ namespace PKHeX.WinForms.Controls
             System.IO.MemoryStream ms = new System.IO.MemoryStream();
             stream.CopyTo(ms);
             byte[] pk7reset = ms.ToArray();
-            this.CurrentSAV = new PKHeX.WinForms.Controls.SAVEditor();
-            this.CurrentSAV.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+            CurrentSAV = new PKHeX.WinForms.Controls.SAVEditor();
+            CurrentSAV.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.CurrentSAV.Location = new System.Drawing.Point(292, 26);
-            this.CurrentSAV.Name = "C_SAV";
-            this.CurrentSAV.Size = new System.Drawing.Size(310, 326);
-            this.CurrentSAV.TabIndex = 104;
+            CurrentSAV.Location = new System.Drawing.Point(292, 26);
+            CurrentSAV.Name = "C_SAV";
+            CurrentSAV.Size = new System.Drawing.Size(310, 326);
+            CurrentSAV.TabIndex = 104;
             if (TryLoadPKM(pk7reset, "", "pk7", CurrentSAV.SAV))
             {
                 return;
@@ -764,10 +790,7 @@ namespace PKHeX.WinForms.Controls
                 WinFormsUtil.Alert("Ignore this legality check");
                 return true;
             }
-            else
-
-                //WinFormsUtil.Alert(report);
-                return false;
+            else return false;
         }
 
         private void OpenEvent(string path, bool force = false)
@@ -796,13 +819,7 @@ namespace PKHeX.WinForms.Controls
             {
                 byte[] input; try { input = System.IO.File.ReadAllBytes(path); }
                 catch (Exception e) { WinFormsUtil.Error("Unable to load file.  It could be in use by another program.\nPath: " + path, e); return; }
-
-#if DEBUG
                 OpenFile(input, path, ext, CurrentSAV.SAV);
-#else
-                try { openFile(input, path, ext); }
-                catch (Exception e) { WinFormsUtil.Error("Unable to load file.\nPath: " + path, e); }
-#endif
             }
         }
 
@@ -811,14 +828,11 @@ namespace PKHeX.WinForms.Controls
             int counter = 0;
             string line;
             List<List<string>> evoList = new List<List<string>>();
-
             List<string> blankList = new List<string>();
-            // Read the file and display it line by line.
             var assembly = Assembly.GetExecutingAssembly();
             var resourceName = "PKHeX.WinForms.Resources.text.evolutions.txt";
             System.IO.Stream stream = assembly.GetManifestResourceStream(resourceName);
             System.IO.StreamReader file = new System.IO.StreamReader(stream);
-
             while ((line = file.ReadLine()) != null)
             {
                 if (line.Trim() == "")
@@ -830,10 +844,8 @@ namespace PKHeX.WinForms.Controls
                 {
                     blankList.Add(line.Trim());
                 }
-                //Console.WriteLine(line);
                 counter++;
             }
-
             file.Close();
             return evoList;
         }
