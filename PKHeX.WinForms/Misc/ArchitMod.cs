@@ -87,19 +87,6 @@ namespace PKHeX.WinForms.Controls
             ComboBox[] m = { CB_Move1, CB_Move2, CB_Move3, CB_Move4 };
             for (int i = 0; i < 4; i++) m[i].SelectedValue = Set.Moves[i];
 
-            // Set Keldeo Form
-            if (CB_Species.Text == "Keldeo")
-            {
-                if (CB_Move1.Text == "Secret Sword" || CB_Move2.Text == "Secret Sword" || CB_Move3.Text == "Secret Sword" || CB_Move4.Text == "Secret Sword")
-                {
-                    CB_Form.SelectedIndex = 1;
-                }
-                else
-                {
-                    CB_Form.SelectedIndex = 0;
-                }
-            }
-
             // Set Item and Nature
             CB_HeldItem.SelectedValue = Set.HeldItem < 0 ? 0 : Set.HeldItem;
             CB_Nature.SelectedValue = Set.Nature < 0 ? 0 : Set.Nature;
