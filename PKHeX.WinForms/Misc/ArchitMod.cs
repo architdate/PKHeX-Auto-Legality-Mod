@@ -33,6 +33,7 @@ namespace PKHeX.WinForms.Controls
             List<List<string>> evoChart = generateEvoLists();
             hardReset();
             bool legendary = false;
+            bool eventMon = false;
             string[] legendaryList = new string[] { "Articuno", "Zapdos", "Moltres", "Mewtwo", "Mew", "Raikou", "Suicuine",
                                                     "Entei", "Lugia", "Celebi", "Regirock", "Regice", "Registeel", "Latias",
                                                     "Latios", "Kyogre", "Groudon", "Rayquaza", "Jirachi", "Deoxys", "Uxie",
@@ -45,6 +46,9 @@ namespace PKHeX.WinForms.Controls
                                                     "Lunala", "Nihilego", "Buzzwole", "Pheromosa", "Xurkitree", "Celesteela",
                                                     "Kartana", "Guzzlord", "Necrozma", "Magearna"};
 
+            string[] eventList = new string[] { "Celebi", "Diancie", "Genesect", "Hoopa", "Jirachi", "Keldeo", "Manaphy",
+                                                "Meloetta", "Volcanion", "Magearna", "Marshadow" };
+
             CB_Species.SelectedValue = Set.Species;
 
             // Checking for Legendary to save time in egg iterations
@@ -53,6 +57,14 @@ namespace PKHeX.WinForms.Controls
                 if (CB_Species.Text == mon)
                 {
                     legendary = true;
+                }
+            }
+
+            foreach (string mon in eventList)
+            {
+                if (CB_Species.Text == mon)
+                {
+                    eventMon = true;
                 }
             }
 
@@ -123,7 +135,7 @@ namespace PKHeX.WinForms.Controls
             UpdateLegality();
 
             // Egg based pokemon
-            if (!legendary)
+            if (!legendary && !eventMon)
             {
                 for (int i = 0; i < CB_GameOrigin.Items.Count - 1; i++)
                 {
@@ -175,7 +187,7 @@ namespace PKHeX.WinForms.Controls
             }
 
             // Legendary / Wild Pokemon
-            if (!Legality.Valid)
+            if (!Legality.Valid && !eventMon)
             {
                 for (int i = 0; i < CB_GameOrigin.Items.Count - 1; i++)
                 {
