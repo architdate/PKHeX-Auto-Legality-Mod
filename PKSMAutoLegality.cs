@@ -10,23 +10,13 @@ namespace PKHeX.WinForms.Controls
 {
     public partial class Blah : UserControl
     {
-        public void GenerateFolders_PKSM()
-        {
-            if (DialogResult.Yes != WinFormsUtil.Prompt(MessageBoxButtons.YesNo,
-                $"thecommondude's (Archit Date's) mod event legality will only work if mgdb folder is in the same folder as the executable.",
-                "Would you like to create the required folders now?")) return;
-
-            try
-            {
-                System.IO.Directory.CreateDirectory(System.IO.Path.Combine(Main.WorkingDirectory, "mgdb"));
-                WinFormsUtil.Alert("mgdb folder created. Remember to add event files to it");
-            }
-            catch (Exception ex) { WinFormsUtil.Error($"Unable to create necessary folders", ex); }
-        }
 
         public PKM LoadShowdownSetModded_PKSM(PKM Set)
         {
             List<List<string>> evoChart = generateEvoLists2();
+            int abilitynum = Set.AbilityNumber < 6 ? Set.AbilityNumber >> 1 : 0;
+            Console.WriteLine(abilitynum);
+            bool shiny = Set.IsShiny;
             bool legendary = false;
             bool eventMon = false;
             int[] legendaryList = new int[] { 150, 151 };
@@ -74,32 +64,36 @@ namespace PKHeX.WinForms.Controls
                 for (int i = 0; i < GameVersionList.Length; i++)
                 {
                     Set.Version = GameVersionList[i];
+                    Set.Language = 2;
                     Set.OT_Name = "Archit (TCD)";
                     Set.TID = 24521;
                     Set.SID = 42312;
                     Set.EggMetDate = new DateTime(2000, 1, 1);
                     Set.Egg_Location = 60002;
+                    if (Set.Version == (int)GameVersion.D || Set.Version == (int)GameVersion.P || Set.Version == (int)GameVersion.Pt) Set.Egg_Location = 2002;
                     Set.Met_Level = 1;
                     Set.ConsoleRegion = 2;
                     Set = clickMetLocationModPKSM(Set);
+                    if (Set.GenNumber > 4) Set.Met_Level = 1;
                     try
                     {
                         Set.CurrentHandler = 1;
                         Set.HT_Name = "Archit";
                         Set = SetSuggestedRelearnMoves_PKSM(Set);
                         Set.PID = PKX.GetRandomPID(Set.Species, Set.Gender, Set.Version, Set.Nature, Set.Format, (uint)(Set.AbilityNumber * 0x10001));
-                        if (Set.IsShiny) Set.SetShinyPID();
+                        if (shiny) Set.SetShinyPID();
                         if (Set.PID == 0)
                         {
                             Set.PID = PKX.GetRandomPID(Set.Species, Set.Gender, Set.Version, Set.Nature, Set.Format, (uint)(Set.AbilityNumber * 0x10001));
-                            if (Set.IsShiny) Set.SetShinyPID();
+                            if (shiny) Set.SetShinyPID();
                         }
-                        PKM SavedSet = Set;
+                        if (Set.GenNumber < 6) Set.EncryptionConstant = Set.PID;
                         if (CommonErrorHandling2(Set))
                         {
-                            if (SavedSet.IsShiny) Set.SetShinyPID();
+                            if (shiny) Set.SetShinyPID();
                             return Set;
                         }
+                        if (Set.GenNumber < 6) Set.EncryptionConstant = Set.PID;
                         if (new LegalityAnalysis(Set).Valid)
                         {
                             return Set;
@@ -108,13 +102,64 @@ namespace PKHeX.WinForms.Controls
                     catch { continue; }
                 }
             }
-            
+            if (!new LegalityAnalysis(Set).Valid && !eventMon)
+            {
+                for (int i = 0; i < GameVersionList.Length ; i++)
+                {
+                    Set.AbilityNumber = abilitynum;
+                    Set.WasEgg = false;
+                    Set.EggMetDate = null;
+                    Set.Egg_Location = 0;
+                    Set.Version = GameVersionList[i];
+                    Set.Language = 2;
+                    Set.ConsoleRegion = 2;
+                    Set.OT_Name = "Archit (TCD)";
+                    Set.TID = 24521;
+                    Set.SID = 42312;
+                    try
+                    {
+                        Set.RelearnMove1 = 0;
+                        Set.RelearnMove2 = 0;
+                        Set.RelearnMove3 = 0;
+                        Set.RelearnMove4 = 0;
+                        clickMetLocationModPKSM(Set);
+                        Set.CurrentHandler = 1;
+                        Set.HT_Name = "Archit";
+                        Set.PID = PKX.GetRandomPID(Set.Species, Set.Gender, Set.Version, Set.Nature, Set.Format, (uint)(Set.AbilityNumber * 0x10001));
+                        if (shiny) Set.SetShinyPID();
+                        if (Set.PID == 0)
+                        {
+                            Set.PID = PKX.GetRandomPID(Set.Species, Set.Gender, Set.Version, Set.Nature, Set.Format, (uint)(Set.AbilityNumber * 0x10001));
+                            if (shiny) Set.SetShinyPID();
+                        }
+                        Set.RefreshAbility(abilitynum);
+                        if (Set.GenNumber < 6) Set.EncryptionConstant = Set.PID;
+                        if (CommonErrorHandling2(Set))
+                        {
+                            if (shiny) Set.SetShinyPID();
+                            return Set;
+                        }
+                        Set.RefreshAbility(abilitynum);
+                        if (Set.GenNumber < 6) Set.EncryptionConstant = Set.PID;
+                        if (new LegalityAnalysis(Set).Valid || Set.Valid)
+                        {
+                            return Set;
+                        }
+                    }
+                    catch { continue; }
+                    if (Set.B2W2) return Set;
+                }
+            }
 
             return Set;
         }
 
         private PKM SetSuggestedRelearnMoves_PKSM(PKM Set)
         {
+            Set.RelearnMove1 = 0;
+            Set.RelearnMove2 = 0;
+            Set.RelearnMove3 = 0;
+            Set.RelearnMove4 = 0;
             LegalityAnalysis Legality = new LegalityAnalysis(Set);
             if (Set.Format < 6)
                 return Set;
@@ -146,41 +191,13 @@ namespace PKHeX.WinForms.Controls
             string spa = pk.IV_SPA.ToString();
             string spd = pk.IV_SPD.ToString();
             string spe = pk.IV_SPE.ToString();
-            bool HTworkaround = false;
             LegalityAnalysis la = new LegalityAnalysis(pk);
             var report = la.Report(false);
-            PKM pknew;
             var updatedReport = report;
 
             if (report.Contains("Ability mismatch for encounter"))
             {
-                bool legalized = false;
-                int abilityIndex = pk.AbilityNumber;
-                int legalizedIndex = abilityIndex;
-
-                for (int i = 0; i < 3; i++)
-                {
-                    pk.AbilityNumber = i;
-                    LegalityAnalysis updatedLA = new LegalityAnalysis(pk);
-                    updatedReport = updatedLA.Report(false);
-                    if (!updatedReport.Contains("Ability mismatch for encounter"))
-                    {
-                        report = updatedReport;
-                        legalizedIndex = i;
-                        break;
-                    }
-                }
-                pk.AbilityNumber = abilityIndex;
-                LegalityAnalysis recheckLA = new LegalityAnalysis(pk);
-                updatedReport = recheckLA.Report(false);
-                if (!updatedReport.Contains("Ability mismatch for encounter"))
-                {
-                    report = updatedReport;
-                }
-                else if (legalized)
-                {
-                    pk.AbilityNumber = legalizedIndex;
-                }
+                pk.RefreshAbility(pk.AbilityNumber);
             }
             if (report.Contains("Invalid Met Location, expected Transporter."))
             {
@@ -191,9 +208,9 @@ namespace PKHeX.WinForms.Controls
             }
             if (report.Contains("Can't have ball for encounter type."))
             {
-                if (pk.Version == (int)GameVersion.B2W2)
+                if (pk.B2W2)
                 {
-                    pk.Ball = 6;
+                    pk.Ball = 25; //Dream Ball
                     LegalityAnalysis recheckLA = new LegalityAnalysis(pk);
                     updatedReport = recheckLA.Report(false);
                     report = updatedReport;
@@ -208,9 +225,17 @@ namespace PKHeX.WinForms.Controls
             }
             if (report.Contains("Non japanese Mew from Faraway Island. Unreleased event."))
             {
-                pk.Language = 0;
+                pk.Language = 1;
                 pk.FatefulEncounter = true;
+                pk.Nickname = PKX.GetSpeciesNameGeneration(pk.Species, pk.Language, 3);
                 pk.PID = PKX.GetRandomPID(pk.Species, pk.Gender, pk.Version, pk.Nature, pk.Format, (uint)(pk.AbilityNumber * 0x10001)); 
+                LegalityAnalysis recheckLA = new LegalityAnalysis(pk);
+                updatedReport = recheckLA.Report(false);
+                report = updatedReport;
+            }
+            if (report.Contains("PID should be equal to EC!"))
+            {
+                pk.EncryptionConstant = pk.PID;
                 LegalityAnalysis recheckLA = new LegalityAnalysis(pk);
                 updatedReport = recheckLA.Report(false);
                 report = updatedReport;
