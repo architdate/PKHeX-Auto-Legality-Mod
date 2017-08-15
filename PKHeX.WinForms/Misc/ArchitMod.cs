@@ -901,38 +901,76 @@ namespace PKHeX.WinForms.Controls
             if (updatedReport.Contains("Invalid: Encounter Type PID mismatch."))
             {
                 List<List<string>> ivspreads = new List<List<string>>();
-                ivspreads.Add(new List<string> { "0", "0", "0", "0", "0", "7" }); // Hardy
-                ivspreads.Add(new List<string> { "0", "0", "0", "0", "1", "1" }); // Lonely
-                ivspreads.Add(new List<string> { "0", "0", "0", "0", "1", "3" }); // Brave
-                ivspreads.Add(new List<string> { "0", "0", "0", "0", "0", "2" }); // Adamant
-                ivspreads.Add(new List<string> { "0", "0", "0", "0", "0", "7" }); // Naughty
-                ivspreads.Add(new List<string> { "0", "0", "0", "0", "0", "19" }); // Bold
-                ivspreads.Add(new List<string> { "0", "0", "0", "0", "0", "0" }); // Docile
-                ivspreads.Add(new List<string> { "0", "0", "0", "0", "0", "0" }); // Relaxed
-                ivspreads.Add(new List<string> { "0", "0", "0", "0", "0", "3" }); // Impish
-                ivspreads.Add(new List<string> { "0", "0", "0", "0", "1", "8" }); // Lax
-                ivspreads.Add(new List<string> { "0", "0", "0", "0", "1", "10" }); // Timid
-                ivspreads.Add(new List<string> { "0", "0", "0", "0", "0", "1" }); // Hasty
-                ivspreads.Add(new List<string> { "0", "0", "0", "0", "0", "1" }); // Serious
-                ivspreads.Add(new List<string> { "0", "0", "0", "0", "0", "16" }); // Jolly
-                ivspreads.Add(new List<string> { "0", "0", "0", "0", "1", "8" }); // Naive
-                ivspreads.Add(new List<string> { "0", "0", "0", "0", "0", "0" }); // Modest
-                ivspreads.Add(new List<string> { "0", "0", "0", "0", "0", "0" }); // Mild
-                ivspreads.Add(new List<string> { "0", "0", "0", "0", "0", "22" }); // Quiet
-                ivspreads.Add(new List<string> { "0", "0", "0", "0", "1", "5" }); // Bashful
-                ivspreads.Add(new List<string> { "0", "0", "0", "0", "0", "5" }); // Rash
-                ivspreads.Add(new List<string> { "0", "0", "0", "0", "0", "1" }); // Calm
-                ivspreads.Add(new List<string> { "0", "0", "0", "0", "0", "1" }); // Gentle
-                ivspreads.Add(new List<string> { "0", "0", "0", "0", "1", "14" }); // Sassy
-                ivspreads.Add(new List<string> { "0", "0", "0", "0", "0", "2" }); // Careful
-                ivspreads.Add(new List<string> { "0", "0", "0", "0", "0", "6" }); // Quirky
+                if (!XD)
+                {
+                    ivspreads.Add(new List<string> { "0", "0", "0", "0", "0", "7" }); // Hardy
+                    ivspreads.Add(new List<string> { "0", "0", "0", "0", "1", "1" }); // Lonely
+                    ivspreads.Add(new List<string> { "0", "0", "0", "0", "1", "3" }); // Brave
+                    ivspreads.Add(new List<string> { "0", "0", "0", "0", "0", "2" }); // Adamant
+                    ivspreads.Add(new List<string> { "0", "0", "0", "0", "0", "7" }); // Naughty
+                    ivspreads.Add(new List<string> { "0", "0", "0", "0", "0", "19" }); // Bold
+                    ivspreads.Add(new List<string> { "0", "0", "0", "0", "0", "0" }); // Docile
+                    ivspreads.Add(new List<string> { "0", "0", "0", "0", "0", "0" }); // Relaxed
+                    ivspreads.Add(new List<string> { "0", "0", "0", "0", "0", "3" }); // Impish
+                    ivspreads.Add(new List<string> { "0", "0", "0", "0", "1", "8" }); // Lax
+                    ivspreads.Add(new List<string> { "0", "0", "0", "0", "1", "10" }); // Timid
+                    ivspreads.Add(new List<string> { "0", "0", "0", "0", "0", "1" }); // Hasty
+                    ivspreads.Add(new List<string> { "0", "0", "0", "0", "0", "1" }); // Serious
+                    ivspreads.Add(new List<string> { "0", "0", "0", "0", "0", "16" }); // Jolly
+                    ivspreads.Add(new List<string> { "0", "0", "0", "0", "1", "8" }); // Naive
+                    ivspreads.Add(new List<string> { "0", "0", "0", "0", "0", "0" }); // Modest
+                    ivspreads.Add(new List<string> { "0", "0", "0", "0", "0", "0" }); // Mild
+                    ivspreads.Add(new List<string> { "0", "0", "0", "0", "0", "22" }); // Quiet
+                    ivspreads.Add(new List<string> { "0", "0", "0", "0", "1", "5" }); // Bashful
+                    ivspreads.Add(new List<string> { "0", "0", "0", "0", "0", "5" }); // Rash
+                    ivspreads.Add(new List<string> { "0", "0", "0", "0", "0", "1" }); // Calm
+                    ivspreads.Add(new List<string> { "0", "0", "0", "0", "0", "1" }); // Gentle
+                    ivspreads.Add(new List<string> { "0", "0", "0", "0", "1", "14" }); // Sassy
+                    ivspreads.Add(new List<string> { "0", "0", "0", "0", "0", "2" }); // Careful
+                    ivspreads.Add(new List<string> { "0", "0", "0", "0", "0", "6" }); // Quirky
+                }
+                else
+                {
+                    ivspreads.Add(new List<string> { "7", "17", "7", "23", "20", "22" }); // XDHardy
+                    ivspreads.Add(new List<string> { "29", "22", "5", "14", "27", "4" }); // XDLonely
+                    ivspreads.Add(new List<string> { "24", "10", "14", "15", "20", "16" }); // XDBrave
+                    ivspreads.Add(new List<string> { "23", "20", "8", "16", "11", "21" }); // XDAdamant
+                    ivspreads.Add(new List<string> { "18", "9", "25", "0", "18", "25" }); // XDNaughty
+                    ivspreads.Add(new List<string> { "6", "1", "0", "17", "7", "7" }); // XDBold
+                    ivspreads.Add(new List<string> { "27", "4", "18", "16", "16", "11" }); // XDDocile
+                    ivspreads.Add(new List<string> { "22", "23", "20", "12", "2", "5" }); // XDRelaxed
+                    ivspreads.Add(new List<string> { "18", "6", "10", "28", "29", "20" }); // XDImpish
+                    ivspreads.Add(new List<string> { "20", "28", "29", "22", "5", "29" }); // XDLax
+                    ivspreads.Add(new List<string> { "21", "16", "11", "5", "8", "13" }); // XDTimid
+                    ivspreads.Add(new List<string> { "27", "1", "23", "10", "12", "9" }); // XDHasty
+                    ivspreads.Add(new List<string> { "0", "6", "2", "15", "9", "29" }); // XDSerious
+                    ivspreads.Add(new List<string> { "17", "17", "15", "23", "8", "17" }); // XDJolly
+                    ivspreads.Add(new List<string> { "16", "15", "20", "4", "31", "19" }); // XDNaive
+                    ivspreads.Add(new List<string> { "13", "27", "30", "3", "20", "8" }); // XDModest
+                    ivspreads.Add(new List<string> { "19", "4", "31", "4", "21", "23" }); // XDMild
+                    ivspreads.Add(new List<string> { "4", "26", "23", "12", "11", "1" }); // XDQuiet
+                    ivspreads.Add(new List<string> { "8", "26", "0", "4", "18", "27" }); // XDBashful
+                    ivspreads.Add(new List<string> { "11", "9", "1", "6", "2", "0" }); // XDRash
+                    ivspreads.Add(new List<string> { "1", "6", "13", "26", "23", "4" }); // XDCalm
+                    ivspreads.Add(new List<string> { "29", "15", "9", "16", "31", "22" }); // XDGentle
+                    ivspreads.Add(new List<string> { "17", "23", "8", "21", "25", "13" }); // XDSassy
+                    ivspreads.Add(new List<string> { "25", "8", "0", "1", "20", "25" }); // XDCareful
+                    ivspreads.Add(new List<string> { "29", "16", "31", "6", "10", "18" }); // XDQuirky
+                }
                 TB_HPIV.Text = ivspreads[Convert.ToInt32(nature)][0];
                 TB_ATKIV.Text = ivspreads[Convert.ToInt32(nature)][1];
                 TB_DEFIV.Text = ivspreads[Convert.ToInt32(nature)][2];
                 TB_SPAIV.Text = ivspreads[Convert.ToInt32(nature)][3];
                 TB_SPDIV.Text = ivspreads[Convert.ToInt32(nature)][4];
                 TB_SPEIV.Text = ivspreads[Convert.ToInt32(nature)][5];
-                pidsid = Misc.IVtoPIDGenerator.M1PID(uint.Parse(TB_HPIV.Text), uint.Parse(TB_ATKIV.Text), uint.Parse(TB_DEFIV.Text), uint.Parse(TB_SPAIV.Text), uint.Parse(TB_SPDIV.Text), uint.Parse(TB_SPEIV.Text), nature, 0);
+                if (!XD)
+                {
+                    pidsid = Misc.IVtoPIDGenerator.M1PID(uint.Parse(TB_HPIV.Text), uint.Parse(TB_ATKIV.Text), uint.Parse(TB_DEFIV.Text), uint.Parse(TB_SPAIV.Text), uint.Parse(TB_SPDIV.Text), uint.Parse(TB_SPEIV.Text), nature, 0);
+                }
+                else
+                {
+                    pidsid = Misc.IVtoPIDGenerator.XDPID(uint.Parse(TB_HPIV.Text), uint.Parse(TB_ATKIV.Text), uint.Parse(TB_DEFIV.Text), uint.Parse(TB_SPAIV.Text), uint.Parse(TB_SPDIV.Text), uint.Parse(TB_SPEIV.Text), nature, 0);
+                }
                 TB_PID.Text = pidsid[0];
                 TB_SID.Text = pidsid[1];
                 if (pidsid[0] == "0" && pidsid[1] == "0")
@@ -959,6 +997,15 @@ namespace PKHeX.WinForms.Controls
                 updatedReport = recheckLA.Report(false);
                 CheckSumVerify();
                 UpdateLegality();
+                if (updatedReport.Contains("PID-Gender mismatch."))
+                {
+                    ClickGender(null, null);
+                    pknew = PreparePKM();
+                    recheckLA = new LegalityAnalysis(pknew);
+                    updatedReport = recheckLA.Report(false);
+                    CheckSumVerify();
+                    UpdateLegality();
+                }
                 if (updatedReport.Contains("Invalid: Encounter Type PID mismatch."))
                 {
                     pknew = PreparePKM();
