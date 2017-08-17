@@ -41,13 +41,33 @@ $ git clone https://github.com/kwsch/PKHeX.git
 - Right click on the `Misc` folder in `PKHeX.WinForms` sub-project and in the `Add` menu select `Existing Item`.
 - Add the `ArchitMod.cs` file from the `PKHeX.WinForms/Misc` directory to the `Misc` folder.
 - Add the `IVtoPIDGenerator.cs` file from the `PKHeX.WinForms/Misc` directory to the `Misc` folder.
+- Add the `PKSMAutoLegality.cs` file from the `PKHeX.WinForms/Misc` directory to the `Misc` folder.
 - Similarly add `reset.pk7` file from `PKHeX.Winforms/Resources/byte` directory to the `Resources/byte` folder.
 - Click on `reset.pk7` file and set it as an `Embedded Resource` in the property box below.
 - Similarly add `evolutions.txt` file from `PKHeX.Winforms/Resources/text` directory to the `Resources/text` folder.
 - Click on `evolutions.txt` file and set it as an `Embedded Resource` in the property box below.
 - Go to `MainWindow` folder and expand `Main.cs` and open the `Main` code section.
 - Search for the function `ClickShowdownImportPKM` using `Ctrl + F`.
-- Replace `PKME_Tabs.LoadShowdownSet(Set);` in that function with `PKME_Tabs.LoadShowdownSetModded(Set);`
+- Replace `PKME_Tabs.LoadShowdownSet(Set);` in that function with 
+```
+            bool resetForm = false;
+            PKME_Tabs.hardReset();
+            if (Set.Form == null) { }
+            else if (Set.Form.Contains("Mega") || Set.Form == "Primal" || Set.Form == "Busted")
+            {
+                resetForm = true;
+                Console.WriteLine(Set.Species);
+            }
+            PKME_Tabs.LoadShowdownSet(Set);
+            PKM p = PreparePKM();
+            Blah b = new Blah();
+            PKM legal = b.LoadShowdownSetModded_PKSM(p, resetForm);
+            PKME_Tabs.PopulateFields(legal);
+            if (!new LegalityAnalysis(legal).Valid)
+            {
+                PKME_Tabs.LoadShowdownSetModded(Set, true);
+            }
+```
 - Right click on the main PKHeX project and click Rebuild all.
 - The output of the PKHeX file should be in `PKHeX\PKHeX.WinForms\bin\Debug` folder.
 
@@ -66,4 +86,6 @@ Just me right now, but if you want to contribute, feel free to contact me on Dis
 
 ## Credits
 - IV to PID conversion code taken [RNGReporter](https://github.com/Admiral-Fish/RNGReporter) by [Admiral-Fish](https://github.com/Admiral-Fish) which is under the GNU General Public License v2.0.
+- My good friend TORNADO for helping me with Test Cases
+- Speed Improvement ideas by [Bernardo Giordano](https://github.com/BernardoGiordano)
 - kwsch for the original PKHeX repository.

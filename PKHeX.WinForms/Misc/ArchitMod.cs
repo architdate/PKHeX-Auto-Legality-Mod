@@ -28,12 +28,12 @@ namespace PKHeX.WinForms.Controls
         }
 
 
-        public void LoadShowdownSetModded(ShowdownSet Set)
+        public void LoadShowdownSetModded(ShowdownSet Set, bool isEvent = false)
         {
             List<List<string>> evoChart = generateEvoLists();
             hardReset();
             bool legendary = false;
-            bool eventMon = false;
+            bool eventMon = isEvent;
             string[] legendaryList = new string[] { "Articuno", "Zapdos", "Moltres", "Mewtwo", "Mew", "Raikou", "Suicuine",
                                                     "Entei", "Lugia", "Celebi", "Regirock", "Regice", "Registeel", "Latias",
                                                     "Latios", "Kyogre", "Groudon", "Rayquaza", "Jirachi", "Deoxys", "Uxie",
@@ -735,7 +735,7 @@ namespace PKHeX.WinForms.Controls
             return true;
         }
 
-        private void hardReset()
+        public void hardReset()
         {
             var assembly = Assembly.GetExecutingAssembly();
             var resourceName = "PKHeX.WinForms.Resources.byte.reset.pk7";
