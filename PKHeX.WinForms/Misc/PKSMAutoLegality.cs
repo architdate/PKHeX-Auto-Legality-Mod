@@ -67,7 +67,12 @@ namespace PKHeX.WinForms.Controls
                     if (Set.Version == (int)GameVersion.D || Set.Version == (int)GameVersion.P || Set.Version == (int)GameVersion.Pt) Set.Egg_Location = 2002;
                     Set.Met_Level = 1;
                     Set.ConsoleRegion = 2;
-                    Set = clickMetLocationModPKSM(Set);
+                    if (Set.Version == (int)GameVersion.CXD)
+                    {
+                        Set.Met_Location = 30001;
+                        Set.Met_Level = 100;
+                    }
+                    else { Set = clickMetLocationModPKSM(Set); }
                     if (Set.GenNumber > 4) Set.Met_Level = 1;
                     try
                     {
@@ -121,7 +126,12 @@ namespace PKHeX.WinForms.Controls
                         Set.RelearnMove2 = 0;
                         Set.RelearnMove3 = 0;
                         Set.RelearnMove4 = 0;
-                        clickMetLocationModPKSM(Set);
+                        if (Set.Version == (int)GameVersion.CXD)
+                        {
+                            Set.Met_Location = 30001;
+                            Set.Met_Level = 100;
+                        }
+                        else { clickMetLocationModPKSM(Set); }
                         Set.CurrentHandler = 1;
                         Set.HT_Name = "Archit";
                         Set.PID = PKX.GetRandomPID(Set.Species, Set.Gender, Set.Version, Set.Nature, Set.Format, (uint)(Set.AbilityNumber * 0x10001));
@@ -140,6 +150,7 @@ namespace PKHeX.WinForms.Controls
                         }
                         Set.RefreshAbility(abilitynum);
                         if (Set.GenNumber < 6) Set.EncryptionConstant = Set.PID;
+                        
                         if (new LegalityAnalysis(Set).Valid || Set.Valid)
                         {
                             return Set;
