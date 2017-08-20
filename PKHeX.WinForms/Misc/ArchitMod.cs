@@ -6,12 +6,14 @@ using System.Collections.Generic;
 using System.Reflection;
 
 using PKHeX.Core;
+using PKHeX.WinForms.Properties;
 
 namespace PKHeX.WinForms.Controls
 {
     public partial class PKMEditor : UserControl
     {
         private Controls.SAVEditor CurrentSAV;
+        public BoxEditor Box;
 
         public void GenerateFolders()
         {
@@ -25,6 +27,84 @@ namespace PKHeX.WinForms.Controls
                 WinFormsUtil.Alert("mgdb folder created. Remember to add event files to it");
             }
             catch (Exception ex) { WinFormsUtil.Error($"Unable to create necessary folders", ex); }
+        }
+
+        public void ClickSet(object sender, int slot)
+        {
+            SlotChangeManager m = GetSenderInfo(ref sender, out SlotChange info, slot);
+            if (m == null)
+                return;
+
+            var editor = m.SE.PKME_Tabs;
+            var sav = m.SE.SAV;
+            if (info.IsParty && editor.IsEmptyOrEgg && sav.IsPartyAllEggs(info.Slot - 30) && !m.SE.HaX)
+            { WinFormsUtil.Alert("Can't have empty/egg party."); return; }
+            if (m.SE.SAV.IsSlotLocked(info.Box, info.Slot))
+            { WinFormsUtil.Alert("Can't set to locked slot."); return; }
+
+            PKM pk = editor.PreparePKM();
+
+            string[] errata = sav.IsPKMCompatible(pk);
+            if (errata.Length > 0 && DialogResult.Yes != WinFormsUtil.Prompt(MessageBoxButtons.YesNo, string.Join(Environment.NewLine, errata), "Continue?"))
+                return;
+
+            if (info.Slot >= 30)
+                info.Box = -1;
+            if (info.Slot >= 30 && info.Slot < 36) // Party
+            {
+                // If info.Slot isn't overwriting existing PKM, make it write to the lowest empty PKM info.Slot
+                if (sav.PartyCount < info.Slot + 1 - 30)
+                {
+                    info.Slot = sav.PartyCount + 30;
+                    info.Offset = m.SE.GetPKMOffset(info.Slot);
+                }
+                m.SetPKM(pk, info, true, Resources.slotSet);
+            }
+            else if (info.Slot < 30 || m.SE.HaX)
+            {
+                if (info.Slot < 30)
+                {
+                    m.SE.UndoStack.Push(new SlotChange
+                    {
+                        Box = info.Box,
+                        Slot = info.Slot,
+                        Offset = info.Offset,
+                        PKM = sav.GetStoredSlot(info.Offset)
+                    });
+                    m.SE.Menu_Undo.Enabled = true;
+                }
+
+                m.SetPKM(pk, info, true, Resources.slotSet);
+            }
+
+            editor.LastData = pk.Data;
+            m.SE.RedoStack.Clear(); m.SE.Menu_Redo.Enabled = false;
+        }
+        private static SlotChangeManager GetSenderInfo(ref object sender, out SlotChange loc, int slot)
+        {
+            loc = new SlotChange();
+            var ctrl = WinFormsUtil.GetUnderlyingControl(sender);
+            var obj = ctrl.Parent.Parent;
+            if (obj is BoxEditor b)
+            {
+                loc.Box = b.CurrentBox;
+                loc.Slot = slot;
+                loc.Offset = b.GetOffset(loc.Slot, loc.Box);
+                loc.Parent = b.FindForm();
+                sender = ctrl;
+                return b.M;
+            }
+            obj = obj.Parent.Parent;
+            if (obj is SAVEditor z)
+            {
+                loc.Box = z.Box.CurrentBox;
+                loc.Slot = slot;
+                loc.Offset = z.GetPKMOffset(loc.Slot, loc.Box);
+                loc.Parent = z.FindForm();
+                sender = ctrl;
+                return z.M;
+            }
+            return null;
         }
 
 
@@ -321,7 +401,7 @@ namespace PKHeX.WinForms.Controls
 
             if (!Legality.Valid)
             {
-                WinFormsUtil.Alert("Set Not supported for autolegality yet, please DM thecommondude with the set details");
+                WinFormsUtil.Alert("Reconfirm Legality Details of the genned mon/team");
             }
 
         }

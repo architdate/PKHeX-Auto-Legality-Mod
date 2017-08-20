@@ -48,24 +48,85 @@ $ git clone https://github.com/kwsch/PKHeX.git
 - Click on `evolutions.txt` file and set it as an `Embedded Resource` in the property box below.
 - Go to `MainWindow` folder and expand `Main.cs` and open the `Main` code section.
 - Search for the function `ClickShowdownImportPKM` using `Ctrl + F`.
-- Replace `PKME_Tabs.LoadShowdownSet(Set);` in that function with 
-```
-            bool resetForm = false;
-            PKME_Tabs.hardReset();
-            if (Set.Form == null) { }
-            else if (Set.Form.Contains("Mega") || Set.Form == "Primal" || Set.Form == "Busted")
+- Replace **ALL THE CONTENTS** in that function with 
+```csharp
+            if (!Clipboard.ContainsText())
+            { WinFormsUtil.Alert("Clipboard does not contain text."); return; }
+
+            string source = Clipboard.GetText();
+            string[] stringSeparators = new string[] { "\n\r" };
+            string[] result;
+
+            // ...
+            result = source.Split(stringSeparators, StringSplitOptions.None);
+            Console.WriteLine(result.Length);
+
+            if (result.Length > 1)
             {
-                resetForm = true;
-                Console.WriteLine(Set.Species);
+                for(int i = 0; i < result.Length; i++)
+                {
+                    ShowdownSet Set = new ShowdownSet(result[i]);
+                    if (Set.InvalidLines.Any())
+                        WinFormsUtil.Alert("Invalid lines detected:", string.Join(Environment.NewLine, Set.InvalidLines));
+
+                    // Set Species & Nickname
+                    bool resetForm = false;
+                    PKME_Tabs.hardReset();
+                    if (Set.Form == null) { }
+                    else if (Set.Form.Contains("Mega") || Set.Form == "Primal" || Set.Form == "Busted")
+                    {
+                        resetForm = true;
+                        Console.WriteLine(Set.Species);
+                    }
+                    PKME_Tabs.LoadShowdownSet(Set);
+                    PKM p = PreparePKM();
+                    Blah b = new Blah();
+                    PKM legal = b.LoadShowdownSetModded_PKSM(p, resetForm);
+                    PKME_Tabs.PopulateFields(legal);
+                    if (!new LegalityAnalysis(legal).Valid)
+                    {
+                        PKME_Tabs.LoadShowdownSetModded(Set, true);
+                    }
+                    PKM pk = PreparePKM();
+                    PKME_Tabs.ClickSet(C_SAV.Box.SlotPictureBoxes[0], i);
+                }
             }
-            PKME_Tabs.LoadShowdownSet(Set);
-            PKM p = PreparePKM();
-            Blah b = new Blah();
-            PKM legal = b.LoadShowdownSetModded_PKSM(p, resetForm);
-            PKME_Tabs.PopulateFields(legal);
-            if (!new LegalityAnalysis(legal).Valid)
+            else
             {
-                PKME_Tabs.LoadShowdownSetModded(Set, true);
+                // Get Simulator Data
+                ShowdownSet Set = new ShowdownSet(Clipboard.GetText());
+
+                if (Set.Species < 0)
+                { WinFormsUtil.Alert("Set data not found in clipboard."); return; }
+
+                if (Set.Nickname?.Length > C_SAV.SAV.NickLength)
+                    Set.Nickname = Set.Nickname.Substring(0, C_SAV.SAV.NickLength);
+
+                if (DialogResult.Yes != WinFormsUtil.Prompt(MessageBoxButtons.YesNo, "Import this set?", Set.Text))
+                    return;
+
+                if (Set.InvalidLines.Any())
+                    WinFormsUtil.Alert("Invalid lines detected:", string.Join(Environment.NewLine, Set.InvalidLines));
+
+                // Set Species & Nickname
+                //PKME_Tabs.LoadShowdownSet(Set);
+                bool resetForm = false;
+                PKME_Tabs.hardReset();
+                if (Set.Form == null) { }
+                else if (Set.Form.Contains("Mega") || Set.Form == "Primal" || Set.Form == "Busted")
+                {
+                    resetForm = true;
+                    Console.WriteLine(Set.Species);
+                }
+                PKME_Tabs.LoadShowdownSet(Set);
+                PKM p = PreparePKM();
+                Blah b = new Blah();
+                PKM legal = b.LoadShowdownSetModded_PKSM(p, resetForm);
+                PKME_Tabs.PopulateFields(legal);
+                if (!new LegalityAnalysis(legal).Valid)
+                {
+                    PKME_Tabs.LoadShowdownSetModded(Set, true);
+                }
             }
 ```
 - Right click on the main PKHeX project and click Rebuild all.
