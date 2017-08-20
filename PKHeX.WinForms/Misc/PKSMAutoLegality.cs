@@ -62,11 +62,17 @@ namespace PKHeX.WinForms.Controls
                     Set.OT_Name = "Archit (TCD)";
                     Set.TID = 24521;
                     Set.SID = 42312;
+                    if (Set.Version == (int)GameVersion.RD || Set.Version == (int)GameVersion.BU || Set.Version == (int)GameVersion.YW || Set.Version == (int)GameVersion.GN) Set.SID = 0;
                     Set.EggMetDate = new DateTime(2000, 1, 1);
                     Set.Egg_Location = 60002;
                     if (Set.Version == (int)GameVersion.D || Set.Version == (int)GameVersion.P || Set.Version == (int)GameVersion.Pt) Set.Egg_Location = 2002;
                     Set.Met_Level = 1;
                     Set.ConsoleRegion = 2;
+                    if (Set.Version == (int)GameVersion.RD || Set.Version == (int)GameVersion.BU || Set.Version == (int)GameVersion.YW || Set.Version == (int)GameVersion.GN)
+                    {
+                        Set.Met_Location = 30013;
+                        Set.Met_Level = 100;
+                    }
                     if (Set.Version == (int)GameVersion.CXD)
                     {
                         Set.Met_Location = 30001;
@@ -111,6 +117,7 @@ namespace PKHeX.WinForms.Controls
             {
                 for (int i = 0; i < GameVersionList.Length ; i++)
                 {
+                    Console.WriteLine(Set.Version);
                     Set.WasEgg = false;
                     Set.EggMetDate = null;
                     Set.Egg_Location = 0;
@@ -120,12 +127,18 @@ namespace PKHeX.WinForms.Controls
                     Set.OT_Name = "Archit (TCD)";
                     Set.TID = 24521;
                     Set.SID = 42312;
+                    if (Set.Version == (int)GameVersion.RD || Set.Version == (int)GameVersion.BU || Set.Version == (int)GameVersion.YW || Set.Version == (int)GameVersion.GN) Set.SID = 0;
                     try
                     {
                         Set.RelearnMove1 = 0;
                         Set.RelearnMove2 = 0;
                         Set.RelearnMove3 = 0;
                         Set.RelearnMove4 = 0;
+                        if (Set.Version == (int)GameVersion.RD || Set.Version == (int)GameVersion.BU || Set.Version == (int)GameVersion.YW || Set.Version == (int)GameVersion.GN)
+                        {
+                            Set.Met_Location = 30013;
+                            Set.Met_Level = 100;
+                        }
                         if (Set.Version == (int)GameVersion.CXD)
                         {
                             Set.Met_Location = 30001;
@@ -293,6 +306,27 @@ namespace PKHeX.WinForms.Controls
                 updatedReport = recheckLA.Report(false);
                 report = updatedReport;
             }
+            if (report.Contains("Invalid Ribbons: National"))
+            {
+                ReflectUtil.SetValue(pk, "RibbonNational", 0);
+                LegalityAnalysis recheckLA = new LegalityAnalysis(pk);
+                updatedReport = recheckLA.Report(false);
+                report = updatedReport;
+            }
+            if (report.Contains("OT Name too long."))
+            {
+                pk.OT_Name = "ARCH";
+                LegalityAnalysis recheckLA = new LegalityAnalysis(pk);
+                updatedReport = recheckLA.Report(false);
+                report = updatedReport;
+            }
+            if (report.Contains("GeoLocation Memory: Memories should be present."))
+            {
+                pk.Geo1_Country = 1;
+                LegalityAnalysis recheckLA = new LegalityAnalysis(pk);
+                updatedReport = recheckLA.Report(false);
+                report = updatedReport;
+            }
             if (report.Contains("Can't have ball for encounter type."))
             {
                 pk.Ball = 4;
@@ -311,6 +345,13 @@ namespace PKHeX.WinForms.Controls
             if (report.Contains("Special ingame Fateful Encounter flag missing"))
             {
                 pk.FatefulEncounter = true;
+                LegalityAnalysis recheckLA = new LegalityAnalysis(pk);
+                updatedReport = recheckLA.Report(false);
+                report = updatedReport;
+            }
+            if (report.Contains("Fateful Encounter should not be checked."))
+            {
+                pk.FatefulEncounter = false;
                 LegalityAnalysis recheckLA = new LegalityAnalysis(pk);
                 updatedReport = recheckLA.Report(false);
                 report = updatedReport;
