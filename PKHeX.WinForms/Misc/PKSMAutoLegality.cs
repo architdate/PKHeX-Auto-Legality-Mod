@@ -11,8 +11,9 @@ namespace PKHeX.WinForms.Controls
     public partial class Blah : UserControl
     {
         public event EventHandler LegalityChanged;
-        public PKM LoadShowdownSetModded_PKSM(PKM Set, bool resetForm = false)
+        public PKM LoadShowdownSetModded_PKSM(PKM Set, bool resetForm = false , int TID = -1, int SID = -1, string OT = "")
         {
+            bool trainerinfo = TID > 0;
             List<List<string>> evoChart = generateEvoLists2();
             int abilitynum = Set.AbilityNumber < 6 ? Set.AbilityNumber >> 1 : 0;
             if (resetForm)
@@ -59,9 +60,18 @@ namespace PKHeX.WinForms.Controls
                 {
                     Set.Version = GameVersionList[i];
                     Set.Language = 2;
-                    Set.OT_Name = "Archit (TCD)";
-                    Set.TID = 24521;
-                    Set.SID = 42312;
+                    if (trainerinfo)
+                    {
+                        Set.OT_Name = OT;
+                        Set.TID = TID;
+                        Set.SID = SID;
+                    }
+                    else
+                    {
+                        Set.OT_Name = "Archit (TCD)";
+                        Set.TID = 24521;
+                        Set.SID = 42312;
+                    }
                     if (Set.Version == (int)GameVersion.RD || Set.Version == (int)GameVersion.BU || Set.Version == (int)GameVersion.YW || Set.Version == (int)GameVersion.GN) Set.SID = 0;
                     Set.EggMetDate = new DateTime(2000, 1, 1);
                     Set.Egg_Location = 60002;
@@ -117,16 +127,25 @@ namespace PKHeX.WinForms.Controls
             {
                 for (int i = 0; i < GameVersionList.Length ; i++)
                 {
-                    Console.WriteLine(Set.Version);
+                    if (Set.Met_Level == 100) Set.Met_Level = 0;
                     Set.WasEgg = false;
                     Set.EggMetDate = null;
                     Set.Egg_Location = 0;
                     Set.Version = GameVersionList[i];
                     Set.Language = 2;
                     Set.ConsoleRegion = 2;
-                    Set.OT_Name = "Archit (TCD)";
-                    Set.TID = 24521;
-                    Set.SID = 42312;
+                    if (trainerinfo)
+                    {
+                        Set.OT_Name = OT;
+                        Set.TID = TID;
+                        Set.SID = SID;
+                    }
+                    else
+                    {
+                        Set.OT_Name = "Archit (TCD)";
+                        Set.TID = 24521;
+                        Set.SID = 42312;
+                    }
                     if (Set.Version == (int)GameVersion.RD || Set.Version == (int)GameVersion.BU || Set.Version == (int)GameVersion.YW || Set.Version == (int)GameVersion.GN) Set.SID = 0;
                     try
                     {

@@ -18,6 +18,8 @@ The teambuilder for the Pokemon templates can be found on:
 - Auto Legality support for all Pokemon in all generations except Colosseum and XD
 - Mystery Gift Legality based on `mgdb` database provided
 - Supports HaX easter egg in PKHeX
+- Supports box/team imports (Sets it to the current box)
+- Supports custom OT, TID, SID setting whereever possible.
 - Supports error handling for -Mega and -Busted pokemon (All megas and mimikyu)
 
 ## Known Issues
@@ -53,6 +55,18 @@ $ git clone https://github.com/kwsch/PKHeX.git
             if (!Clipboard.ContainsText())
             { WinFormsUtil.Alert("Clipboard does not contain text."); return; }
 
+            int TID = -1;
+            int SID = -1;
+            string OT = "";
+            if(File.Exists(System.IO.Path.GetDirectoryName(Application.ExecutablePath) + "\\trainerdata.txt"))
+            {
+                string text = File.ReadAllText(System.IO.Path.GetDirectoryName(Application.ExecutablePath) + "\\trainerdata.txt", System.Text.Encoding.UTF8);
+                string[] lines = text.Split(new string[] { Environment.NewLine }, StringSplitOptions.None);
+                TID = Convert.ToInt32(lines[0].Split(':')[1].Trim());
+                SID = Convert.ToInt32(lines[1].Split(':')[1].Trim());
+                OT = lines[2].Split(':')[1].Trim();
+            }
+
             string source = Clipboard.GetText();
             string[] stringSeparators = new string[] { "\n\r" };
             string[] result;
@@ -63,7 +77,7 @@ $ git clone https://github.com/kwsch/PKHeX.git
 
             if (result.Length > 1)
             {
-                for(int i = 0; i < result.Length; i++)
+                for (int i = 0; i < result.Length; i++)
                 {
                     ShowdownSet Set = new ShowdownSet(result[i]);
                     if (Set.InvalidLines.Any())
@@ -81,7 +95,7 @@ $ git clone https://github.com/kwsch/PKHeX.git
                     PKME_Tabs.LoadShowdownSet(Set);
                     PKM p = PreparePKM();
                     Blah b = new Blah();
-                    PKM legal = b.LoadShowdownSetModded_PKSM(p, resetForm);
+                    PKM legal = b.LoadShowdownSetModded_PKSM(p, resetForm, TID, SID, OT);
                     PKME_Tabs.PopulateFields(legal);
                     if (!new LegalityAnalysis(legal).Valid)
                     {
@@ -121,7 +135,7 @@ $ git clone https://github.com/kwsch/PKHeX.git
                 PKME_Tabs.LoadShowdownSet(Set);
                 PKM p = PreparePKM();
                 Blah b = new Blah();
-                PKM legal = b.LoadShowdownSetModded_PKSM(p, resetForm);
+                PKM legal = b.LoadShowdownSetModded_PKSM(p, resetForm, TID, SID, OT);
                 PKME_Tabs.PopulateFields(legal);
                 if (!new LegalityAnalysis(legal).Valid)
                 {
@@ -132,6 +146,17 @@ $ git clone https://github.com/kwsch/PKHeX.git
 - Right click on the main PKHeX project and click Rebuild all.
 - The output of the PKHeX file should be in `PKHeX\PKHeX.WinForms\bin\Debug` folder.
 
+## [OPTIONAL] Custom TID, SID, OT settings.
+
+- Create a new text file called `trainerdata.txt` in the same directory as `PKHeX.exe`
+- Inside the directory paste your TID, SID and OT based on the sample given below.
+- Note: Follow the format of the sample given below. DO NOT change the format. Just edit the values.
+- The `trainerdata.txt` format should be as follows:
+```
+TID:12345
+SID:54321
+OT:PKHeX
+```
 
 ## Adding Priority to event searches.
 
