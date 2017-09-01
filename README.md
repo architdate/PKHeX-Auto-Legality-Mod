@@ -94,6 +94,7 @@ $ git clone https://github.com/kwsch/PKHeX.git
                     }
                     PKME_Tabs.LoadShowdownSet(Set);
                     PKM p = PreparePKM();
+                    p.Version = (int)GameVersion.MN;
                     Blah b = new Blah();
                     PKM legal = b.LoadShowdownSetModded_PKSM(p, resetForm, TID, SID, OT);
                     PKME_Tabs.PopulateFields(legal);
@@ -134,6 +135,7 @@ $ git clone https://github.com/kwsch/PKHeX.git
                 }
                 PKME_Tabs.LoadShowdownSet(Set);
                 PKM p = PreparePKM();
+                p.Version = (int)GameVersion.MN;
                 Blah b = new Blah();
                 PKM legal = b.LoadShowdownSetModded_PKSM(p, resetForm, TID, SID, OT);
                 PKME_Tabs.PopulateFields(legal);
