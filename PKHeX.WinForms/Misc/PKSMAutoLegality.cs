@@ -146,6 +146,7 @@ namespace PKHeX.WinForms.Controls
                         Set.TID = 24521;
                         Set.SID = 42312;
                     }
+                    if (Set.Species == 793 || Set.Species == 794 || Set.Species == 795 || Set.Species == 796 || Set.Species == 797 || Set.Species == 798 || Set.Species == 799) Set.Ball = 26;
                     if (Set.Version == (int)GameVersion.RD || Set.Version == (int)GameVersion.BU || Set.Version == (int)GameVersion.YW || Set.Version == (int)GameVersion.GN) Set.SID = 0;
                     try
                     {
