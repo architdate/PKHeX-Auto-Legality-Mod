@@ -115,8 +115,12 @@ namespace PKHeX.WinForms.Controls
                         }
                         else
                         {
+                            if (Set.Version == (int)GameVersion.SS) Console.WriteLine(Set.Version);
                             LegalityAnalysis la = new LegalityAnalysis(Set);
                             Console.WriteLine(la.Report(false));
+                            if (Set.Version == (int)GameVersion.SS) Console.WriteLine(Set.Country);
+                            if (Set.Version == (int)GameVersion.SS) Console.WriteLine(Set.ConsoleRegion);
+                            if (Set.Version == (int)GameVersion.SS) Console.WriteLine("-----------------");
                         }
                     }
                     catch { continue; }
@@ -125,7 +129,7 @@ namespace PKHeX.WinForms.Controls
 
             if (!new LegalityAnalysis(Set).Valid && !eventMon)
             {
-                for (int i = 0; i < GameVersionList.Length ; i++)
+                for (int i = 0; i < GameVersionList.Length; i++)
                 {
                     if (Set.Met_Level == 100) Set.Met_Level = 0;
                     Set.WasEgg = false;
@@ -183,7 +187,7 @@ namespace PKHeX.WinForms.Controls
                         }
                         Set.RefreshAbility(abilitynum);
                         if (Set.GenNumber < 6) Set.EncryptionConstant = Set.PID;
-                        
+
                         if (new LegalityAnalysis(Set).Valid || Set.Valid)
                         {
                             return Set;
@@ -195,6 +199,7 @@ namespace PKHeX.WinForms.Controls
                         }
                     }
                     catch { continue; }
+                    if (Set.Version == (int)GameVersion.HG) break;
                 }
             }
 
@@ -321,6 +326,13 @@ namespace PKHeX.WinForms.Controls
                 updatedReport = recheckLA.Report(false);
                 report = updatedReport;
             }
+            if (report.Contains("Current level is below met level."))
+            {
+                pk.CurrentLevel = 100;
+                LegalityAnalysis recheckLA = new LegalityAnalysis(pk);
+                updatedReport = recheckLA.Report(false);
+                report = updatedReport;
+            }
             if (report.Contains("Missing Ribbons: National"))
             {
                 ReflectUtil.SetValue(pk, "RibbonNational", -1);
@@ -435,6 +447,7 @@ namespace PKHeX.WinForms.Controls
             }
             else { pidsid = Misc.IVtoPIDGenerator.M1PID(hp, atk, def, spa, spd, spe, nature, 0); }
             pk.PID = Util.GetHexValue(pidsid[0]);
+            if (pk.GenNumber < 5) pk.EncryptionConstant = pk.PID;
             pk.SID = Convert.ToInt32(pidsid[1]);
             if (shiny) pk.SetShinySID();
             LegalityAnalysis recheckLA = new LegalityAnalysis(pk);
@@ -549,7 +562,12 @@ namespace PKHeX.WinForms.Controls
                     LegalityAnalysis recheckLA2 = new LegalityAnalysis(pk);
                     updatedReport = recheckLA2.Report(false);
                 }
-                if (pk.E) Console.WriteLine(updatedReport);
+                if (updatedReport.Contains("Can't Hyper Train a Pokémon that isn't level 100."))
+                {
+                    pk.CurrentLevel = 100;
+                    LegalityAnalysis recheckLA2 = new LegalityAnalysis(pk);
+                    updatedReport = recheckLA2.Report(false);
+                }
                 LegalityAnalysis Legality = new LegalityAnalysis(pk);
                 if (Legality.Valid) return pk;
                 // Fix Moves if a slot is empty 
