@@ -115,12 +115,8 @@ namespace PKHeX.WinForms.Controls
                         }
                         else
                         {
-                            if (Set.Version == (int)GameVersion.SS) Console.WriteLine(Set.Version);
                             LegalityAnalysis la = new LegalityAnalysis(Set);
                             Console.WriteLine(la.Report(false));
-                            if (Set.Version == (int)GameVersion.SS) Console.WriteLine(Set.Country);
-                            if (Set.Version == (int)GameVersion.SS) Console.WriteLine(Set.ConsoleRegion);
-                            if (Set.Version == (int)GameVersion.SS) Console.WriteLine("-----------------");
                         }
                     }
                     catch { continue; }
