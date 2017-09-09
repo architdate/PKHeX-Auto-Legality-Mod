@@ -2826,7 +2826,7 @@ namespace PKHeX.WinForms.Misc
 
         public FrameGenerator()
         {
-            maxResults = 100000;
+            maxResults = 1000000;
             Compatibility = 20;
             InitialFrame = 1;
             InitialSeed = 0;
@@ -3184,7 +3184,7 @@ namespace PKHeX.WinForms.Misc
                                                      0, 0, 0, 0, 0, 0, 0, 0, 0);
                                                 frame.DisplayPrep();
 
-                                                frames.Add(frame);
+                                                frames.Add(frame); break;
                                             }
                                         }
                                     }
@@ -3299,7 +3299,7 @@ namespace PKHeX.WinForms.Misc
 
                     if (frameCompare.Compare(frame))
                     {
-                        frames.Add(frame);
+                        frames.Add(frame); break;
                     }
                 }
             }
@@ -3370,7 +3370,7 @@ namespace PKHeX.WinForms.Misc
                                 rngList[5]);
                     }
 
-                    frames.Add(frame);
+                    frames.Add(frame); break;
                 }
             }
             else if (frameType == FrameType.Method5CGear)
@@ -3446,7 +3446,7 @@ namespace PKHeX.WinForms.Misc
                                 rngList[5]);
                     }
 
-                    frames.Add(frame);
+                    frames.Add(frame); break;
                 }
             }
             else if (frameType == FrameType.ColoXD)
@@ -3476,7 +3476,7 @@ namespace PKHeX.WinForms.Misc
 
                     if (frameCompare.Compare(frame))
                     {
-                        frames.Add(frame);
+                        frames.Add(frame); break;
                     }
                 }
             }
@@ -3853,7 +3853,7 @@ namespace PKHeX.WinForms.Misc
 
                     if (frameCompare.Compare(frame))
                     {
-                        frames.Add(frame);
+                        frames.Add(frame); break;
                     }
 
                     if (frameType == FrameType.BredSplit)
@@ -4926,7 +4926,7 @@ namespace PKHeX.WinForms.Misc
                     null,
                     new NoGenderFilter());
             List<Frame> frames = generator.Generate(frameCompare, 0, 0);
-            Console.WriteLine(frames.Count);
+            Console.WriteLine("Num frames: " + frames.Count);
             return new string[] { frames[0].Pid.ToString("X"), frames[0].Hp.ToString(), frames[0].Atk.ToString(), frames[0].Def.ToString(), frames[0].Spa.ToString(), frames[0].Spd.ToString(), frames[0].Spe.ToString() };
         }
     }
