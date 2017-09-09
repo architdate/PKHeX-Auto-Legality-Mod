@@ -287,7 +287,7 @@ namespace PKHeX.WinForms.Controls
                 pk.FatefulEncounter = true;
                 pk.Nickname = PKX.GetSpeciesNameGeneration(pk.Species, pk.Language, 3);
                 pk.PID = PKX.GetRandomPID(pk.Species, pk.Gender, pk.Version, pk.Nature, pk.Format, (uint)(pk.AbilityNumber * 0x10001));
-                if (shiny) pk.SetShinyPID();
+                if (shiny) pk.SetShinySID();
                 LegalityAnalysis recheckLA = new LegalityAnalysis(pk);
                 updatedReport = recheckLA.Report(false);
                 report = updatedReport;
@@ -385,10 +385,9 @@ namespace PKHeX.WinForms.Controls
                 updatedReport = recheckLA.Report(false);
                 report = updatedReport;
             }
-            if (report.Equals("Invalid: Encounter Type PID mismatch."))
+            if (report.Contains("Invalid: Encounter Type PID mismatch."))
             {
                 //return true;
-                
                 if (pk.Version == (int)GameVersion.CXD)
                 { pk = setPIDSID(pk, pk.IsShiny, true); }
                 else pk = setPIDSID(pk, pk.IsShiny);
