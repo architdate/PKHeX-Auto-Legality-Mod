@@ -115,8 +115,12 @@ namespace PKHeX.WinForms.Controls
                         }
                         else
                         {
+                            if (Set.Version == (int)GameVersion.SS) Console.WriteLine(Set.Version);
                             LegalityAnalysis la = new LegalityAnalysis(Set);
                             Console.WriteLine(la.Report(false));
+                            if (Set.Version == (int)GameVersion.SS) Console.WriteLine(Set.Country);
+                            if (Set.Version == (int)GameVersion.SS) Console.WriteLine(Set.ConsoleRegion);
+                            if (Set.Version == (int)GameVersion.SS) Console.WriteLine("-----------------");
                         }
                     }
                     catch { continue; }
@@ -195,7 +199,6 @@ namespace PKHeX.WinForms.Controls
                         }
                     }
                     catch { continue; }
-                    if (Set.Version == (int)GameVersion.HG) break;
                 }
             }
 
@@ -436,6 +439,7 @@ namespace PKHeX.WinForms.Controls
             uint spd = (uint)pk.IV_SPD;
             uint spe = (uint)pk.IV_SPE;
             uint nature = (uint)pk.Nature;
+            bool pidsidmethod = true;
             string[] pidsid = { "", "" };
             if (XD)
             {
@@ -451,82 +455,24 @@ namespace PKHeX.WinForms.Controls
             Console.WriteLine(updatedReport);
             if (updatedReport.Contains("Invalid: Encounter Type PID mismatch."))
             {
-                List<List<uint>> ivspreads = new List<List<uint>>();
-                if (!XD)
-                {
-                    ivspreads.Add(new List<uint> { 0, 0, 0, 0, 0, 7 }); // 1 Hardy
-                    ivspreads.Add(new List<uint> { 0, 0, 0, 0, 1, 1 }); // 2 Lonely
-                    ivspreads.Add(new List<uint> { 0, 0, 0, 0, 1, 3 }); // 3 Brave
-                    ivspreads.Add(new List<uint> { 0, 0, 0, 0, 0, 2 }); // 4 Adamant
-                    ivspreads.Add(new List<uint> { 0, 0, 0, 0, 0, 7 }); // 5 Naughty
-                    ivspreads.Add(new List<uint> { 0, 0, 0, 0, 0, 19 }); // Bold
-                    ivspreads.Add(new List<uint> { 0, 0, 0, 0, 0, 0 }); // Docile
-                    ivspreads.Add(new List<uint> { 0, 0, 0, 0, 0, 0 }); // Relaxed
-                    ivspreads.Add(new List<uint> { 0, 0, 0, 0, 0, 3 }); // Impish
-                    ivspreads.Add(new List<uint> { 0, 0, 0, 0, 1, 8 }); // Lax
-                    ivspreads.Add(new List<uint> { 0, 0, 0, 0, 1, 10 }); // Timid
-                    ivspreads.Add(new List<uint> { 0, 0, 0, 0, 0, 1 }); // Hasty
-                    ivspreads.Add(new List<uint> { 0, 0, 0, 0, 0, 1 }); // Serious
-                    ivspreads.Add(new List<uint> { 0, 0, 0, 0, 0, 16 }); // Jolly
-                    ivspreads.Add(new List<uint> { 0, 0, 0, 0, 1, 8 }); // Naive
-                    ivspreads.Add(new List<uint> { 0, 0, 0, 0, 0, 0 }); // Modest
-                    ivspreads.Add(new List<uint> { 0, 0, 0, 0, 0, 0 }); // Mild
-                    ivspreads.Add(new List<uint> { 0, 0, 0, 0, 0, 22 }); // Quiet
-                    ivspreads.Add(new List<uint> { 0, 0, 0, 0, 1, 5 }); // Bashful
-                    ivspreads.Add(new List<uint> { 0, 0, 0, 0, 0, 5 }); // Rash
-                    ivspreads.Add(new List<uint> { 0, 0, 0, 0, 0, 1 }); // Calm
-                    ivspreads.Add(new List<uint> { 0, 0, 0, 0, 0, 1 }); // Gentle
-                    ivspreads.Add(new List<uint> { 0, 0, 0, 0, 1, 14 }); // Sassy
-                    ivspreads.Add(new List<uint> { 0, 0, 0, 0, 0, 2 }); // Careful
-                    ivspreads.Add(new List<uint> { 0, 0, 0, 0, 0, 6 }); // Quirky
-                }
-                else
-                {
-                    ivspreads.Add(new List<uint> { 7, 17, 7, 23, 20, 22 }); // XDHardy
-                    ivspreads.Add(new List<uint> { 29, 22, 5, 14, 27, 4 }); // XDLonely
-                    ivspreads.Add(new List<uint> { 24, 10, 14, 15, 20, 16 }); // XDBrave
-                    ivspreads.Add(new List<uint> { 23, 20, 8, 16, 11, 21 }); // XDAdamant
-                    ivspreads.Add(new List<uint> { 18, 9, 25, 0, 18, 25 }); // XDNaughty
-                    ivspreads.Add(new List<uint> { 6, 1, 0, 17, 7, 7 }); // XDBold
-                    ivspreads.Add(new List<uint> { 27, 4, 18, 16, 16, 11 }); // XDDocile
-                    ivspreads.Add(new List<uint> { 22, 23, 20, 12, 2, 5 }); // XDRelaxed
-                    ivspreads.Add(new List<uint> { 18, 6, 10, 28, 29, 20 }); // XDImpish
-                    ivspreads.Add(new List<uint> { 20, 28, 29, 22, 5, 29 }); // XDLax
-                    ivspreads.Add(new List<uint> { 21, 16, 11, 5, 8, 13 }); // XDTimid
-                    ivspreads.Add(new List<uint> { 27, 1, 23, 10, 12, 9 }); // XDHasty
-                    ivspreads.Add(new List<uint> { 0, 6, 2, 15, 9, 29 }); // XDSerious
-                    ivspreads.Add(new List<uint> { 17, 17, 15, 23, 8, 17 }); // XDJolly
-                    ivspreads.Add(new List<uint> { 16, 15, 20, 4, 31, 19 }); // XDNaive
-                    ivspreads.Add(new List<uint> { 13, 27, 30, 3, 20, 8 }); // XDModest
-                    ivspreads.Add(new List<uint> { 19, 4, 31, 4, 21, 23 }); // XDMild
-                    ivspreads.Add(new List<uint> { 4, 26, 23, 12, 11, 1 }); // XDQuiet
-                    ivspreads.Add(new List<uint> { 8, 26, 0, 4, 18, 27 }); // XDBashful
-                    ivspreads.Add(new List<uint> { 11, 9, 1, 6, 2, 0 }); // XDRash
-                    ivspreads.Add(new List<uint> { 1, 6, 13, 26, 23, 4 }); // XDCalm
-                    ivspreads.Add(new List<uint> { 29, 15, 9, 16, 31, 22 }); // XDGentle
-                    ivspreads.Add(new List<uint> { 17, 23, 8, 21, 25, 13 }); // XDSassy
-                    ivspreads.Add(new List<uint> { 25, 8, 0, 1, 20, 25 }); // XDCareful
-                    ivspreads.Add(new List<uint> { 29, 16, 31, 6, 10, 18 }); // XDQuirky
-                }
-                pk.IV_HP = Convert.ToInt32(ivspreads[Convert.ToInt32(nature)][0]);
-                pk.IV_ATK = Convert.ToInt32(ivspreads[Convert.ToInt32(nature)][1]);
-                pk.IV_DEF = Convert.ToInt32(ivspreads[Convert.ToInt32(nature)][2]);
-                pk.IV_SPA = Convert.ToInt32(ivspreads[Convert.ToInt32(nature)][3]);
-                pk.IV_SPD = Convert.ToInt32(ivspreads[Convert.ToInt32(nature)][4]);
-                pk.IV_SPE = Convert.ToInt32(ivspreads[Convert.ToInt32(nature)][5]);
-                Console.WriteLine(pk.IV_HP+" "+ pk.IV_ATK+" "+ pk.IV_DEF+" "+ pk.IV_SPA+" "+ pk.IV_SPD+" "+ pk.IV_SPE);
-                if (!XD)
-                {
-                    pidsid = Misc.IVtoPIDGenerator.M1PID((uint)pk.IV_HP, (uint)pk.IV_ATK, (uint)pk.IV_DEF, (uint)pk.IV_SPA, (uint)pk.IV_SPD, (uint)pk.IV_SPE, nature, 0);
-                }
-                else
-                {
-                    pidsid = Misc.IVtoPIDGenerator.XDPID((uint)pk.IV_HP, (uint)pk.IV_ATK, (uint)pk.IV_DEF, (uint)pk.IV_SPA, (uint)pk.IV_SPD, (uint)pk.IV_SPE, nature, 0);
-                }
-                pk.PID = Util.GetHexValue(pidsid[0]);
-                if(pk.GenNumber < 5) pk.EncryptionConstant = pk.PID;
-                pk.SID = Convert.ToInt32(pidsid[1]);
-                if (pidsid[0] == "0" && pidsid[1] == "0")
+                string[] hpower = { "fighting", "flying", "poison", "ground", "rock", "bug", "ghost", "steel", "fire", "water", "grass", "electric", "psychic", "ice", "dragon", "dark" };
+                string hiddenpower = hpower[pk.HPType];
+                string[] NatureHPIVs = Misc.IVtoPIDGenerator.getIVPID(nature, hiddenpower, XD);
+                Console.WriteLine(XD);
+                pk.PID = Util.GetHexValue(NatureHPIVs[0]);
+                if (pk.GenNumber < 5) pk.EncryptionConstant = pk.PID;
+                Console.WriteLine(NatureHPIVs[0]);
+                pk.IV_HP = Convert.ToInt32(NatureHPIVs[1]);
+                pk.IV_ATK = Convert.ToInt32(NatureHPIVs[2]);
+                pk.IV_DEF = Convert.ToInt32(NatureHPIVs[3]);
+                pk.IV_SPA = Convert.ToInt32(NatureHPIVs[4]);
+                pk.IV_SPD = Convert.ToInt32(NatureHPIVs[5]);
+                pk.IV_SPE = Convert.ToInt32(NatureHPIVs[6]);
+                if (shiny) pk.SetShinySID();
+                recheckLA = new LegalityAnalysis(pk);
+                updatedReport = recheckLA.Report(false);
+                if (!updatedReport.Contains("Invalid: Encounter Type PID mismatch.")) pidsidmethod = false;
+                if (pidsid[0] == "0" && pidsid[1] == "0" && pidsidmethod)
                 {
                     pk.PID = PKX.GetRandomPID(pk.Species, pk.Gender, pk.Version, pk.Nature, pk.Format, (uint)(pk.AbilityNumber * 0x10001));
                     pk.IV_HP = (int)hp;
@@ -536,12 +482,12 @@ namespace PKHeX.WinForms.Controls
                     pk.IV_SPD = (int)spd;
                     pk.IV_SPE = (int)spe;
                 }
-                if (hp >= 30) pk.HT_HP = true;
-                if (atk >= 30) pk.HT_ATK = true;
-                if (def >= 30) pk.HT_DEF = true;
-                if (spa >= 30) pk.HT_SPA = true;
-                if (spd >= 30) pk.HT_SPD = true;
-                if (spe >= 30) pk.HT_SPE = true;
+                if (hp >= 30 && pk.IV_HP !=31) pk.HT_HP = true;
+                if (atk >= 30 && pk.IV_ATK != 31) pk.HT_ATK = true;
+                if (def >= 30 && pk.IV_DEF != 31) pk.HT_DEF = true;
+                if (spa >= 30 && pk.IV_SPA != 31) pk.HT_SPA = true;
+                if (spd >= 30 && pk.IV_SPD != 31) pk.HT_SPD = true;
+                if (spe >= 30 && pk.IV_SPE != 31) pk.HT_SPE = true;
                 if (shiny) pk.SetShinySID();
                 recheckLA = new LegalityAnalysis(pk);
                 updatedReport = recheckLA.Report(false);
