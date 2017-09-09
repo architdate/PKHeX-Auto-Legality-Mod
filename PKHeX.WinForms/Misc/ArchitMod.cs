@@ -344,7 +344,12 @@ namespace PKHeX.WinForms.Controls
                         try
                         {
                             OpenEvent(eventfile);
+                            string StaticPID = TB_PID.Text;
                             ShowdownData(Set);
+                            PKM poke = PreparePKM();
+                            LegalityAnalysis a = new LegalityAnalysis(poke);
+                            string eventrep = a.Report(false);
+                            if (eventrep.Contains("PID mismatch")) TB_PID.Text = StaticPID;
                             bool ignoreLegality = false;
                             if (clickLegality(ignoreLegality)) return;
                             UpdateLegality();
