@@ -208,14 +208,28 @@ Magmortar
 Magikarp
 Gyarados
 
+Eevee
 Vaporeon
+
+Eevee
 Jolteon
+
+Eevee
 Flareon
+
+Eevee
 Sylveon
+
 Eevee
 Espeon
+
+Eevee
 Umbreon
+
+Eevee
 Leafeon
+
+Eevee
 Glaceon
 
 Porygon

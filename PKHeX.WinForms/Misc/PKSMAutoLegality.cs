@@ -184,7 +184,7 @@ namespace PKHeX.WinForms.Controls
                         Set.RefreshAbility(abilitynum);
                         if (Set.GenNumber < 6) Set.EncryptionConstant = Set.PID;
 
-                        if (new LegalityAnalysis(Set).Valid || Set.Valid)
+                        if (new LegalityAnalysis(Set).Valid)
                         {
                             return Set;
                         }
