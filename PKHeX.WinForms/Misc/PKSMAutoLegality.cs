@@ -349,6 +349,13 @@ namespace PKHeX.WinForms.Controls
                 updatedReport = recheckLA.Report(false);
                 report = updatedReport;
             }
+            if (report.Contains("OT from Generation 1/2 uses unavailable characters."))
+            {
+                pk.OT_Name = "ARCH";
+                LegalityAnalysis recheckLA = new LegalityAnalysis(pk);
+                updatedReport = recheckLA.Report(false);
+                report = updatedReport;
+            }
             if (report.Contains("GeoLocation Memory: Memories should be present."))
             {
                 pk.Geo1_Country = 1;
