@@ -330,6 +330,8 @@ namespace PKHeX.WinForms.Controls
                 if (legendary)
                 {
                     List<string> fileList = new List<string>();
+                    bool ignoreshowdownreset = false;
+                    string StaticPID = "";
                     string fpath = System.IO.Path.GetDirectoryName(Application.ExecutablePath) + "\\mgdb";
                     foreach (string file in System.IO.Directory.GetFiles(fpath, "*.*", System.IO.SearchOption.AllDirectories))
                     {
@@ -344,20 +346,42 @@ namespace PKHeX.WinForms.Controls
                         try
                         {
                             OpenEvent(eventfile);
-                            string StaticPID = TB_PID.Text;
+                            bool staticpidfix = false;
+                            StaticPID = TB_PID.Text;
                             ShowdownData(Set);
                             PKM poke = PreparePKM();
                             LegalityAnalysis a = new LegalityAnalysis(poke);
                             string eventrep = a.Report(false);
-                            if (eventrep.Contains("PID mismatch")) TB_PID.Text = StaticPID;
                             bool ignoreLegality = false;
+                            if (eventrep.Contains("PID mismatch"))
+                            {
+                                TB_PID.Text = StaticPID;
+                                staticpidfix = true;
+                            }
                             if (clickLegality(ignoreLegality)) return;
                             UpdateLegality();
-                            if (Legality.Valid) break;
+                            a = new LegalityAnalysis(PreparePKM());
+                            eventrep = a.Report(false);
+                            if (eventrep.Contains("PID mismatch"))
+                            {
+                                TB_PID.Text = StaticPID;
+                                staticpidfix = true;
+                            }
+                            a = new LegalityAnalysis(PreparePKM());
+                            if (a.Valid)
+                            {
+                                if (staticpidfix) ignoreshowdownreset = true;
+                                break;
+                            }
                         }
                         catch { }
                     }
                     ShowdownData(Set);
+                    if (ignoreshowdownreset)
+                    {
+                        TB_PID.Text = StaticPID;
+                        clickLegality(false);
+                    }
                 }
                 else
                 {
