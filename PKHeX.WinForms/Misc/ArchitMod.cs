@@ -153,7 +153,7 @@ namespace PKHeX.WinForms.Controls
                 TB_Nickname.Text = Set.Nickname;
             if (Set.Gender != null)
             {
-                int Gender = PKX.GetGenderFromPID(Set.Gender);
+                int Gender = PKX.GetGenderFromString(Set.Gender);
                 Label_Gender.Text = gendersymbols[Gender];
                 Label_Gender.ForeColor = GetGenderColor(Gender);
             }
@@ -442,7 +442,7 @@ namespace PKHeX.WinForms.Controls
                 TB_Nickname.Text = Set.Nickname;
             if (Set.Gender != null)
             {
-                int Gender = PKX.GetGenderFromPID(Set.Gender);
+                int Gender = PKX.GetGenderFromString(Set.Gender);
                 Label_Gender.Text = gendersymbols[Gender];
                 Label_Gender.ForeColor = GetGenderColor(Gender);
             }
