@@ -186,7 +186,17 @@ namespace PKHeX.WinForms.Controls
 
                         if (new LegalityAnalysis(Set).Valid)
                         {
-                            return Set;
+                            if (shiny && Set.IsShiny) return Set;
+                            if (shiny && !Set.IsShiny)
+                            {
+                                PKM temp = Set;
+                                Set.SetShinyPID();
+                                if (new LegalityAnalysis(Set).Valid) return Set;
+                                Set = temp;
+                                Set.SetShinySID();
+                                if (new LegalityAnalysis(Set).Valid) return Set;
+                                else return temp;
+                            }
                         }
                         else
                         {
