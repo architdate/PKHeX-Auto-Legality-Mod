@@ -186,6 +186,7 @@ namespace PKHeX.WinForms.Controls
 
                         if (new LegalityAnalysis(Set).Valid)
                         {
+                        	PKM returnval = Set;
                             if (shiny && Set.IsShiny) return Set;
                             if (shiny && !Set.IsShiny)
                             {
@@ -197,6 +198,7 @@ namespace PKHeX.WinForms.Controls
                                 if (new LegalityAnalysis(Set).Valid) return Set;
                                 else return temp;
                             }
+                            else return returnval;
                         }
                         else
                         {
