@@ -947,3 +947,6 @@ Cosmog
 Cosmoem
 Solgaleo
 Lunala
+
+Poipole
+Naganadel

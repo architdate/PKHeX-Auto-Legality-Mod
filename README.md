@@ -100,7 +100,7 @@ $ git clone https://github.com/kwsch/PKHeX.git
                     PKME_Tabs.PopulateFields(legal);
                     if (!new LegalityAnalysis(legal).Valid)
                     {
-                        PKME_Tabs.LoadShowdownSetModded(Set, true);
+                        PKME_Tabs.LoadShowdownSetModdedEvent(Set, true);
                     }
                     PKM pk = PreparePKM();
                     PKME_Tabs.ClickSet(C_SAV.Box.SlotPictureBoxes[0], i);
@@ -141,7 +141,7 @@ $ git clone https://github.com/kwsch/PKHeX.git
                 PKME_Tabs.PopulateFields(legal);
                 if (!new LegalityAnalysis(legal).Valid)
                 {
-                    PKME_Tabs.LoadShowdownSetModded(Set, true);
+                    PKME_Tabs.LoadShowdownSetModdedEvent(Set, true);
                 }
             }
 ```

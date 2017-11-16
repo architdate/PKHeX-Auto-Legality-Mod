@@ -31,11 +31,12 @@ namespace PKHeX.WinForms.Controls
 
             int[] eventList = new int[] { 251, 719, 649, 720, 385, 647, 490, 648, 721, 801, 802 };
 
-            int[] GameVersionList = new int[] { (int)GameVersion.MN, (int)GameVersion.SN, (int)GameVersion.AS, (int)GameVersion.OR, (int)GameVersion.X,
-                                                (int)GameVersion.Y, (int)GameVersion.B, (int)GameVersion.B2, (int)GameVersion.W, (int)GameVersion.W2,
-                                                (int)GameVersion.D, (int)GameVersion.P, (int)GameVersion.Pt, (int)GameVersion.HG, (int)GameVersion.SS,
-                                                (int)GameVersion.R, (int)GameVersion.S, (int)GameVersion.E, (int)GameVersion.FR, (int)GameVersion.LG,
-                                                (int)GameVersion.CXD, (int)GameVersion.RD, (int)GameVersion.GN, (int)GameVersion.BU, (int)GameVersion.YW };
+            int[] GameVersionList = new int[] { (int)GameVersion.UM, (int)GameVersion.US, (int)GameVersion.MN, (int)GameVersion.SN, (int)GameVersion.AS,
+                                                (int)GameVersion.OR, (int)GameVersion.X, (int)GameVersion.Y, (int)GameVersion.B, (int)GameVersion.B2,
+                                                (int)GameVersion.W, (int)GameVersion.W2, (int)GameVersion.D, (int)GameVersion.P, (int)GameVersion.Pt,
+                                                (int)GameVersion.HG, (int)GameVersion.SS, (int)GameVersion.R, (int)GameVersion.S, (int)GameVersion.E,
+                                                (int)GameVersion.FR, (int)GameVersion.LG, (int)GameVersion.CXD, (int)GameVersion.RD, (int)GameVersion.GN,
+                                                (int)GameVersion.BU, (int)GameVersion.YW };
             
             foreach (int mon in legendaryList)
             {
@@ -165,6 +166,7 @@ namespace PKHeX.WinForms.Controls
                             Set.Met_Level = 100;
                         }
                         else { clickMetLocationModPKSM(Set); }
+                        Set = SetSuggestedRelearnMoves_PKSM(Set);
                         Set.CurrentHandler = 1;
                         Set.HT_Name = "Archit";
                         Set.PID = PKX.GetRandomPID(Set.Species, Set.Gender, Set.Version, Set.Nature, Set.Format, (uint)(Set.AbilityNumber * 0x10001));
@@ -209,16 +211,6 @@ namespace PKHeX.WinForms.Controls
                     catch { continue; }
                 }
             }
-
-            /*
-            if (!new LegalityAnalysis(Set).Valid)
-            {
-                SAVEditor C_SAV = new SAVEditor();
-                C_SAV.PKME_Tabs = new Controls.PKMEditor();
-                C_SAV.PKME_Tabs.LoadShowdownSetModded(new ShowdownSet(Clipboard.GetText()), true);
-            }
-            */
-
             return Set;
         }
 

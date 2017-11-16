@@ -12,23 +12,10 @@ namespace PKHeX.WinForms.Controls
 {
     public partial class PKMEditor : UserControl
     {
+        // Initialize Current Save file
         private Controls.SAVEditor CurrentSAV;
-        public BoxEditor Box;
 
-        public void GenerateFolders()
-        {
-            if (DialogResult.Yes != WinFormsUtil.Prompt(MessageBoxButtons.YesNo,
-                $"thecommondude's (Archit Date's) mod event legality will only work if mgdb folder is in the same folder as the executable.",
-                "Would you like to create the required folders now?")) return;
-
-            try
-            {
-                System.IO.Directory.CreateDirectory(System.IO.Path.Combine(Main.WorkingDirectory, "mgdb"));
-                WinFormsUtil.Alert("mgdb folder created. Remember to add event files to it");
-            }
-            catch (Exception ex) { WinFormsUtil.Error($"Unable to create necessary folders", ex); }
-        }
-
+        // Command to set in box (for multiple imports)
         public void ClickSet(object sender, int slot)
         {
             SlotChangeManager m = GetSenderInfo(ref sender, out SlotChange info, slot);
@@ -80,6 +67,7 @@ namespace PKHeX.WinForms.Controls
             editor.LastData = pk.Data;
             m.SE.RedoStack.Clear(); m.SE.Menu_Redo.Enabled = false;
         }
+
         private static SlotChangeManager GetSenderInfo(ref object sender, out SlotChange loc, int slot)
         {
             loc = new SlotChange();
@@ -107,13 +95,27 @@ namespace PKHeX.WinForms.Controls
             return null;
         }
 
+        /*
+         * Event handling for my mod
+         * Handled by searching mgdb for events that have specific names (their species names) in the file name
+         */
 
-        public void LoadShowdownSetModded(ShowdownSet Set, bool isEvent = false)
+        public void LoadShowdownSetModdedEvent(ShowdownSet Set, bool eventLoad = true)
         {
+
+            // Debug value to shut down event searching
+            if(!eventLoad) return;
+
+            // Generate a list of all evolutionary pokemon
             List<List<string>> evoChart = generateEvoLists();
+
+            // Hard reset all changes before iterating
             hardReset();
+
+            // Initialize legendary value (assume false initially)
             bool legendary = false;
-            bool eventMon = isEvent;
+
+            // Hardcoded legendary set
             string[] legendaryList = new string[] { "Articuno", "Zapdos", "Moltres", "Mewtwo", "Mew", "Raikou", "Suicuine",
                                                     "Entei", "Lugia", "Celebi", "Regirock", "Regice", "Registeel", "Latias",
                                                     "Latios", "Kyogre", "Groudon", "Rayquaza", "Jirachi", "Deoxys", "Uxie",
@@ -125,6 +127,11 @@ namespace PKHeX.WinForms.Controls
                                                     "Tapu Lele", "Tapu Bulu", "Tapu Fini", "Cosmog", "Cosmoem", "Solgaleo",
                                                     "Lunala", "Nihilego", "Buzzwole", "Pheromosa", "Xurkitree", "Celesteela",
                                                     "Kartana", "Guzzlord", "Necrozma", "Magearna"};
+            /*
+             * USUM PREP note: Add legendaries from USUM into the above, as of this date, UB Burst, UB Assembly and UB Adhesive
+             */
+
+            // Event only pokemon (Omit Lycanroc Dusk unless it turns out to be a new species of rockruff)
 
             string[] eventList = new string[] { "Celebi", "Diancie", "Genesect", "Hoopa", "Jirachi", "Keldeo", "Manaphy",
                                                 "Meloetta", "Volcanion", "Magearna", "Marshadow" };
@@ -137,183 +144,6 @@ namespace PKHeX.WinForms.Controls
                 if (CB_Species.Text == mon)
                 {
                     legendary = true;
-                }
-            }
-
-            foreach (string mon in eventList)
-            {
-                if (CB_Species.Text == mon)
-                {
-                    eventMon = true;
-                }
-            }
-
-            CHK_Nicknamed.Checked = Set.Nickname != null;
-            if (Set.Nickname != null)
-                TB_Nickname.Text = Set.Nickname;
-            if (Set.Gender != null)
-            {
-                int Gender = PKX.GetGenderFromString(Set.Gender);
-                Label_Gender.Text = gendersymbols[Gender];
-                Label_Gender.ForeColor = GetGenderColor(Gender);
-            }
-
-            // Set Form
-            string[] formStrings = PKX.GetFormList(Set.Species,
-                Util.GetTypesList("en"),
-                Util.GetFormsList("en"), gendersymbols, pkm.Format);
-            int form = 0;
-            for (int i = 0; i < formStrings.Length; i++)
-                if (formStrings[i].Contains(Set.Form ?? ""))
-                { form = i; break; }
-            CB_Form.SelectedIndex = Math.Min(CB_Form.Items.Count - 1, form);
-
-            // Error Handling for Mega and Busted forms
-            if (CB_Form.Text.Contains("Mega") || CB_Form.Text == "Busted" || CB_Form.Text.Contains("Primal"))
-            {
-                CB_Form.SelectedIndex = 0;
-            }
-
-            // Set Ability and Moves
-            CB_Ability.SelectedIndex = Math.Max(0, Array.IndexOf(pkm.PersonalInfo.Abilities, Set.Ability));
-            ComboBox[] m = { CB_Move1, CB_Move2, CB_Move3, CB_Move4 };
-            for (int i = 0; i < 4; i++) m[i].SelectedValue = Set.Moves[i];
-
-            // Set Item and Nature
-            CB_HeldItem.SelectedValue = Set.HeldItem < 0 ? 0 : Set.HeldItem;
-            CB_Nature.SelectedValue = Set.Nature < 0 ? 0 : Set.Nature;
-
-            // Set IVs
-            TB_HPIV.Text = Set.IVs[0].ToString();
-            TB_ATKIV.Text = Set.IVs[1].ToString();
-            TB_DEFIV.Text = Set.IVs[2].ToString();
-            TB_SPAIV.Text = Set.IVs[4].ToString();
-            TB_SPDIV.Text = Set.IVs[5].ToString();
-            TB_SPEIV.Text = Set.IVs[3].ToString();
-
-            // Set EVs
-            TB_HPEV.Text = Set.EVs[0].ToString();
-            TB_ATKEV.Text = Set.EVs[1].ToString();
-            TB_DEFEV.Text = Set.EVs[2].ToString();
-            TB_SPAEV.Text = Set.EVs[4].ToString();
-            TB_SPDEV.Text = Set.EVs[5].ToString();
-            TB_SPEEV.Text = Set.EVs[3].ToString();
-
-            // Set Level and Friendship
-            TB_Level.Text = Set.Level.ToString();
-            TB_Friendship.Text = Set.Friendship.ToString();
-
-            // Reset IV/EVs
-            UpdateRandomPID(null, null);
-            UpdateRandomEC(null, null);
-            ComboBox[] p = { CB_PPu1, CB_PPu2, CB_PPu3, CB_PPu4 };
-            for (int i = 0; i < 4; i++)
-                p[i].SelectedIndex = m[i].SelectedIndex != 0 ? 3 : 0; // max PP
-
-            if (Set.Shiny) UpdateShiny(true);
-            pkm = PreparePKM();
-            UpdateLegality();
-
-            // Egg based pokemon
-            if (!legendary && !eventMon)
-            {
-                for (int i = 0; i < CB_GameOrigin.Items.Count - 1; i++)
-                {
-                    CB_GameOrigin.SelectedIndex = i;
-                    TB_OT.Text = "Archit (TCD)";
-                    TB_TID.Text = "24521";
-                    TB_SID.Text = "42312";
-                    CHK_AsEgg.Checked = true;
-                    TB_MetLevel.Text = "1";
-                    CB_MetLocation.SelectedIndex = 5;
-                    clickMetLocationMod(null, null);
-                    CB_3DSReg.SelectedIndex = 2;
-                    GB_EggConditions.Visible = true;
-                    CB_EggLocation.SelectedIndex = CHK_AsEgg.Checked ? 1 : 0; // daycare : none
-                    try
-                    {
-                        CB_RelearnMove1.SelectedIndex = 0;
-                        CB_RelearnMove2.SelectedIndex = 0;
-                        CB_RelearnMove3.SelectedIndex = 0;
-                        CB_RelearnMove4.SelectedIndex = 0;
-                        pkm = PreparePKM();
-                        pkm.CurrentHandler = 1;
-                        TB_OTt2.Text = "Archit";
-                        if (Legality.Info.Relearn.Any(z => !z.Valid))
-                            SetSuggestedRelearnMoves(silent: true);
-                        CheckSumVerify();
-                        UpdateLegality();
-                        UpdateRandomPID(BTN_RerollPID, null);
-                        if (Set.Shiny) UpdateShiny(true);
-                        if (TB_PID.Text == "00000000")
-                        {
-                            UpdateRandomPID(BTN_RerollPID, null);
-                            if (Set.Shiny) UpdateShiny(true);
-                        }
-                        if (CommonErrorHandling(pkm))
-                        {
-                            PKM pkmfinal = PreparePKM();
-                            if (Set.Shiny && !pkmfinal.IsShiny) UpdateShiny(true);
-                            WinFormsUtil.Alert("Ignore this legality");
-                            return;
-                        }
-                        if (Legality.Valid)
-                        {
-                            break;
-                        }
-                    }
-                    catch { continue; }
-                }
-            }
-
-            // Legendary / Wild Pokemon
-            if (!Legality.Valid && !eventMon)
-            {
-                for (int i = 0; i < CB_GameOrigin.Items.Count - 1; i++)
-                {
-                    CHK_AsEgg.Checked = false;
-                    CB_EggLocation.SelectedIndex = CHK_AsEgg.Checked ? 1 : 0; // daycare : none
-                    CB_GameOrigin.SelectedIndex = i;
-                    CB_3DSReg.SelectedIndex = 2;
-                    TB_OT.Text = "Archit (TCD)";
-                    TB_TID.Text = "24521";
-                    TB_SID.Text = "42312";
-                    try
-                    {
-                        CB_RelearnMove1.SelectedIndex = 0;
-                        CB_RelearnMove2.SelectedIndex = 0;
-                        CB_RelearnMove3.SelectedIndex = 0;
-                        CB_RelearnMove4.SelectedIndex = 0;
-                        clickMetLocationMod(null, null);
-                        pkm = PreparePKM();
-                        pkm.CurrentHandler = 1;
-                        TB_OTt2.Text = "Archit";
-                        CheckSumVerify();
-                        UpdateLegality();
-                        UpdateRandomPID(BTN_RerollPID, null);
-                        if (Set.Shiny) UpdateShiny(true);
-                        if (TB_PID.Text == "00000000")
-                        {
-                            UpdateRandomPID(BTN_RerollPID, null);
-                            if (Set.Shiny) UpdateShiny(true);
-                        }
-                        CheckSumVerify();
-                        if (CommonErrorHandling(PreparePKM()))
-                        {
-                            PKM pkmfinal = PreparePKM();
-                            if (Set.Shiny && !pkmfinal.IsShiny)
-                            {
-                                UpdateShiny(false);
-                            }
-                            WinFormsUtil.Alert("Ignore this legality");
-                            return;
-                        }
-                        if (Legality.Valid)
-                        {
-                            break;
-                        }
-                    }
-                    catch { continue; }
                 }
             }
 
@@ -435,6 +265,8 @@ namespace PKHeX.WinForms.Controls
 
         }
 
+        // Regular Showdown import (Winforms side) Note to refine later
+
         private void ShowdownData(ShowdownSet Set)
         {
             CB_Species.SelectedValue = Set.Species;
@@ -517,6 +349,8 @@ namespace PKHeX.WinForms.Controls
 
             if (Set.Shiny) UpdateShiny(true);
         }
+
+        // Winforms error handling
 
         private bool CommonErrorHandling(PKM pk)
         {
