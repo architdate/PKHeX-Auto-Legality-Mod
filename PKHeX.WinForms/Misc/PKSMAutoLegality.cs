@@ -252,6 +252,7 @@ namespace PKHeX.WinForms.Controls
             for (int i = 0; i < 3; i++)
             {
                 pk.AbilityNumber = abilityNumList[i];
+                pk.RefreshAbility(pk.AbilityNumber < 6 ? pk.AbilityNumber >> 1 : 0);
                 if (pk.Ability == abilityID)
                 {
                     LegalityAnalysis recheckLA = new LegalityAnalysis(pk);
