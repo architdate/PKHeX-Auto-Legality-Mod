@@ -183,7 +183,7 @@ namespace PKHeX.WinForms.Controls
                             if (shiny) Set.SetShinyPID();
                             return Set;
                         }
-                        Set.RefreshAbility(abilitynum);
+                        AlternateAbilityRefresh(Set);
                         if (Set.GenNumber < 6) Set.EncryptionConstant = Set.PID;
 
                         if (new LegalityAnalysis(Set).Valid)
@@ -243,6 +243,30 @@ namespace PKHeX.WinForms.Controls
             return Set;
         }
 
+        private void AlternateAbilityRefresh(PKM pk)
+        {
+            int abilityID = pk.Ability;
+            int abilityNum = pk.AbilityNumber;
+            int finalabilitynum = abilityNum;
+            int[] abilityNumList = new int[] { 1, 2, 4 };
+            for (int i = 0; i < 3; i++)
+            {
+                pk.AbilityNumber = abilityNumList[i];
+                if (pk.Ability == abilityID)
+                {
+                    LegalityAnalysis recheckLA = new LegalityAnalysis(pk);
+                    var updatedReport = recheckLA.Report(false);
+                    if (!updatedReport.Contains("Ability mismatch for encounter"))
+                    {
+                        finalabilitynum = pk.AbilityNumber;
+                        break;
+                    }
+                }
+            }
+            pk.AbilityNumber = finalabilitynum;
+            pk.RefreshAbility(pk.AbilityNumber < 6 ? pk.AbilityNumber >> 1 : 0);
+        }
+
         private bool CommonErrorHandling2(PKM pk)
         {
             string hp = pk.IV_HP.ToString();
@@ -259,6 +283,16 @@ namespace PKHeX.WinForms.Controls
             if (report.Contains("Ability mismatch for encounter"))
             {
                 pk.RefreshAbility(pk.AbilityNumber < 6 ? pk.AbilityNumber >> 1 : 0);
+                LegalityAnalysis recheckLA = new LegalityAnalysis(pk);
+                updatedReport = recheckLA.Report(false);
+                report = updatedReport;
+                if (report.Contains("Ability mismatch for encounter"))
+                {
+                    AlternateAbilityRefresh(pk);
+                }
+                recheckLA = new LegalityAnalysis(pk);
+                updatedReport = recheckLA.Report(false);
+                report = updatedReport;
             }
             if (report.Contains("Invalid Met Location, expected Transporter."))
             {
