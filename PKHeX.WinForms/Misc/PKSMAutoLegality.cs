@@ -10,9 +10,11 @@ namespace PKHeX.WinForms.Controls
 {
     public partial class Blah : UserControl
     {
+        PKM backup;
         public event EventHandler LegalityChanged;
         public PKM LoadShowdownSetModded_PKSM(PKM Set, bool resetForm = false , int TID = -1, int SID = -1, string OT = "")
         {
+            backup = Set;
             bool trainerinfo = TID > 0;
             List<List<string>> evoChart = generateEvoLists2();
             int abilitynum = Set.AbilityNumber < 6 ? Set.AbilityNumber >> 1 : 0;
@@ -36,7 +38,7 @@ namespace PKHeX.WinForms.Controls
                                                 (int)GameVersion.W, (int)GameVersion.W2, (int)GameVersion.D, (int)GameVersion.P, (int)GameVersion.Pt,
                                                 (int)GameVersion.HG, (int)GameVersion.SS, (int)GameVersion.R, (int)GameVersion.S, (int)GameVersion.E,
                                                 (int)GameVersion.FR, (int)GameVersion.LG, (int)GameVersion.CXD, (int)GameVersion.RD, (int)GameVersion.GN,
-                                                (int)GameVersion.BU, (int)GameVersion.YW };
+                                                (int)GameVersion.BU, (int)GameVersion.YW, (int)GameVersion.GD, (int)GameVersion.SV, (int)GameVersion.C };
             
             foreach (int mon in legendaryList)
             {
@@ -148,7 +150,14 @@ namespace PKHeX.WinForms.Controls
                         Set.SID = 42312;
                     }
                     if (Set.Species == 793 || Set.Species == 794 || Set.Species == 795 || Set.Species == 796 || Set.Species == 797 || Set.Species == 798 || Set.Species == 799) Set.Ball = 26;
-                    if (Set.Version == (int)GameVersion.RD || Set.Version == (int)GameVersion.BU || Set.Version == (int)GameVersion.YW || Set.Version == (int)GameVersion.GN) Set.SID = 0;
+                    if (Set.Version == (int)GameVersion.RD || Set.Version == (int)GameVersion.BU || Set.Version == (int)GameVersion.YW || Set.Version == (int)GameVersion.GN || Set.Version == (int)GameVersion.GD || Set.Version == (int)GameVersion.SV || Set.Version == (int)GameVersion.C)
+                    {
+                        Set.SID = 0;
+                        if (OT.Length > 6)
+                        {
+                            Set.OT_Name = "ARCH";
+                        }
+                    }
                     try
                     {
                         Set.RelearnMove1 = 0;
@@ -158,6 +167,11 @@ namespace PKHeX.WinForms.Controls
                         if (Set.Version == (int)GameVersion.RD || Set.Version == (int)GameVersion.BU || Set.Version == (int)GameVersion.YW || Set.Version == (int)GameVersion.GN)
                         {
                             Set.Met_Location = 30013;
+                            Set.Met_Level = 100;
+                        }
+                        if (Set.Version == (int)GameVersion.GD || Set.Version == (int)GameVersion.SV || Set.Version == (int)GameVersion.C)
+                        {
+                            Set.Met_Location = 30017;
                             Set.Met_Level = 100;
                         }
                         if (Set.Version == (int)GameVersion.CXD)
@@ -431,9 +445,15 @@ namespace PKHeX.WinForms.Controls
                 updatedReport = recheckLA.Report(false);
                 report = updatedReport;
             }
+            if (report.Contains("Invalid: Evolution not valid (or level/trade evolution unsatisfied)."))
+            {
+                pk.Met_Level = pk.Met_Level - 1;
+                LegalityAnalysis recheckLA = new LegalityAnalysis(pk);
+                updatedReport = recheckLA.Report(false);
+                report = updatedReport;
+            }
             if (report.Contains("Invalid: Encounter Type PID mismatch."))
             {
-                //return true;
                 if (pk.Version == (int)GameVersion.CXD)
                 { pk = setPIDSID(pk, pk.IsShiny, true); }
                 else pk = setPIDSID(pk, pk.IsShiny);
@@ -466,6 +486,27 @@ namespace PKHeX.WinForms.Controls
                     {
                         return false;
                     }
+                }
+            }
+            if (report.Contains("Should have at least 3 IVs = 31."))
+            {
+                PKM temp = pk;
+                pk.IV_HP = 31;
+                pk.IV_ATK = 31;
+                pk.IV_DEF = 31;
+                pk.IV_SPA = 31;
+                pk.IV_SPD = 31;
+                pk.IV_SPE = 31;
+                LegalityAnalysis recheckLA2 = new LegalityAnalysis(pk);
+                updatedReport = recheckLA2.Report(false);
+                report = updatedReport;
+                if (new LegalityAnalysis(pk).Valid)
+                {
+                    return false;
+                }
+                else
+                {
+                    pk = temp;
                 }
             }
             return false;
