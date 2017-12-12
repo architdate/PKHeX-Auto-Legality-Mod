@@ -452,6 +452,18 @@ namespace PKHeX.WinForms.Controls
                 updatedReport = recheckLA.Report(false);
                 report = updatedReport;
             }
+            if (report.Contains("Can't Hyper Train a Pokémon with perfect IVs."))
+            {
+                if (pk.IV_HP == 31) pk.HT_HP = false;
+                if (pk.IV_ATK == 31) pk.HT_ATK = false;
+                if (pk.IV_DEF == 31) pk.HT_DEF = false;
+                if (pk.IV_SPA == 31) pk.HT_SPA = false;
+                if (pk.IV_SPD == 31) pk.HT_SPD = false;
+                if (pk.IV_SPE == 31) pk.HT_SPE = false;
+                LegalityAnalysis recheckLA = new LegalityAnalysis(pk);
+                updatedReport = recheckLA.Report(false);
+                report = updatedReport;
+            }
             if (report.Contains("Invalid: Encounter Type PID mismatch."))
             {
                 if (pk.Version == (int)GameVersion.CXD)
