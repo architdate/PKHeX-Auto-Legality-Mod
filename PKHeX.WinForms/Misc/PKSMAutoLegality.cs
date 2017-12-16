@@ -212,7 +212,6 @@ namespace PKHeX.WinForms.Controls
                                 Set = temp;
                                 Set.SetShinySID();
                                 if (new LegalityAnalysis(Set).Valid) return Set;
-                                else return temp;
                             }
                             else return returnval;
                         }
@@ -454,12 +453,12 @@ namespace PKHeX.WinForms.Controls
             }
             if (report.Contains("Can't Hyper Train a Pokémon with perfect IVs."))
             {
-                if (pk.IV_HP == 31) pk.HT_HP = false;
-                if (pk.IV_ATK == 31) pk.HT_ATK = false;
-                if (pk.IV_DEF == 31) pk.HT_DEF = false;
-                if (pk.IV_SPA == 31) pk.HT_SPA = false;
-                if (pk.IV_SPD == 31) pk.HT_SPD = false;
-                if (pk.IV_SPE == 31) pk.HT_SPE = false;
+                pk.HT_HP = false;
+                pk.HT_ATK = false;
+                pk.HT_DEF = false;
+                pk.HT_SPA = false;
+                pk.HT_SPD = false;
+                pk.HT_SPE = false;
                 LegalityAnalysis recheckLA = new LegalityAnalysis(pk);
                 updatedReport = recheckLA.Report(false);
                 report = updatedReport;
