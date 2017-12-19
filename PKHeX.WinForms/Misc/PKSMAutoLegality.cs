@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Reflection;
 
 using PKHeX.Core;
+using static PKHeX.Core.LegalityCheckStrings;
 
 namespace PKHeX.WinForms.Controls
 {
@@ -292,47 +293,36 @@ namespace PKHeX.WinForms.Controls
             bool HTworkaround = false;
             LegalityAnalysis la = new LegalityAnalysis(pk);
             var report = la.Report(false);
-            var updatedReport = report;
 
-            if (report.Contains("Ability mismatch for encounter"))
+            if (report.Contains(V223)) //V223 = Ability mismatch for encounter.
             {
                 pk.RefreshAbility(pk.AbilityNumber < 6 ? pk.AbilityNumber >> 1 : 0);
-                LegalityAnalysis recheckLA = new LegalityAnalysis(pk);
-                updatedReport = recheckLA.Report(false);
-                report = updatedReport;
-                if (report.Contains("Ability mismatch for encounter"))
+                report = UpdateReport(pk);
+                if (report.Contains(V223)) //V223 = Ability mismatch for encounter.
                 {
                     AlternateAbilityRefresh(pk);
                 }
-                recheckLA = new LegalityAnalysis(pk);
-                updatedReport = recheckLA.Report(false);
-                report = updatedReport;
+                report = UpdateReport(pk);
             }
-            if (report.Contains("Invalid Met Location, expected Transporter."))
+            if (report.Contains(V61)) //V61 = Invalid Met Location, expected Transporter.
             {
                 pk.Met_Location = 30001;
-                LegalityAnalysis recheckLA = new LegalityAnalysis(pk);
-                updatedReport = recheckLA.Report(false);
-                report = updatedReport;
+                report = UpdateReport(pk);
             }
-            if (report.Contains("Can't have ball for encounter type."))
+            if (report.Contains(V118)) //V118 = Can't have ball for encounter type.
             {
                 if (pk.B2W2)
                 {
                     pk.Ball = 25; //Dream Ball
-                    LegalityAnalysis recheckLA = new LegalityAnalysis(pk);
-                    updatedReport = recheckLA.Report(false);
-                    report = updatedReport;
+                    report = UpdateReport(pk);
                 }
                 else
                 {
                     pk.Ball = 0;
-                    LegalityAnalysis recheckLA = new LegalityAnalysis(pk);
-                    updatedReport = recheckLA.Report(false);
-                    report = updatedReport;
+                    report = UpdateReport(pk);
                 }
             }
-            if (report.Contains("Non japanese Mew from Faraway Island. Unreleased event."))
+            if (report.Contains(V353)) //V353 = Non japanese Mew from Faraway Island. Unreleased event.
             {
                 bool shiny = pk.IsShiny;
                 pk.Language = 1;
@@ -340,28 +330,22 @@ namespace PKHeX.WinForms.Controls
                 pk.Nickname = PKX.GetSpeciesNameGeneration(pk.Species, pk.Language, 3);
                 pk.PID = PKX.GetRandomPID(pk.Species, pk.Gender, pk.Version, pk.Nature, pk.Format, (uint)(pk.AbilityNumber * 0x10001));
                 if (shiny) pk.SetShinySID();
-                LegalityAnalysis recheckLA = new LegalityAnalysis(pk);
-                updatedReport = recheckLA.Report(false);
-                report = updatedReport;
+                report = UpdateReport(pk);
             }
-            if (report.Contains("PID should be equal to EC!"))
+            if (report.Contains(V216))//V216 = PID should be equal to EC!
             {
                 pk.EncryptionConstant = pk.PID;
-                LegalityAnalysis recheckLA = new LegalityAnalysis(pk);
-                updatedReport = recheckLA.Report(false);
-                report = updatedReport;
+                report = UpdateReport(pk);
             }
-            if (report.Contains("PID should be equal to EC [with top bit flipped]!"))
+            if (report.Contains(V215)) //V215 = PID should be equal to EC [with top bit flipped]!
             {
                 pk.PID = PKX.GetRandomPID(pk.Species, pk.Gender, pk.Version, pk.Nature, pk.Format, (uint)(pk.AbilityNumber * 0x10001));
                 if (pk.IsShiny) pk.SetShinyPID();
-                LegalityAnalysis recheckLA = new LegalityAnalysis(pk);
-                updatedReport = recheckLA.Report(false);
-                report = updatedReport;
+                report = UpdateReport(pk);
             }
-            if (report.Contains("PID-Gender mismatch."))
+            if (report.Contains(V251)) //V251 = PID-Gender mismatch.
             {
-                if(pk.Gender == 0)
+                if (pk.Gender == 0)
                 {
                     pk.Gender = 1;
                 }
@@ -369,89 +353,65 @@ namespace PKHeX.WinForms.Controls
                 {
                     pk.Gender = 0;
                 }
-                LegalityAnalysis recheckLA = new LegalityAnalysis(pk);
-                updatedReport = recheckLA.Report(false);
-                report = updatedReport;
+                report = UpdateReport(pk);
             }
-            if (report.Contains("Current level is below met level."))
+            if (report.Contains(V85)) //V85 = Current level is below met level.
             {
                 pk.CurrentLevel = 100;
-                LegalityAnalysis recheckLA = new LegalityAnalysis(pk);
-                updatedReport = recheckLA.Report(false);
-                report = updatedReport;
+                report = UpdateReport(pk); 
             }
-            if (report.Contains("Missing Ribbons: National"))
+            if (report.Contains(string.Format(V600, "National"))) //V600 = Missing Ribbons: {0} (National in this case)
             {
                 ReflectUtil.SetValue(pk, "RibbonNational", -1);
-                LegalityAnalysis recheckLA = new LegalityAnalysis(pk);
-                updatedReport = recheckLA.Report(false);
-                report = updatedReport;
+                report = UpdateReport(pk);
             }
-            if (report.Contains("Invalid Ribbons: National"))
+            if (report.Contains(string.Format(V601, "National"))) //V601 = Invalid Ribbons: {0} (National in this case)
             {
                 ReflectUtil.SetValue(pk, "RibbonNational", 0);
-                LegalityAnalysis recheckLA = new LegalityAnalysis(pk);
-                updatedReport = recheckLA.Report(false);
-                report = updatedReport;
+                report = UpdateReport(pk);
             }
-            if (report.Contains("OT Name too long."))
+            if (report.Contains(V38)) //V38 = OT Name too long.
             {
                 pk.OT_Name = "ARCH";
-                LegalityAnalysis recheckLA = new LegalityAnalysis(pk);
-                updatedReport = recheckLA.Report(false);
-                report = updatedReport;
+                report = UpdateReport(pk);
             }
-            if (report.Contains("OT from Generation 1/2 uses unavailable characters."))
+            if (report.Contains(V421)) //V421 = OT from Generation 1/2 uses unavailable characters.
             {
                 pk.OT_Name = "ARCH";
-                LegalityAnalysis recheckLA = new LegalityAnalysis(pk);
-                updatedReport = recheckLA.Report(false);
-                report = updatedReport;
+                report = UpdateReport(pk);
             }
-            if (report.Contains("GeoLocation Memory: Memories should be present."))
+            if (report.Contains(V137)) //V137 = GeoLocation Memory: Memories should be present.
             {
                 pk.Geo1_Country = 1;
-                LegalityAnalysis recheckLA = new LegalityAnalysis(pk);
-                updatedReport = recheckLA.Report(false);
-                report = updatedReport;
+                report = UpdateReport(pk);
             }
-            if (report.Contains("Can't have ball for encounter type."))
+            if (report.Contains(V118)) //V118 = Can't have ball for encounter type.
             {
                 pk.Ball = 4;
-                LegalityAnalysis recheckLA = new LegalityAnalysis(pk);
-                updatedReport = recheckLA.Report(false);
-                report = updatedReport;
+                report = UpdateReport(pk);
             }
-            if (report.Contains("Form cannot exist outside of a battle."))
+            if (report.Contains(V310)) //V310 = Form cannot exist outside of a battle.
             {
                 pk.AltForm = 0;
-                LegalityAnalysis recheckLA = new LegalityAnalysis(pk);
-                updatedReport = recheckLA.Report(false);
-                report = updatedReport;
-                
+                report = UpdateReport(pk);
             }
-            if (report.Contains("Special ingame Fateful Encounter flag missing"))
+            if (report.Contains(V324)) //V324 = Special ingame Fateful Encounter flag missing.
             {
                 pk.FatefulEncounter = true;
-                LegalityAnalysis recheckLA = new LegalityAnalysis(pk);
-                updatedReport = recheckLA.Report(false);
-                report = updatedReport;
+                report = UpdateReport(pk);
             }
-            if (report.Contains("Fateful Encounter should not be checked."))
+            if (report.Contains(V325)) //V325 = Fateful Encounter should not be checked.
+
             {
                 pk.FatefulEncounter = false;
-                LegalityAnalysis recheckLA = new LegalityAnalysis(pk);
-                updatedReport = recheckLA.Report(false);
-                report = updatedReport;
+                report = UpdateReport(pk);
             }
-            if (report.Contains("Invalid: Evolution not valid (or level/trade evolution unsatisfied)."))
+            if (report.Contains(V86)) //V86 = Evolution not valid (or level/trade evolution unsatisfied).
             {
                 pk.Met_Level = pk.Met_Level - 1;
-                LegalityAnalysis recheckLA = new LegalityAnalysis(pk);
-                updatedReport = recheckLA.Report(false);
-                report = updatedReport;
+                report = UpdateReport(pk);
             }
-            if (report.Contains("Can't Hyper Train a Pokémon with perfect IVs."))
+            if (report.Contains(V41)) // V41 = Can't Hyper Train a Pokémon with perfect IVs.
             {
                 pk.HT_HP = false;
                 pk.HT_ATK = false;
@@ -459,11 +419,9 @@ namespace PKHeX.WinForms.Controls
                 pk.HT_SPA = false;
                 pk.HT_SPD = false;
                 pk.HT_SPE = false;
-                LegalityAnalysis recheckLA = new LegalityAnalysis(pk);
-                updatedReport = recheckLA.Report(false);
-                report = updatedReport;
+                report = UpdateReport(pk);
             }
-            if (report.Contains("Invalid: Encounter Type PID mismatch."))
+            if (report.Contains(V411)) //V411 = Encounter Type PID mismatch.
             {
                 if (pk.Version == (int)GameVersion.CXD)
                 { pk = setPIDSID(pk, pk.IsShiny, true); }
@@ -473,14 +431,12 @@ namespace PKHeX.WinForms.Controls
                     return false;
                 }
                 if (pk.HT_HP) { HTworkaround = true; }
-                LegalityAnalysis recheckLA = new LegalityAnalysis(pk);
-                updatedReport = recheckLA.Report(false);
-                report = updatedReport;
-                if (report.Equals("Invalid: Encounter Type PID mismatch."))
+                report = UpdateReport(pk);
+                if (report.Equals(V411)) // V411 = Encounter Type PID mismatch.
                 {
                     return true;
                 }
-                else if (report.Contains("PID-Gender mismatch."))
+                else if (report.Contains(V251)) // V251 = PID-Gender mismatch.
                 {
                     if (pk.Gender == 0)
                     {
@@ -490,16 +446,14 @@ namespace PKHeX.WinForms.Controls
                     {
                         pk.Gender = 0;
                     }
-                    LegalityAnalysis recheckLA2 = new LegalityAnalysis(pk);
-                    updatedReport = recheckLA2.Report(false);
-                    report = updatedReport;
+                    report = UpdateReport(pk);
                     if (new LegalityAnalysis(pk).Valid)
                     {
                         return false;
                     }
                 }
             }
-            if (report.Contains("Should have at least 3 IVs = 31."))
+            if (report.Contains(string.Format(V28, 3))) //V28 = Should have at least {0} IVs = 31.
             {
                 PKM temp = pk;
                 pk.IV_HP = 31;
@@ -508,9 +462,7 @@ namespace PKHeX.WinForms.Controls
                 pk.IV_SPA = 31;
                 pk.IV_SPD = 31;
                 pk.IV_SPE = 31;
-                LegalityAnalysis recheckLA2 = new LegalityAnalysis(pk);
-                updatedReport = recheckLA2.Report(false);
-                report = updatedReport;
+                report = UpdateReport(pk);
                 if (new LegalityAnalysis(pk).Valid)
                 {
                     return false;
@@ -521,6 +473,13 @@ namespace PKHeX.WinForms.Controls
                 }
             }
             return false;
+        }
+
+        private string UpdateReport(PKM pk)
+        {
+            LegalityAnalysis la = new LegalityAnalysis(pk);
+            string report = la.Report(false);
+            return report;
         }
 
         private PKM setPIDSID(PKM pk, bool shiny, bool XD = false)
