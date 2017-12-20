@@ -14,7 +14,7 @@ namespace PKHeX.WinForms.Controls
         PKM backup;
         bool returnSet = false; // Debug bool
         public event EventHandler LegalityChanged;
-        public PKM LoadShowdownSetModded_PKSM(PKM Set, bool resetForm = false , int TID = -1, int SID = -1, string OT = "")
+        public PKM LoadShowdownSetModded_PKSM(PKM Set, bool resetForm = false , int TID = -1, int SID = -1, string OT = "", int gender = 0)
         {
             backup = Set;
             bool trainerinfo = TID > 0;
@@ -70,6 +70,7 @@ namespace PKHeX.WinForms.Controls
                         Set.OT_Name = OT;
                         Set.TID = TID;
                         Set.SID = SID;
+                        Set.OT_Gender = gender;
                     }
                     else
                     {
@@ -144,6 +145,7 @@ namespace PKHeX.WinForms.Controls
                         Set.OT_Name = OT;
                         Set.TID = TID;
                         Set.SID = SID;
+                        Set.OT_Gender = gender;
                     }
                     else
                     {
@@ -359,6 +361,11 @@ namespace PKHeX.WinForms.Controls
                 {
                     pk.Gender = 0;
                 }
+                report = UpdateReport(pk);
+            }
+            if (report.Contains(V407) || report.Contains(V408)) //V407 = OT from Colosseum/XD cannot be female. V408 = Female OT from Generation 1 / 2 is invalid.
+            {
+                pk.OT_Gender = 0;
                 report = UpdateReport(pk);
             }
             if (report.Contains(V85)) //V85 = Current level is below met level.

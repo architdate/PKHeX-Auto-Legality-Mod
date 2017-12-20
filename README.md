@@ -58,13 +58,15 @@ $ git clone https://github.com/kwsch/PKHeX.git
             int TID = -1;
             int SID = -1;
             string OT = "";
-            if(File.Exists(System.IO.Path.GetDirectoryName(Application.ExecutablePath) + "\\trainerdata.txt"))
+            int gender = 0;
+            if (File.Exists(System.IO.Path.GetDirectoryName(Application.ExecutablePath) + "\\trainerdata.txt"))
             {
                 string text = File.ReadAllText(System.IO.Path.GetDirectoryName(Application.ExecutablePath) + "\\trainerdata.txt", System.Text.Encoding.UTF8);
                 string[] lines = text.Split(new string[] { Environment.NewLine }, StringSplitOptions.None);
                 TID = Convert.ToInt32(lines[0].Split(':')[1].Trim());
                 SID = Convert.ToInt32(lines[1].Split(':')[1].Trim());
                 OT = lines[2].Split(':')[1].Trim();
+                if (lines[3].Split(':')[1].Trim() == "F" || lines[3].Split(':')[1].Trim() == "Female") gender = 1;
             }
 
             string source = Clipboard.GetText();
@@ -96,7 +98,7 @@ $ git clone https://github.com/kwsch/PKHeX.git
                     PKM p = PreparePKM();
                     p.Version = (int)GameVersion.MN;
                     Blah b = new Blah();
-                    PKM legal = b.LoadShowdownSetModded_PKSM(p, resetForm, TID, SID, OT);
+                    PKM legal = b.LoadShowdownSetModded_PKSM(p, resetForm, TID, SID, OT, gender);
                     PKME_Tabs.PopulateFields(legal);
                     if (!new LegalityAnalysis(legal).Valid)
                     {
@@ -137,7 +139,7 @@ $ git clone https://github.com/kwsch/PKHeX.git
                 PKM p = PreparePKM();
                 p.Version = (int)GameVersion.MN;
                 Blah b = new Blah();
-                PKM legal = b.LoadShowdownSetModded_PKSM(p, resetForm, TID, SID, OT);
+                PKM legal = b.LoadShowdownSetModded_PKSM(p, resetForm, TID, SID, OT, gender);
                 PKME_Tabs.PopulateFields(legal);
                 if (!new LegalityAnalysis(legal).Valid)
                 {
@@ -158,7 +160,9 @@ $ git clone https://github.com/kwsch/PKHeX.git
 TID:12345
 SID:54321
 OT:PKHeX
+Gender:M
 ```
+- Gender can be specified as `M` or `F` or `Male` or `Female`
 
 ## Adding Priority to event searches.
 
