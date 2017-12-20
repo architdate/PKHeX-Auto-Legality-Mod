@@ -12,6 +12,7 @@ namespace PKHeX.WinForms.Controls
     public partial class Blah : UserControl
     {
         PKM backup;
+        bool returnSet = false; // Debug bool
         public event EventHandler LegalityChanged;
         public PKM LoadShowdownSetModded_PKSM(PKM Set, bool resetForm = false , int TID = -1, int SID = -1, string OT = "")
         {
@@ -180,7 +181,9 @@ namespace PKHeX.WinForms.Controls
                             Set.Met_Location = 30001;
                             Set.Met_Level = 100;
                         }
-                        else { clickMetLocationModPKSM(Set); }
+                        else {
+                            clickMetLocationModPKSM(Set);
+                        }
                         Set = SetSuggestedRelearnMoves_PKSM(Set);
                         Set.CurrentHandler = 1;
                         Set.HT_Name = "Archit";
@@ -242,9 +245,12 @@ namespace PKHeX.WinForms.Controls
             if (m.All(z => z == 0))
                 if (!Set.WasEgg && !Set.WasEvent && !Set.WasEventEgg && !Set.WasLink)
                 {
-                    var encounter = Legality.GetSuggestedMetInfo();
-                    if (encounter != null)
-                        m = encounter.Relearn;
+                    if (Set.Version != (int)GameVersion.CXD)
+                    {
+                        var encounter = Legality.GetSuggestedMetInfo();
+                        if (encounter != null)
+                            m = encounter.Relearn;
+                    }
                 }
 
             if (Set.RelearnMoves.SequenceEqual(m))
