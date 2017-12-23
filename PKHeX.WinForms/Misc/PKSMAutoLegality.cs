@@ -266,11 +266,16 @@ namespace PKHeX.WinForms.Controls
                 foreach (string file in fileList)
                 {
                     PKM eventpk = Set;
+                    int PIDType = 0;
+                    int Generation = 0;
+                    int AbilityType = 0;
                     C_SAV = new PKHeX.WinForms.Controls.SAVEditor();
                     if (System.IO.Path.GetExtension(file) == ".wc7" || System.IO.Path.GetExtension(file) == ".wc7full")
                     {
                         var mg = (WC7)MysteryGift.GetMysteryGift(System.IO.File.ReadAllBytes(file), System.IO.Path.GetExtension(file));
-                        //if (mg.Species != Set.Species) continue;
+                        PIDType = mg.PIDType;
+                        AbilityType = mg.AbilityType;
+                        Generation = 7;
                         if (!ValidShiny(mg.PIDType, shiny)) continue;
                         var temp = mg.ConvertToPKM(C_SAV.SAV);
                         eventpk = PKMConverter.ConvertToType(temp, C_SAV.SAV.PKMType, out string c);
@@ -278,7 +283,9 @@ namespace PKHeX.WinForms.Controls
                     else if (System.IO.Path.GetExtension(file) == ".wc6" || System.IO.Path.GetExtension(file) == ".wc6full")
                     {
                         var mg = (WC6)MysteryGift.GetMysteryGift(System.IO.File.ReadAllBytes(file), System.IO.Path.GetExtension(file));
-                        //if (mg.Species != Set.Species) continue;
+                        PIDType = mg.PIDType;
+                        AbilityType = mg.AbilityType;
+                        Generation = 6;
                         if (!ValidShiny(mg.PIDType, shiny)) continue;
                         var temp = mg.ConvertToPKM(C_SAV.SAV);
                         eventpk = PKMConverter.ConvertToType(temp, C_SAV.SAV.PKMType, out string c);
@@ -286,7 +293,9 @@ namespace PKHeX.WinForms.Controls
                     else if (System.IO.Path.GetExtension(file) == ".pgf")
                     {
                         var mg = (PGF)MysteryGift.GetMysteryGift(System.IO.File.ReadAllBytes(file), System.IO.Path.GetExtension(file));
-                        //if (mg.Species != Set.Species) continue;
+                        PIDType = mg.PIDType;
+                        AbilityType = mg.AbilityType;
+                        Generation = 5;
                         if (!ValidShiny(mg.PIDType, shiny)) continue;
                         var temp = mg.ConvertToPKM(C_SAV.SAV);
                         eventpk = PKMConverter.ConvertToType(temp, C_SAV.SAV.PKMType, out string c);
@@ -303,23 +312,125 @@ namespace PKHeX.WinForms.Controls
                             }
                         }
                     }
-                    if (shiny == true) eventpk.SetShinyPID();
-                    LegalityAnalysis la = new LegalityAnalysis(eventpk);
-                    if (!la.Valid) continue;
+                    if ((PIDType == 0 && eventpk.IsShiny && shiny == false) || (PIDType == 0 && !eventpk.IsShiny && shiny == true)) continue;
+                    if (shiny == true && !eventpk.IsShiny)
+                    {
+                        if (PIDType == 1) eventpk.SetShinyPID();
+                        else if (PIDType == 3) continue;
+                    }
+                    if (shiny == false && eventpk.IsShiny)
+                    {
+                        if (PIDType == 1) eventpk.PID ^= 0x10000000;
+                        else if (PIDType == 2) continue;
+                    }
+                    
                     eventpk.Species = Set.Species;
                     eventpk.Nickname = eventpk.IsNicknamed ? eventpk.Nickname : PKX.GetSpeciesNameGeneration(Set.Species, eventpk.Language, eventpk.GenNumber);
+                    eventpk.HeldItem = SSet.HeldItem < 0 ? 0 : SSet.HeldItem;
+                    eventpk.Nature = SSet.Nature < 0 ? 0 : Set.Nature;
+                    eventpk.Ability = SSet.Ability;
+
+                    // Set IVs
+                    eventpk.IV_HP = Set.IVs[0];
+                    eventpk.IV_ATK = Set.IVs[1];
+                    eventpk.IV_DEF = Set.IVs[2];
+                    eventpk.IV_SPA = Set.IVs[4];
+                    eventpk.IV_SPD = Set.IVs[5];
+                    eventpk.IV_SPE = Set.IVs[3];
+
+                    // Set EVs
+                    eventpk.EV_HP = Set.EVs[0];
+                    eventpk.EV_ATK = Set.EVs[1];
+                    eventpk.EV_DEF = Set.EVs[2];
+                    eventpk.EV_SPA = Set.EVs[4];
+                    eventpk.EV_SPD = Set.EVs[5];
+                    eventpk.EV_SPE = Set.EVs[3];
+
                     eventpk.CurrentLevel = 100;
                     eventpk.Move1 = SSet.Moves[0];
                     eventpk.Move2 = SSet.Moves[1];
                     eventpk.Move3 = SSet.Moves[2];
                     eventpk.Move4 = SSet.Moves[3];
-                    if (file.Contains("0591 ORAS - WORLDS16 Charmander HA (ENG).wc6full")) return eventpk;
+
+                    eventpk = SetWCXPID(eventpk, PIDType, Generation, AbilityType);
                     LegalityAnalysis la2 = new LegalityAnalysis(eventpk);
-                    if (!la2.Valid) continue;
+                    if (!la2.Valid)
+                    {
+                        continue;
+                    }
                     else return eventpk;
                 }
             }
             return Set;
+        }
+
+        private PKM SetWCXPID(PKM pk, int PIDType, int Generation, int AbilityType)
+        {
+            if (Generation == 6 || Generation == 7)
+            {
+                switch (PIDType)
+                {
+                    case 00: // Specified
+                        pk.PID = pk.PID;
+                        break;
+                    case 01: // Random
+                        pk.PID = Util.Rand32();
+                        break;
+                    case 02: // Random Shiny
+                        pk.PID = Util.Rand32();
+                        pk.PID = (uint)(((pk.TID ^ pk.SID ^ (pk.PID & 0xFFFF)) << 16) + (pk.PID & 0xFFFF));
+                        break;
+                    case 03: // Random Nonshiny
+                        pk.PID = Util.Rand32();
+                        if ((uint)(((pk.TID ^ pk.SID ^ (pk.PID & 0xFFFF)) << 16) + (pk.PID & 0xFFFF)) < 16) pk.PID ^= 0x10000000;
+                        break;
+                }
+                return pk;
+            }
+            else if (Generation == 5)
+            {
+                int av = 0;
+                switch (AbilityType)
+                {
+                    case 00: // 0 - 0
+                    case 01: // 1 - 1
+                    case 02: // 2 - H
+                        av = AbilityType;
+                        break;
+                    case 03: // 0/1
+                    case 04: // 0/1/H
+                        av = (int)(Util.Rand32() % (AbilityType - 1));
+                        break;
+                }
+                if (pk.PID != 0)
+                    pk.PID = pk.PID;
+                else
+                {
+                    pk.PID = Util.Rand32();
+
+                    // Force Gender
+                    do { pk.PID = (pk.PID & 0xFFFFFF00) | Util.Rand32() & 0xFF; } while (!pk.IsGenderValid());
+
+                    // Force Ability
+                    if (av == 1) pk.PID |= 0x10000; else pk.PID &= 0xFFFEFFFF;
+
+                    if (PIDType == 2) // Force Shiny
+                    {
+                        uint gb = pk.PID & 0xFF;
+                        pk.PID = PIDGenerator.GetMG5ShinyPID(gb, (uint)av, pk.TID, pk.SID);
+                    }
+                    else if (PIDType != 1) // Force Not Shiny
+                    {
+                        if (pk.IsShiny)
+                            pk.PID ^= 0x10000000;
+                    }
+                }
+                return pk;
+            }
+            else
+            {
+                return pk;
+            }
         }
 
         private bool ValidAbility(int AbilityNumber, int AbilityType)
