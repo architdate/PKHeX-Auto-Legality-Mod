@@ -266,7 +266,7 @@ namespace PKHeX.WinForms.Controls
                 foreach (string file in fileList)
                 {
                     PKM eventpk = Set;
-                    int PIDType = 0;
+                    int PIDType = -1;
                     int Generation = 0;
                     int AbilityType = 0;
                     C_SAV = new PKHeX.WinForms.Controls.SAVEditor();
@@ -299,6 +299,25 @@ namespace PKHeX.WinForms.Controls
                         if (!ValidShiny(mg.PIDType, shiny)) continue;
                         var temp = mg.ConvertToPKM(C_SAV.SAV);
                         eventpk = PKMConverter.ConvertToType(temp, C_SAV.SAV.PKMType, out string c);
+                    }
+                    else if (System.IO.Path.GetExtension(file) == ".pgt" || System.IO.Path.GetExtension(file) == ".pcd")
+                    {
+                        try
+                        {
+                            var mg = (PCD)MysteryGift.GetMysteryGift(System.IO.File.ReadAllBytes(file), System.IO.Path.GetExtension(file));
+                            Generation = 4;
+                            if (shiny != mg.IsShiny) continue;
+                            var temp = mg.ConvertToPKM(C_SAV.SAV);
+                            eventpk = PKMConverter.ConvertToType(temp, C_SAV.SAV.PKMType, out string c);
+                        }
+                        catch
+                        {
+                            var mg = (PGT)MysteryGift.GetMysteryGift(System.IO.File.ReadAllBytes(file), System.IO.Path.GetExtension(file));
+                            Generation = 4;
+                            if (shiny != mg.IsShiny) continue;
+                            var temp = mg.ConvertToPKM(C_SAV.SAV);
+                            eventpk = PKMConverter.ConvertToType(temp, C_SAV.SAV.PKMType, out string c);
+                        }
                     }
                     if (SSet.Form != null)
                     {
@@ -356,6 +375,8 @@ namespace PKHeX.WinForms.Controls
                     LegalityAnalysis la2 = new LegalityAnalysis(eventpk);
                     if (!la2.Valid)
                     {
+                        eventpk.AbilityNumber = Set.AbilityNumber;
+                        if (new LegalityAnalysis(eventpk).Valid) return eventpk;
                         continue;
                     }
                     else return eventpk;
@@ -425,6 +446,43 @@ namespace PKHeX.WinForms.Controls
                             pk.PID ^= 0x10000000;
                     }
                 }
+                return pk;
+            }
+            else if (Generation == 4)
+            {
+                uint seed = Util.Rand32();
+                if (pk.PID == 1) // Create Nonshiny
+                {
+                    uint pid1 = PKX.LCRNG(ref seed) >> 16;
+                    uint pid2 = PKX.LCRNG(ref seed) >> 16;
+
+                    while ((pid1 ^ pid2 ^ pk.TID ^ pk.SID) < 8)
+                    {
+                        uint testPID = pid1 | pid2 << 16;
+
+                        // Call the ARNG to change the PID
+                        testPID = RNG.ARNG.Next(testPID);
+
+                        pid1 = testPID & 0xFFFF;
+                        pid2 = testPID >> 16;
+                    }
+                    pk.PID = pid1 | (pid2 << 16);
+                }
+                PK4 pk4 = new PK4();
+                // Generate IVs
+                if (pk4.IV32 == 0)
+                {
+                    uint iv1 = (PKX.LCRNG(ref seed) >> 16) & 0x7FFF;
+                    uint iv2 = (PKX.LCRNG(ref seed) >> 16) & 0x7FFF;
+                    pk4.IV32 = iv1 | iv2 << 15;
+                }
+                pk.IV_HP = pk4.IV_HP;
+                pk.IV_ATK = pk4.IV_ATK;
+                pk.IV_DEF = pk4.IV_DEF;
+                pk.IV_SPA = pk4.IV_SPA;
+                pk.IV_SPD = pk4.IV_SPD;
+                pk.IV_SPE = pk4.IV_SPE;
+                pk.SetPIDGender(pk.Gender);
                 return pk;
             }
             else
