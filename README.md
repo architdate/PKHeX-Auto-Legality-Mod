@@ -98,12 +98,8 @@ $ git clone https://github.com/kwsch/PKHeX.git
                     PKM p = PreparePKM();
                     p.Version = (int)GameVersion.MN;
                     Blah b = new Blah();
-                    PKM legal = b.LoadShowdownSetModded_PKSM(p, resetForm, TID, SID, OT, gender);
+                    PKM legal = b.LoadShowdownSetModded_PKSM(p, Set, resetForm, TID, SID, OT, gender);
                     PKME_Tabs.PopulateFields(legal);
-                    if (!new LegalityAnalysis(legal).Valid)
-                    {
-                        PKME_Tabs.LoadShowdownSetModdedEvent(Set, true);
-                    }
                     PKM pk = PreparePKM();
                     PKME_Tabs.ClickSet(C_SAV.Box.SlotPictureBoxes[0], i);
                 }
@@ -139,12 +135,8 @@ $ git clone https://github.com/kwsch/PKHeX.git
                 PKM p = PreparePKM();
                 p.Version = (int)GameVersion.MN;
                 Blah b = new Blah();
-                PKM legal = b.LoadShowdownSetModded_PKSM(p, resetForm, TID, SID, OT, gender);
+                PKM legal = b.LoadShowdownSetModded_PKSM(p, Set, resetForm, TID, SID, OT, gender);
                 PKME_Tabs.PopulateFields(legal);
-                if (!new LegalityAnalysis(legal).Valid)
-                {
-                    PKME_Tabs.LoadShowdownSetModdedEvent(Set, true);
-                }
             }
 ```
 - Right click on the main PKHeX project and click Rebuild all.

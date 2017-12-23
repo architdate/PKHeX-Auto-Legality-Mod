@@ -14,7 +14,8 @@ namespace PKHeX.WinForms.Controls
         PKM backup;
         bool returnSet = false; // Debug bool
         public event EventHandler LegalityChanged;
-        public PKM LoadShowdownSetModded_PKSM(PKM Set, bool resetForm = false , int TID = -1, int SID = -1, string OT = "", int gender = 0)
+        private Controls.SAVEditor C_SAV;
+        public PKM LoadShowdownSetModded_PKSM(PKM Set, ShowdownSet SSet, bool resetForm = false , int TID = -1, int SID = -1, string OT = "", int gender = 0)
         {
             backup = Set;
             bool trainerinfo = TID > 0;
@@ -173,12 +174,12 @@ namespace PKHeX.WinForms.Controls
                             Set.Met_Location = 30013;
                             Set.Met_Level = 100;
                         }
-                        if (Set.Version == (int)GameVersion.GD || Set.Version == (int)GameVersion.SV || Set.Version == (int)GameVersion.C)
+                        else if (Set.Version == (int)GameVersion.GD || Set.Version == (int)GameVersion.SV || Set.Version == (int)GameVersion.C)
                         {
                             Set.Met_Location = 30017;
                             Set.Met_Level = 100;
                         }
-                        if (Set.Version == (int)GameVersion.CXD)
+                        else if (Set.Version == (int)GameVersion.CXD)
                         {
                             Set.Met_Location = 30001;
                             Set.Met_Level = 100;
@@ -205,7 +206,6 @@ namespace PKHeX.WinForms.Controls
                         }
                         AlternateAbilityRefresh(Set);
                         if (Set.GenNumber < 6) Set.EncryptionConstant = Set.PID;
-
                         if (new LegalityAnalysis(Set).Valid)
                         {
                         	PKM returnval = Set;
@@ -230,7 +230,112 @@ namespace PKHeX.WinForms.Controls
                     catch { continue; }
                 }
             }
+            //return Set;
+
+            if (!new LegalityAnalysis(Set).Valid)
+            {
+                string fpath = System.IO.Path.GetDirectoryName(Application.ExecutablePath) + "\\mgdb";
+                List<string> fileList = new List<string>();
+                string[] PKMNList = Util.GetSpeciesList("en");
+                List<string> chain = new List<string>();
+                if (!legendary)
+                {
+                    foreach (List<string> a in evoChart)
+                    {
+                        foreach (string b in a)
+                        {
+                            if (b == PKMNList[Set.Species] && Set.Species != 0)
+                            {
+                                chain = a;
+                            }
+                        }
+                    }
+                }
+                if (chain.Count == 0 && Set.Species != 0) chain.Add(PKMNList[Set.Species]);
+                foreach (string file in System.IO.Directory.GetFiles(fpath, "*.*", System.IO.SearchOption.AllDirectories))
+                {
+                    foreach (string mon in chain)
+                    {
+                        if (file.Contains(mon))
+                        {
+                            fileList.Add(file);
+                            Console.WriteLine(file);
+                        }
+                    }
+                }
+                foreach (string file in fileList)
+                {
+                    PKM eventpk = Set;
+                    C_SAV = new PKHeX.WinForms.Controls.SAVEditor();
+                    if (System.IO.Path.GetExtension(file) == ".wc7" || System.IO.Path.GetExtension(file) == ".wc7full")
+                    {
+                        var mg = (WC7)MysteryGift.GetMysteryGift(System.IO.File.ReadAllBytes(file), System.IO.Path.GetExtension(file));
+                        //if (mg.Species != Set.Species) continue;
+                        if (!ValidShiny(mg.PIDType, shiny)) continue;
+                        var temp = mg.ConvertToPKM(C_SAV.SAV);
+                        eventpk = PKMConverter.ConvertToType(temp, C_SAV.SAV.PKMType, out string c);
+                    }
+                    else if (System.IO.Path.GetExtension(file) == ".wc6" || System.IO.Path.GetExtension(file) == ".wc6full")
+                    {
+                        var mg = (WC6)MysteryGift.GetMysteryGift(System.IO.File.ReadAllBytes(file), System.IO.Path.GetExtension(file));
+                        //if (mg.Species != Set.Species) continue;
+                        if (!ValidShiny(mg.PIDType, shiny)) continue;
+                        var temp = mg.ConvertToPKM(C_SAV.SAV);
+                        eventpk = PKMConverter.ConvertToType(temp, C_SAV.SAV.PKMType, out string c);
+                    }
+                    else if (System.IO.Path.GetExtension(file) == ".pgf")
+                    {
+                        var mg = (PGF)MysteryGift.GetMysteryGift(System.IO.File.ReadAllBytes(file), System.IO.Path.GetExtension(file));
+                        //if (mg.Species != Set.Species) continue;
+                        if (!ValidShiny(mg.PIDType, shiny)) continue;
+                        var temp = mg.ConvertToPKM(C_SAV.SAV);
+                        eventpk = PKMConverter.ConvertToType(temp, C_SAV.SAV.PKMType, out string c);
+                    }
+                    if (SSet.Form != null)
+                    {
+                        if (SSet.Form.Contains("Mega") || SSet.Form == "Primal" || SSet.Form == "Busted")
+                        {
+                            resetForm = true;
+                            if (resetForm)
+                            {
+                                eventpk.AltForm = 0;
+                                eventpk.RefreshAbility(eventpk.AbilityNumber < 6 ? eventpk.AbilityNumber >> 1 : 0);
+                            }
+                        }
+                    }
+                    if (shiny == true) eventpk.SetShinyPID();
+                    LegalityAnalysis la = new LegalityAnalysis(eventpk);
+                    if (!la.Valid) continue;
+                    eventpk.Species = Set.Species;
+                    eventpk.Nickname = eventpk.IsNicknamed ? eventpk.Nickname : PKX.GetSpeciesNameGeneration(Set.Species, eventpk.Language, eventpk.GenNumber);
+                    eventpk.CurrentLevel = 100;
+                    eventpk.Move1 = SSet.Moves[0];
+                    eventpk.Move2 = SSet.Moves[1];
+                    eventpk.Move3 = SSet.Moves[2];
+                    eventpk.Move4 = SSet.Moves[3];
+                    if (file.Contains("0591 ORAS - WORLDS16 Charmander HA (ENG).wc6full")) return eventpk;
+                    LegalityAnalysis la2 = new LegalityAnalysis(eventpk);
+                    if (!la2.Valid) continue;
+                    else return eventpk;
+                }
+            }
             return Set;
+        }
+
+        private bool ValidAbility(int AbilityNumber, int AbilityType)
+        {
+            Console.WriteLine("AbilityNumber = " + AbilityNumber + " AbilityType = " + AbilityType);
+            if ((AbilityNumber == 1 && AbilityType == 0) || (AbilityNumber == 1 && AbilityType == 3) || (AbilityNumber == 1 && AbilityType == 4)) return true;
+            if ((AbilityNumber == 2 && AbilityType == 1) || (AbilityNumber == 2 && AbilityType == 3) || (AbilityNumber == 2 && AbilityType == 4)) return true;
+            if ((AbilityNumber == 4 && AbilityType == 2) || (AbilityNumber == 4 && AbilityType == 4)) return true;
+            return false;
+        }
+
+        private bool ValidShiny(int PIDType, bool shiny)
+        {
+            if ((PIDType == 0 && shiny == true) || (PIDType == 1 && shiny == true) || (PIDType == 2 && shiny == true)) return true;
+            if ((PIDType == 0 && shiny == false) || (PIDType == 1 && shiny == false) || (PIDType == 3 && shiny == false)) return true;
+            return false;
         }
 
         private PKM SetSuggestedRelearnMoves_PKSM(PKM Set)
