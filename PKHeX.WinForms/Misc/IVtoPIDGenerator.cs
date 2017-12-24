@@ -4807,6 +4807,35 @@ namespace PKHeX.WinForms.Misc
             return ans;
         }
 
+        public static string[] M2PID(uint hp, uint atk, uint def, uint spa, uint spd, uint spe, uint nature, uint tid)
+        {
+            List<Seed> seeds =
+                IVtoSeed.GetSeeds(
+                    hp,
+                    atk,
+                    def,
+                    spa,
+                    spd,
+                    spe,
+                    nature,
+                    tid);
+            Console.WriteLine(hp + " " + atk + " " + def + " " + spa + " " + spd + " " + spe + " " + nature + " " + tid);
+            Seed chosenOne = new Seed();
+            foreach (Seed s in seeds)
+            {
+                Console.WriteLine(s.Method);
+                if (s.Method == "Method 2")
+                {
+                    chosenOne = s;
+                    break;
+                }
+            }
+            string[] ans = new string[2];
+            ans[0] = chosenOne.Pid.ToString("X");
+            ans[1] = chosenOne.Sid.ToString();
+            return ans;
+        }
+
         public static string[] XDPID(uint hp, uint atk, uint def, uint spa, uint spd, uint spe, uint nature, uint tid)
         {
             List<Seed> seeds =
@@ -4909,12 +4938,16 @@ namespace PKHeX.WinForms.Misc
             }
         }
 
-        public static string[] getIVPID(uint nature, string hiddenpower, bool XD = false)
+        public static string[] getIVPID(uint nature, string hiddenpower, bool XD = false, bool M2 = false)
         {
             var generator = new FrameGenerator();
             if (XD) generator = new FrameGenerator
             {
                 FrameType = FrameType.ColoXD
+            };
+            if (M2) generator = new FrameGenerator
+            {
+                FrameType = FrameType.Method2
             };
             FrameCompare frameCompare = new FrameCompare(
                     hptofilter(hiddenpower),

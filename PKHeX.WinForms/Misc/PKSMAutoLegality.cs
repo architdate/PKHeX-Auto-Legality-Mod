@@ -15,7 +15,7 @@ namespace PKHeX.WinForms.Controls
         bool returnSet = false; // Debug bool
         public event EventHandler LegalityChanged;
         private Controls.SAVEditor C_SAV;
-        public PKM LoadShowdownSetModded_PKSM(PKM Set, ShowdownSet SSet, bool resetForm = false , int TID = -1, int SID = -1, string OT = "", int gender = 0)
+        public PKM LoadShowdownSetModded_PKSM(PKM Set, ShowdownSet SSet, bool resetForm = false, int TID = -1, int SID = -1, string OT = "", int gender = 0)
         {
             backup = Set;
             bool trainerinfo = TID > 0;
@@ -42,7 +42,7 @@ namespace PKHeX.WinForms.Controls
                                                 (int)GameVersion.HG, (int)GameVersion.SS, (int)GameVersion.R, (int)GameVersion.S, (int)GameVersion.E,
                                                 (int)GameVersion.FR, (int)GameVersion.LG, (int)GameVersion.CXD, (int)GameVersion.RD, (int)GameVersion.GN,
                                                 (int)GameVersion.BU, (int)GameVersion.YW, (int)GameVersion.GD, (int)GameVersion.SV, (int)GameVersion.C };
-            
+
             foreach (int mon in legendaryList)
             {
                 if (Set.Species == mon)
@@ -184,7 +184,8 @@ namespace PKHeX.WinForms.Controls
                             Set.Met_Location = 30001;
                             Set.Met_Level = 100;
                         }
-                        else {
+                        else
+                        {
                             clickMetLocationModPKSM(Set);
                         }
                         Set = SetSuggestedRelearnMoves_PKSM(Set);
@@ -208,7 +209,7 @@ namespace PKHeX.WinForms.Controls
                         if (Set.GenNumber < 6) Set.EncryptionConstant = Set.PID;
                         if (new LegalityAnalysis(Set).Valid)
                         {
-                        	PKM returnval = Set;
+                            PKM returnval = Set;
                             if (shiny && Set.IsShiny) return Set;
                             if (shiny && !Set.IsShiny)
                             {
@@ -263,12 +264,14 @@ namespace PKHeX.WinForms.Controls
                         }
                     }
                 }
+                PKM prevevent = new PK7();
                 foreach (string file in fileList)
                 {
                     PKM eventpk = Set;
                     int PIDType = -1;
                     int Generation = 0;
-                    int AbilityType = 0;
+                    int AbilityType = -1;
+                    uint fixedPID = 0;
                     C_SAV = new PKHeX.WinForms.Controls.SAVEditor();
                     if (System.IO.Path.GetExtension(file) == ".wc7" || System.IO.Path.GetExtension(file) == ".wc7full")
                     {
@@ -276,6 +279,7 @@ namespace PKHeX.WinForms.Controls
                         PIDType = mg.PIDType;
                         AbilityType = mg.AbilityType;
                         Generation = 7;
+                        fixedPID = mg.PID;
                         if (!ValidShiny(mg.PIDType, shiny)) continue;
                         var temp = mg.ConvertToPKM(C_SAV.SAV);
                         eventpk = PKMConverter.ConvertToType(temp, C_SAV.SAV.PKMType, out string c);
@@ -286,6 +290,7 @@ namespace PKHeX.WinForms.Controls
                         PIDType = mg.PIDType;
                         AbilityType = mg.AbilityType;
                         Generation = 6;
+                        fixedPID = mg.PID;
                         if (!ValidShiny(mg.PIDType, shiny)) continue;
                         var temp = mg.ConvertToPKM(C_SAV.SAV);
                         eventpk = PKMConverter.ConvertToType(temp, C_SAV.SAV.PKMType, out string c);
@@ -296,6 +301,7 @@ namespace PKHeX.WinForms.Controls
                         PIDType = mg.PIDType;
                         AbilityType = mg.AbilityType;
                         Generation = 5;
+                        fixedPID = mg.PID;
                         if (!ValidShiny(mg.PIDType, shiny)) continue;
                         var temp = mg.ConvertToPKM(C_SAV.SAV);
                         eventpk = PKMConverter.ConvertToType(temp, C_SAV.SAV.PKMType, out string c);
@@ -309,6 +315,7 @@ namespace PKHeX.WinForms.Controls
                             if (shiny != mg.IsShiny) continue;
                             var temp = mg.ConvertToPKM(C_SAV.SAV);
                             eventpk = PKMConverter.ConvertToType(temp, C_SAV.SAV.PKMType, out string c);
+                            fixedPID = eventpk.PID;
                         }
                         catch
                         {
@@ -317,6 +324,7 @@ namespace PKHeX.WinForms.Controls
                             if (shiny != mg.IsShiny) continue;
                             var temp = mg.ConvertToPKM(C_SAV.SAV);
                             eventpk = PKMConverter.ConvertToType(temp, C_SAV.SAV.PKMType, out string c);
+                            fixedPID = eventpk.PID;
                         }
                     }
                     if (SSet.Form != null)
@@ -331,20 +339,21 @@ namespace PKHeX.WinForms.Controls
                             }
                         }
                     }
-                    if ((PIDType == 0 && eventpk.IsShiny && shiny == false) || (PIDType == 0 && !eventpk.IsShiny && shiny == true)) continue;
-                    if (shiny == true && !eventpk.IsShiny)
+                    if ((PIDType == 0 && eventpk.IsShiny && shiny == false && Generation > 4) || (PIDType == 0 && !eventpk.IsShiny && shiny == true && Generation > 4)) continue;
+                    if (shiny == true && !eventpk.IsShiny && Generation > 4)
                     {
                         if (PIDType == 1) eventpk.SetShinyPID();
                         else if (PIDType == 3) continue;
                     }
-                    if (shiny == false && eventpk.IsShiny)
+                    if (shiny == false && eventpk.IsShiny && Generation > 4)
                     {
                         if (PIDType == 1) eventpk.PID ^= 0x10000000;
                         else if (PIDType == 2) continue;
                     }
                     
+
                     eventpk.Species = Set.Species;
-                    eventpk.Nickname = eventpk.IsNicknamed ? eventpk.Nickname : PKX.GetSpeciesNameGeneration(Set.Species, eventpk.Language, eventpk.GenNumber);
+                    eventpk.Nickname = eventpk.IsNicknamed ? eventpk.Nickname : PKX.GetSpeciesNameGeneration(Set.Species, eventpk.Language, C_SAV.SAV.Generation);
                     eventpk.HeldItem = SSet.HeldItem < 0 ? 0 : SSet.HeldItem;
                     eventpk.Nature = SSet.Nature < 0 ? 0 : Set.Nature;
                     eventpk.Ability = SSet.Ability;
@@ -364,28 +373,60 @@ namespace PKHeX.WinForms.Controls
                     eventpk.EV_SPA = Set.EVs[4];
                     eventpk.EV_SPD = Set.EVs[5];
                     eventpk.EV_SPE = Set.EVs[3];
+                    
 
                     eventpk.CurrentLevel = 100;
                     eventpk.Move1 = SSet.Moves[0];
                     eventpk.Move2 = SSet.Moves[1];
                     eventpk.Move3 = SSet.Moves[2];
                     eventpk.Move4 = SSet.Moves[3];
+                    
+                    if (new LegalityAnalysis(eventpk).Valid) return eventpk;
 
-                    eventpk = SetWCXPID(eventpk, PIDType, Generation, AbilityType);
+                    eventpk = SetWCXPID(eventpk, PIDType, Generation, AbilityType, shiny);
                     LegalityAnalysis la2 = new LegalityAnalysis(eventpk);
                     if (!la2.Valid)
                     {
-                        eventpk.AbilityNumber = Set.AbilityNumber;
+                        Console.WriteLine(la2.Report(false));
+                        AlternateAbilityRefresh(eventpk);
                         if (new LegalityAnalysis(eventpk).Valid) return eventpk;
+                        if (eventErrorHandling(eventpk, PIDType, AbilityType, Generation, fixedPID)) return eventpk;
+                        prevevent = eventpk;
                         continue;
                     }
-                    else return eventpk;
+                    else
+                    {
+                        return eventpk;
+                    }
                 }
+                Set = prevevent;
             }
             return Set;
         }
 
-        private PKM SetWCXPID(PKM pk, int PIDType, int Generation, int AbilityType)
+        private bool eventErrorHandling(PKM pk, int PIDType, int AbilityType, int Generation, uint fixedPID)
+        {
+            LegalityAnalysis la = new LegalityAnalysis(pk);
+            var report = la.Report(false);
+            Console.WriteLine(fixedPID);
+
+            if (report.Contains(V20)) // V20: Nickname does not match species name
+            {
+                pk.IsNicknamed = false;
+                pk.Nickname = PKX.GetSpeciesNameGeneration(pk.Species, pk.Language, Generation);
+                report = UpdateReport(pk);
+            }
+            if(report.Contains(V410)) // V410 = Mystery Gift fixed PID mismatch.
+            {
+                pk.PID = fixedPID;
+                report = UpdateReport(pk);
+            }
+            if (new LegalityAnalysis(pk).Valid) return true;
+            Console.WriteLine(report);
+            return false;
+        }
+
+        private PKM SetWCXPID(PKM pk, int PIDType, int Generation, int AbilityType, bool shiny)
         {
             if (Generation == 6 || Generation == 7)
             {
@@ -576,6 +617,13 @@ namespace PKHeX.WinForms.Controls
             LegalityAnalysis la = new LegalityAnalysis(pk);
             var report = la.Report(false);
 
+            // fucking M2
+            if((usesEventBasedM2(pk.Species,pk.Moves) && pk.Version == (int)GameVersion.FR) || (usesEventBasedM2(pk.Species, pk.Moves) && pk.Version == (int)GameVersion.LG))
+            {
+                pk = M2EventFix(pk, pk.IsShiny);
+                report = UpdateReport(pk);
+            }
+
             if (report.Contains(V223)) //V223 = Ability mismatch for encounter.
             {
                 pk.RefreshAbility(pk.AbilityNumber < 6 ? pk.AbilityNumber >> 1 : 0);
@@ -645,7 +693,7 @@ namespace PKHeX.WinForms.Controls
             if (report.Contains(V85)) //V85 = Current level is below met level.
             {
                 pk.CurrentLevel = 100;
-                report = UpdateReport(pk); 
+                report = UpdateReport(pk);
             }
             if (report.Contains(string.Format(V600, "National"))) //V600 = Missing Ribbons: {0} (National in this case)
             {
@@ -821,7 +869,7 @@ namespace PKHeX.WinForms.Controls
                     pk.IV_SPD = (int)spd;
                     pk.IV_SPE = (int)spe;
                 }
-                if (hp >= 30 && pk.IV_HP !=31) pk.HT_HP = true;
+                if (hp >= 30 && pk.IV_HP != 31) pk.HT_HP = true;
                 if (atk >= 30 && pk.IV_ATK != 31) pk.HT_ATK = true;
                 if (def >= 30 && pk.IV_DEF != 31) pk.HT_DEF = true;
                 if (spa >= 30 && pk.IV_SPA != 31) pk.HT_SPA = true;
@@ -857,8 +905,13 @@ namespace PKHeX.WinForms.Controls
                 // PKX is now filled
                 pk.RefreshChecksum();
                 pk.RefreshAbility(pk.AbilityNumber < 6 ? pk.AbilityNumber >> 1 : 0);
-                if (updatedReport.Contains("Invalid: Encounter Type PID mismatch."))
+                if (updatedReport.Contains("Invalid: Encounter Type PID mismatch.") || usesEventBasedM2(pk.Species, pk.Moves))
                 {
+                    if (pk.GenNumber == 3 || usesEventBasedM2(pk.Species, pk.Moves))
+                    {
+                        pk = M2EventFix(pk, shiny);
+                        if (!new LegalityAnalysis(pk).Report(false).Contains("PID mismatch") || usesEventBasedM2(pk.Species, pk.Moves)) return pk;
+                    }
                     pk.HT_HP = false;
                     pk.HT_ATK = false;
                     pk.HT_DEF = false;
@@ -874,6 +927,84 @@ namespace PKHeX.WinForms.Controls
                 }
             }
             return pk;
+        }
+
+        private PKM M2EventFix(PKM pk, bool shiny)
+        {
+            int eggloc = pk.Egg_Location;
+            bool feFlag = pk.FatefulEncounter;
+            pk.Egg_Location = 0;
+            pk.FatefulEncounter = true;
+            string[] hpower = { "fighting", "flying", "poison", "ground", "rock", "bug", "ghost", "steel", "fire", "water", "grass", "electric", "psychic", "ice", "dragon", "dark" };
+            string hiddenpower = hpower[pk.HPType];
+            string[] NatureHPIVs = Misc.IVtoPIDGenerator.getIVPID((uint)pk.Nature, hiddenpower, false, true);
+            pk.PID = Util.GetHexValue(NatureHPIVs[0]);
+            if (pk.GenNumber < 5) pk.EncryptionConstant = pk.PID;
+            Console.WriteLine(NatureHPIVs[0]);
+            pk.IV_HP = Convert.ToInt32(NatureHPIVs[1]);
+            pk.IV_ATK = Convert.ToInt32(NatureHPIVs[2]);
+            pk.IV_DEF = Convert.ToInt32(NatureHPIVs[3]);
+            pk.IV_SPA = Convert.ToInt32(NatureHPIVs[4]);
+            pk.IV_SPD = Convert.ToInt32(NatureHPIVs[5]);
+            pk.IV_SPE = Convert.ToInt32(NatureHPIVs[6]);
+            if (shiny) pk.SetShinySID();
+            LegalityAnalysis recheckLA = new LegalityAnalysis(pk);
+            string updatedReport = recheckLA.Report(false);
+            if (updatedReport.Contains("PID-Gender mismatch"))
+            {
+                if (pk.Gender == 0)
+                {
+                    pk.Gender = 1;
+                }
+                else
+                {
+                    pk.Gender = 0;
+                }
+                LegalityAnalysis recheckLA2 = new LegalityAnalysis(pk);
+                updatedReport = recheckLA2.Report(false);
+            }
+            if (!updatedReport.Contains("PID mismatch") || usesEventBasedM2(pk.Species, pk.Moves)) return pk;
+            Console.WriteLine(UpdateReport(pk));
+            pk.FatefulEncounter = feFlag;
+            pk.Egg_Location = eggloc;
+            return pk;
+        }
+        
+        private bool usesEventBasedM2(int Species, int[] Moves)
+        {
+            Dictionary<int, int[]> possibleM2 = new Dictionary<int, int[]>() {
+                {043, new[]{073}}, // Oddish with Leech Seed
+                {052, new[]{080}}, // Meowth with Petal Dance
+                {060, new[]{186}}, // Poliwag with Sweet Kiss
+                {069, new[]{298}}, // Bellsprout with Teeter Dance
+                {083, new[]{273, 281}}, // Farfetch'd with Wish & Yawn
+                {096, new[]{273, 187}}, // Drowzee with Wish & Belly Drum
+                {102, new[]{273, 230}}, // Exeggcute with Wish & Sweet Scent
+                {108, new[]{273, 215}}, // Lickitung with Wish & Heal Bell
+                {113, new[]{273, 230}}, // Chansey with Wish & Sweet Scent
+                {115, new[]{273, 281}}, // Kangaskhan with Wish & Yawn
+                {054, new[]{300}}, // Psyduck with Mud Sport
+                {172, new[]{266}}, // Pichu with Follow me
+                {174, new[]{321}}, // Igglybuff with Tickle
+                {222, new[]{300}}, // Corsola with Mud Sport
+                {276, new[]{297}}, // Taillow with Feather Dance
+                {283, new[]{300}}, // Surskit with Mud Sport
+                {293, new[]{298}}, // Whismur with Teeter Dance
+                {300, new[]{205}}, // Skitty with Rollout
+                {311, new[]{346}}, // Plusle with Water Sport
+                {312, new[]{300}}, // Minun with Mud Sport
+                {325, new[]{253}}, // Spoink with Uproar
+                {327, new[]{047}}, // Spinda with Sing
+                {331, new[]{227}}, // Cacnea with Encore
+                {341, new[]{346}}, // Corphish with Water Sport
+                {360, new[]{321}}, // Wynaut with Tickle
+            };
+            if (!possibleM2.Keys.Contains(Species)) return false;
+            foreach (int i in Moves)
+            {
+                if (possibleM2[Species].Contains(i)) return true;
+            }
+            return false;
         }
 
         private PKM clickMetLocationModPKSM(PKM p)
@@ -933,7 +1064,7 @@ namespace PKHeX.WinForms.Controls
             LegalityAnalysis Legality = new LegalityAnalysis(pkm);
             Console.WriteLine(Legality.Report(true));
             // Refresh Move Legality
-            bool[]validmoves = new bool[] { false, false, false, false };
+            bool[] validmoves = new bool[] { false, false, false, false };
             for (int i = 0; i < 4; i++)
                 validmoves[i] = !Legality.Info?.Moves[i].Valid ?? false;
 
@@ -951,7 +1082,7 @@ namespace PKHeX.WinForms.Controls
             var cb = new[] { pkm.Move1, pkm.Move2, pkm.Move3, pkm.Move4 };
             var moves = Legality.AllSuggestedMovesAndRelearn;
             var moveList = GameInfo.MoveDataSource.OrderByDescending(m => moves.Contains(m.Value)).ToArray();
-            
+
             fieldsLoaded |= tmp;
             LegalityChanged?.Invoke(Legality.Valid, null);
         }
