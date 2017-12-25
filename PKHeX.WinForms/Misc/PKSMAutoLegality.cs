@@ -15,6 +15,82 @@ namespace PKHeX.WinForms.Controls
         bool returnSet = false; // Debug bool
         public event EventHandler LegalityChanged;
         private Controls.SAVEditor C_SAV;
+
+        Dictionary<int, int[]>[] WC3RNGList = new Dictionary<int, int[]>[] {
+            new Dictionary<int, int[]>()
+            { // M2
+                {043, new[]{073}}, // Oddish with Leech Seed
+                {044, new[]{073}}, // Gloom
+                {045, new[]{073}}, // Vileplume
+                {182, new[]{073}}, // Belossom
+                {052, new[]{080}}, // Meowth with Petal Dance
+                {053, new[]{080}}, //Persian
+                {060, new[]{186}}, // Poliwag with Sweet Kiss
+                {061, new[]{186}},
+                {062, new[]{186}},
+                {186, new[]{186}},
+                {069, new[]{298}}, // Bellsprout with Teeter Dance
+                {070, new[]{298}},
+                {071, new[]{298}},
+                {083, new[]{273, 281}}, // Farfetch'd with Wish & Yawn
+                {096, new[]{273, 187}}, // Drowzee with Wish & Belly Drum
+                {097, new[]{273, 187}},
+                {102, new[]{273, 230}}, // Exeggcute with Wish & Sweet Scent
+                {103, new[]{273, 230}},
+                {108, new[]{273, 215}}, // Lickitung with Wish & Heal Bell
+                {463, new[]{273, 215}},
+                {113, new[]{273, 230}}, // Chansey with Wish & Sweet Scent
+                {115, new[]{273, 281}}, // Kangaskhan with Wish & Yawn
+                {054, new[]{300}}, // Psyduck with Mud Sport
+                {055, new[]{300}},
+                {172, new[]{266}}, // Pichu with Follow me
+                {025, new[]{266}},
+                {026, new[]{266}},
+                {174, new[]{321}}, // Igglybuff with Tickle
+                {039, new[]{321}},
+                {040, new[]{321}},
+                {222, new[]{300}}, // Corsola with Mud Sport
+                {276, new[]{297}}, // Taillow with Feather Dance
+                {277, new[]{297}},
+                {283, new[]{300}}, // Surskit with Mud Sport
+                {284, new[]{300}},
+                {293, new[]{298}}, // Whismur with Teeter Dance
+                {294, new[]{298}},
+                {295, new[]{298}},
+                {300, new[]{205}}, // Skitty with Rollout
+                {301, new[]{205}},
+                {311, new[]{346}}, // Plusle with Water Sport
+                {312, new[]{300}}, // Minun with Mud Sport
+                {325, new[]{253}}, // Spoink with Uproar
+                {326, new[]{253}},
+                {327, new[]{047}}, // Spinda with Sing
+                {331, new[]{227}}, // Cacnea with Encore
+                {332, new[]{227}},
+                {341, new[]{346}}, // Corphish with Water Sport
+                {342, new[]{346}},
+                {360, new[]{321}}, // Wynaut with Tickle
+                {202, new[]{321}},
+            },
+            new Dictionary<int, int[]>()
+            { // BACD_R
+                {172, new[]{298, 273} }, // Pichu with Teeter Dance
+                {025, new[]{298, 273} },
+                {026, new[]{298, 273} },
+                //{172, new[]{273} }, // Pichu with Wish
+                {280, new[]{204, 273} }, // Ralts with Charm
+                {281, new[]{204, 273} },
+                {282, new[]{204, 273} },
+                {475, new[]{204, 273} }, 
+                //{280, new[]{273} }, // Ralts with Wish
+                {359, new[]{180, 273} }, // Absol with Spite
+                //{359, new[]{273} }, // Absol with Wish
+                {371, new[]{334, 273} }, // Bagon with Iron Defense
+                {372, new[]{334, 273} },
+                {373, new[]{334, 273} },
+                //{371, new[]{273} }, // Bagon with Wish
+            }
+    };
+
         public PKM LoadShowdownSetModded_PKSM(PKM Set, ShowdownSet SSet, bool resetForm = false, int TID = -1, int SID = -1, string OT = "", int gender = 0)
         {
             backup = Set;
@@ -112,7 +188,7 @@ namespace PKHeX.WinForms.Controls
                         if (Set.GenNumber < 6) Set.EncryptionConstant = Set.PID;
                         if (CommonErrorHandling2(Set))
                         {
-                            if (shiny) Set.SetShinyPID();
+                            if (shiny && !Set.IsShiny) Set.SetShinyPID();
                             return Set;
                         }
                         if (Set.GenNumber < 6) Set.EncryptionConstant = Set.PID;
@@ -618,9 +694,15 @@ namespace PKHeX.WinForms.Controls
             var report = la.Report(false);
 
             // fucking M2
-            if((usesEventBasedM2(pk.Species,pk.Moves) && pk.Version == (int)GameVersion.FR) || (usesEventBasedM2(pk.Species, pk.Moves) && pk.Version == (int)GameVersion.LG))
+            if((usesEventBasedMethod(pk.Species,pk.Moves, "M2") && pk.Version == (int)GameVersion.FR) || (usesEventBasedMethod(pk.Species, pk.Moves, "M2") && pk.Version == (int)GameVersion.LG))
             {
                 pk = M2EventFix(pk, pk.IsShiny);
+                report = UpdateReport(pk);
+            }
+
+            if(usesEventBasedMethod(pk.Species, pk.Moves, "BACD_R") && pk.Version == (int)GameVersion.R)
+            {
+                pk = BACD_REventFix(pk, pk.IsShiny);
                 report = UpdateReport(pk);
             }
 
@@ -754,6 +836,16 @@ namespace PKHeX.WinForms.Controls
                 pk.HT_SPA = false;
                 pk.HT_SPD = false;
                 pk.HT_SPE = false;
+                report = UpdateReport(pk);
+            }
+            if (report.Contains(V42)) // V42 = Can't Hyper Train a perfect IV.
+            {
+                if (pk.IV_HP == 31) pk.HT_HP = false;
+                if (pk.IV_ATK == 31) pk.HT_ATK = false;
+                if (pk.IV_DEF == 31) pk.HT_DEF = false;
+                if (pk.IV_SPA == 31) pk.HT_SPA = false;
+                if (pk.IV_SPD == 31) pk.HT_SPD = false;
+                if (pk.IV_SPE == 31) pk.HT_SPE = false;
                 report = UpdateReport(pk);
             }
             if (report.Contains(V411)) //V411 = Encounter Type PID mismatch.
@@ -905,12 +997,12 @@ namespace PKHeX.WinForms.Controls
                 // PKX is now filled
                 pk.RefreshChecksum();
                 pk.RefreshAbility(pk.AbilityNumber < 6 ? pk.AbilityNumber >> 1 : 0);
-                if (updatedReport.Contains("Invalid: Encounter Type PID mismatch.") || usesEventBasedM2(pk.Species, pk.Moves))
+                if (updatedReport.Contains("Invalid: Encounter Type PID mismatch.") || usesEventBasedMethod(pk.Species, pk.Moves, "M2"))
                 {
-                    if (pk.GenNumber == 3 || usesEventBasedM2(pk.Species, pk.Moves))
+                    if (pk.GenNumber == 3 || usesEventBasedMethod(pk.Species, pk.Moves, "M2"))
                     {
                         pk = M2EventFix(pk, shiny);
-                        if (!new LegalityAnalysis(pk).Report(false).Contains("PID mismatch") || usesEventBasedM2(pk.Species, pk.Moves)) return pk;
+                        if (!new LegalityAnalysis(pk).Report(false).Contains("PID mismatch") || usesEventBasedMethod(pk.Species, pk.Moves, "M2")) return pk;
                     }
                     pk.HT_HP = false;
                     pk.HT_ATK = false;
@@ -937,7 +1029,7 @@ namespace PKHeX.WinForms.Controls
             pk.FatefulEncounter = true;
             string[] hpower = { "fighting", "flying", "poison", "ground", "rock", "bug", "ghost", "steel", "fire", "water", "grass", "electric", "psychic", "ice", "dragon", "dark" };
             string hiddenpower = hpower[pk.HPType];
-            string[] NatureHPIVs = Misc.IVtoPIDGenerator.getIVPID((uint)pk.Nature, hiddenpower, false, true);
+            string[] NatureHPIVs = Misc.IVtoPIDGenerator.getIVPID((uint)pk.Nature, hiddenpower, false, "M2");
             pk.PID = Util.GetHexValue(NatureHPIVs[0]);
             if (pk.GenNumber < 5) pk.EncryptionConstant = pk.PID;
             Console.WriteLine(NatureHPIVs[0]);
@@ -963,48 +1055,72 @@ namespace PKHeX.WinForms.Controls
                 LegalityAnalysis recheckLA2 = new LegalityAnalysis(pk);
                 updatedReport = recheckLA2.Report(false);
             }
-            if (!updatedReport.Contains("PID mismatch") || usesEventBasedM2(pk.Species, pk.Moves)) return pk;
+            if (!updatedReport.Contains("PID mismatch") || usesEventBasedMethod(pk.Species, pk.Moves, "M2")) return pk;
             Console.WriteLine(UpdateReport(pk));
             pk.FatefulEncounter = feFlag;
             pk.Egg_Location = eggloc;
             return pk;
         }
-        
-        private bool usesEventBasedM2(int Species, int[] Moves)
+
+        private PKM BACD_REventFix(PKM pk, bool shiny)
         {
-            Dictionary<int, int[]> possibleM2 = new Dictionary<int, int[]>() {
-                {043, new[]{073}}, // Oddish with Leech Seed
-                {052, new[]{080}}, // Meowth with Petal Dance
-                {060, new[]{186}}, // Poliwag with Sweet Kiss
-                {069, new[]{298}}, // Bellsprout with Teeter Dance
-                {083, new[]{273, 281}}, // Farfetch'd with Wish & Yawn
-                {096, new[]{273, 187}}, // Drowzee with Wish & Belly Drum
-                {102, new[]{273, 230}}, // Exeggcute with Wish & Sweet Scent
-                {108, new[]{273, 215}}, // Lickitung with Wish & Heal Bell
-                {113, new[]{273, 230}}, // Chansey with Wish & Sweet Scent
-                {115, new[]{273, 281}}, // Kangaskhan with Wish & Yawn
-                {054, new[]{300}}, // Psyduck with Mud Sport
-                {172, new[]{266}}, // Pichu with Follow me
-                {174, new[]{321}}, // Igglybuff with Tickle
-                {222, new[]{300}}, // Corsola with Mud Sport
-                {276, new[]{297}}, // Taillow with Feather Dance
-                {283, new[]{300}}, // Surskit with Mud Sport
-                {293, new[]{298}}, // Whismur with Teeter Dance
-                {300, new[]{205}}, // Skitty with Rollout
-                {311, new[]{346}}, // Plusle with Water Sport
-                {312, new[]{300}}, // Minun with Mud Sport
-                {325, new[]{253}}, // Spoink with Uproar
-                {327, new[]{047}}, // Spinda with Sing
-                {331, new[]{227}}, // Cacnea with Encore
-                {341, new[]{346}}, // Corphish with Water Sport
-                {360, new[]{321}}, // Wynaut with Tickle
-            };
-            if (!possibleM2.Keys.Contains(Species)) return false;
+            int eggloc = pk.Egg_Location;
+            bool feFlag = pk.FatefulEncounter;
+            pk.Egg_Location = 0;
+            pk.FatefulEncounter = false;
+            string[] hpower = { "fighting", "flying", "poison", "ground", "rock", "bug", "ghost", "steel", "fire", "water", "grass", "electric", "psychic", "ice", "dragon", "dark" };
+            string hiddenpower = hpower[pk.HPType];
+            string[] NatureHPIVs = Misc.IVtoPIDGenerator.getIVPID((uint)pk.Nature, hiddenpower, false, "BACD_R");
+            pk.PID = Util.GetHexValue(NatureHPIVs[0]);
+            if (pk.GenNumber < 5) pk.EncryptionConstant = pk.PID;
+            Console.WriteLine(NatureHPIVs[0]);
+            pk.IV_HP = Convert.ToInt32(NatureHPIVs[1]);
+            pk.IV_ATK = Convert.ToInt32(NatureHPIVs[2]);
+            pk.IV_DEF = Convert.ToInt32(NatureHPIVs[3]);
+            pk.IV_SPA = Convert.ToInt32(NatureHPIVs[4]);
+            pk.IV_SPD = Convert.ToInt32(NatureHPIVs[5]);
+            pk.IV_SPE = Convert.ToInt32(NatureHPIVs[6]);
+            if (shiny) pk.SetShinySID();
+            LegalityAnalysis recheckLA = new LegalityAnalysis(pk);
+            string updatedReport = recheckLA.Report(false);
+            if (updatedReport.Contains("PID-Gender mismatch"))
+            {
+                if (pk.Gender == 0)
+                {
+                    pk.Gender = 1;
+                }
+                else
+                {
+                    pk.Gender = 0;
+                }
+                LegalityAnalysis recheckLA2 = new LegalityAnalysis(pk);
+                updatedReport = recheckLA2.Report(false);
+            }
+            if (!updatedReport.Contains("PID mismatch") || usesEventBasedMethod(pk.Species, pk.Moves, "BACD_R")) return pk;
+            Console.WriteLine(UpdateReport(pk));
+            pk.FatefulEncounter = feFlag;
+            pk.Egg_Location = eggloc;
+            return pk;
+        }
+
+        private bool usesEventBasedMethod(int Species, int[] Moves, string method)
+        {
+            Dictionary<int, int[]> RNGList = new Dictionary<int, int[]>();
+            if (getRNGListIndex(method) != -1) RNGList = WC3RNGList[getRNGListIndex(method)];
+            else return false;
+            if (!RNGList.Keys.Contains(Species)) return false;
             foreach (int i in Moves)
             {
-                if (possibleM2[Species].Contains(i)) return true;
+                if (RNGList[Species].Contains(i)) return true;
             }
             return false;
+        }
+
+        int getRNGListIndex(string Method)
+        {
+            if (Method == "M2") return 0;
+            else if (Method == "BACD_R") return 1;
+            else return -1;
         }
 
         private PKM clickMetLocationModPKSM(PKM p)

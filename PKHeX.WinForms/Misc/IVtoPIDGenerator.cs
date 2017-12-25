@@ -4836,6 +4836,85 @@ namespace PKHeX.WinForms.Misc
             return ans;
         }
 
+        public string[] generateWishmkr(List<uint> natureList)
+        {
+            uint finalPID = 0;
+            uint finalHP = 0;
+            uint finalATK = 0;
+            uint finalDEF = 0;
+            uint finalSPA = 0;
+            uint finalSPD = 0;
+            uint finalSPE = 0;
+            for (uint x = 0; x <= 0xFFFF; x++)
+            {
+                uint pid1 = forward(x);
+                uint pid2 = forward(pid1);
+                uint pid = (pid1 & 0xFFFF0000) | (pid2 >> 16);
+                uint nature = pid % 25;
+
+                if (natureList == null || natureList.Contains(nature))
+                {
+                    uint ivs1 = forward(pid2);
+                    uint ivs2 = forward(ivs1);
+                    ivs1 >>= 16;
+                    ivs2 >>= 16;
+                    uint[] ivs = createIVs(ivs1, ivs2);
+                    if (ivs != null)
+                    {
+                        finalPID = pid;
+                        finalHP = ivs[0];
+                        finalATK = ivs[1];
+                        finalDEF = ivs[2];
+                        finalSPA = ivs[3];
+                        finalSPD = ivs[4];
+                        finalSPE = ivs[5];
+                        break;
+                    }
+                }
+            }
+            return new string[] { finalPID.ToString("X"), finalHP.ToString(), finalATK.ToString(), finalDEF.ToString(), finalSPA.ToString(), finalSPD.ToString(), finalSPE.ToString() };
+        }
+
+        private uint forward(uint seed)
+        {
+            return seed * 0x41c64e6d + 0x6073;
+        }
+
+        private uint[] createIVs(uint iv1, uint ivs2)
+        {
+            uint[] ivs = new uint[6];
+
+            for (int x = 0; x < 3; x++)
+            {
+                int q = x * 5;
+                uint iv = (iv1 >> q) & 31;
+                if (iv >= 0 && iv <= 31)
+                    ivs[x] = iv;
+                else
+                    return null;
+            }
+
+            uint iV = (ivs2 >> 5) & 31;
+            if (iV >= 0 && iV <= 31)
+                ivs[3] = iV;
+            else
+                return null;
+
+            iV = (ivs2 >> 10) & 31;
+            if (iV >= 0 && iV <= 31)
+                ivs[4] = iV;
+            else
+                return null;
+
+            iV = ivs2 & 31;
+            if (iV >= 0 && iV <= 31)
+                ivs[5] = iV;
+            else
+                return null;
+
+            return ivs;
+        }
+
         public static string[] XDPID(uint hp, uint atk, uint def, uint spa, uint spd, uint spe, uint nature, uint tid)
         {
             List<Seed> seeds =
@@ -4938,17 +5017,26 @@ namespace PKHeX.WinForms.Misc
             }
         }
 
-        public static string[] getIVPID(uint nature, string hiddenpower, bool XD = false, bool M2 = false)
+        public static string[] getIVPID(uint nature, string hiddenpower, bool XD = false, string method = "")
         {
             var generator = new FrameGenerator();
             if (XD) generator = new FrameGenerator
             {
                 FrameType = FrameType.ColoXD
             };
-            if (M2) generator = new FrameGenerator
+            if (method == "M2") generator = new FrameGenerator
             {
                 FrameType = FrameType.Method2
             };
+            if (method == "BACD_R")
+            {
+                generator = new FrameGenerator
+                {
+                    FrameType = FrameType.Method1Reverse
+                };
+                IVtoPIDGenerator bacdr = new IVtoPIDGenerator();
+                return bacdr.generateWishmkr(new List<uint> { nature });
+            }
             FrameCompare frameCompare = new FrameCompare(
                     hptofilter(hiddenpower),
                     new List<uint> { nature },
