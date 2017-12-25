@@ -59,6 +59,9 @@ $ git clone https://github.com/kwsch/PKHeX.git
             int SID = -1;
             string OT = "";
             int gender = 0;
+            string Country = "";
+            string SubRegion = "";
+            string ConsoleRegion = "";
             if (File.Exists(System.IO.Path.GetDirectoryName(Application.ExecutablePath) + "\\trainerdata.txt"))
             {
                 string text = File.ReadAllText(System.IO.Path.GetDirectoryName(Application.ExecutablePath) + "\\trainerdata.txt", System.Text.Encoding.UTF8);
@@ -67,6 +70,13 @@ $ git clone https://github.com/kwsch/PKHeX.git
                 SID = Convert.ToInt32(lines[1].Split(':')[1].Trim());
                 OT = lines[2].Split(':')[1].Trim();
                 if (lines[3].Split(':')[1].Trim() == "F" || lines[3].Split(':')[1].Trim() == "Female") gender = 1;
+                try
+                {
+                    Country = lines[4].Split(':')[1].Trim();
+                    SubRegion = lines[5].Split(':')[1].Trim();
+                    ConsoleRegion = lines[6].Split(':')[1].Trim();
+                }
+                catch { }
             }
 
             string source = Clipboard.GetText();
@@ -100,6 +110,10 @@ $ git clone https://github.com/kwsch/PKHeX.git
                     Blah b = new Blah();
                     PKM legal = b.LoadShowdownSetModded_PKSM(p, Set, resetForm, TID, SID, OT, gender);
                     PKME_Tabs.PopulateFields(legal);
+                    if(Country!="" && SubRegion !="" && ConsoleRegion != "")
+                    {
+                        PKME_Tabs.SetRegions(Country, SubRegion, ConsoleRegion);
+                    }
                     PKM pk = PreparePKM();
                     PKME_Tabs.ClickSet(C_SAV.Box.SlotPictureBoxes[0], i);
                 }
@@ -137,6 +151,10 @@ $ git clone https://github.com/kwsch/PKHeX.git
                 Blah b = new Blah();
                 PKM legal = b.LoadShowdownSetModded_PKSM(p, Set, resetForm, TID, SID, OT, gender);
                 PKME_Tabs.PopulateFields(legal);
+                if (Country != "" && SubRegion != "" && ConsoleRegion != "")
+                {
+                    PKME_Tabs.SetRegions(Country, SubRegion, ConsoleRegion);
+                }
             }
 ```
 - Right click on the main PKHeX project and click Rebuild all.
@@ -145,7 +163,7 @@ $ git clone https://github.com/kwsch/PKHeX.git
 ## [OPTIONAL] Custom TID, SID, OT settings.
 
 - Create a new text file called `trainerdata.txt` in the same directory as `PKHeX.exe`
-- Inside the directory paste your TID, SID and OT based on the sample given below.
+- Inside the directory paste your TID, SID ,OT, Gender, Country, SubRegion and 3DSRegion based on the sample given below.
 - Note: Follow the format of the sample given below. DO NOT change the format. Just edit the values.
 - The `trainerdata.txt` format should be as follows:
 ```
@@ -153,8 +171,15 @@ TID:12345
 SID:54321
 OT:PKHeX
 Gender:M
+Country:Canada
+SubRegion:Alberta
+3DSRegion:Americas (NA/SA)
 ```
 - Gender can be specified as `M` or `F` or `Male` or `Female`
+- Country, SubRegion and 3DSRegion have to be spelt exactly as one of the options on PKHeX. Any spelling errors WILL fail.
+- To ensure proper legality in regards to Country, SubRegion and 3DSRegion, make sure that the SubRegion actually belongs to the Country, and the Country actually lies in the 3DSRegion.
+
+*Credits to the several people who requested this in GitHub Issues*
 
 ## Adding Priority to event searches.
 

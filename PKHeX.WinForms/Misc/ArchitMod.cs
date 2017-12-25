@@ -143,6 +143,13 @@ namespace PKHeX.WinForms.Controls
             return null;
         }
 
+        public void SetRegions(string Country, string SubRegion, string ConsoleRegion)
+        {
+            CB_Country.Text = Country;
+            CB_SubRegion.Text = SubRegion;
+            CB_3DSReg.Text = ConsoleRegion;
+        }
+
     }
 
 }
