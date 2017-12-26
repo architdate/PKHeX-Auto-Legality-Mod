@@ -136,8 +136,6 @@ namespace PKHeX.WinForms.Controls
                 }
             }
 
-            //File.WriteAllBytes("C:\\Users\\test\\Desktop\\PKHeX\\PKHeX.WinForms\\bin\\Debug\\Gen3.pk7", Set.DecryptedBoxData);
-
             // Egg based pokemon
             if (!legendary && !eventMon)
             {
@@ -177,7 +175,6 @@ namespace PKHeX.WinForms.Controls
                     }
                     else { Set = clickMetLocationModPKSM(Set); }
                     if (Set.GenNumber > 4) Set.Met_Level = 1;
-                    //File.WriteAllBytes("C:\\Users\\test\\Desktop\\PKHeX\\PKHeX.WinForms\\bin\\Debug\\Gen"+(4+i).ToString()+".pk7", Set.DecryptedBoxData);
                     try
                     {
                         Set.CurrentHandler = 1;
