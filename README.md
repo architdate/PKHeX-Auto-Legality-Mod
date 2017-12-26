@@ -55,6 +55,8 @@ $ git clone https://github.com/kwsch/PKHeX.git
             if (!Clipboard.ContainsText())
             { WinFormsUtil.Alert("Clipboard does not contain text."); return; }
 
+            if (!Directory.Exists(MGDatabasePath)) Directory.CreateDirectory(MGDatabasePath);
+
             int TID = -1;
             int SID = -1;
             string OT = "";
@@ -110,7 +112,7 @@ $ git clone https://github.com/kwsch/PKHeX.git
                     Blah b = new Blah();
                     PKM legal = b.LoadShowdownSetModded_PKSM(p, Set, resetForm, TID, SID, OT, gender);
                     PKME_Tabs.PopulateFields(legal);
-                    if(Country!="" && SubRegion !="" && ConsoleRegion != "")
+                    if (Country != "" && SubRegion != "" && ConsoleRegion != "")
                     {
                         PKME_Tabs.SetRegions(Country, SubRegion, ConsoleRegion);
                     }

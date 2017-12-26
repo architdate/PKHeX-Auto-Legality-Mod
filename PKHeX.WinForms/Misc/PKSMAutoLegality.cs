@@ -6,6 +6,7 @@ using System.Reflection;
 
 using PKHeX.Core;
 using static PKHeX.Core.LegalityCheckStrings;
+using System.IO;
 
 namespace PKHeX.WinForms.Controls
 {
@@ -135,6 +136,8 @@ namespace PKHeX.WinForms.Controls
                 }
             }
 
+            //File.WriteAllBytes("C:\\Users\\test\\Desktop\\PKHeX\\PKHeX.WinForms\\bin\\Debug\\Gen3.pk7", Set.DecryptedBoxData);
+
             // Egg based pokemon
             if (!legendary && !eventMon)
             {
@@ -155,6 +158,7 @@ namespace PKHeX.WinForms.Controls
                         Set.TID = 24521;
                         Set.SID = 42312;
                     }
+                    Set.MetDate = DateTime.Today;
                     if (Set.Version == (int)GameVersion.RD || Set.Version == (int)GameVersion.BU || Set.Version == (int)GameVersion.YW || Set.Version == (int)GameVersion.GN) Set.SID = 0;
                     Set.EggMetDate = new DateTime(2000, 1, 1);
                     Set.Egg_Location = 60002;
@@ -173,6 +177,7 @@ namespace PKHeX.WinForms.Controls
                     }
                     else { Set = clickMetLocationModPKSM(Set); }
                     if (Set.GenNumber > 4) Set.Met_Level = 1;
+                    //File.WriteAllBytes("C:\\Users\\test\\Desktop\\PKHeX\\PKHeX.WinForms\\bin\\Debug\\Gen"+(4+i).ToString()+".pk7", Set.DecryptedBoxData);
                     try
                     {
                         Set.CurrentHandler = 1;
@@ -239,6 +244,7 @@ namespace PKHeX.WinForms.Controls
                             Set.OT_Name = "ARCH";
                         }
                     }
+                    Set.MetDate = DateTime.Today;
                     try
                     {
                         Set.RelearnMove1 = 0;
