@@ -351,6 +351,7 @@ namespace PKHeX.WinForms.Controls
                     int Generation = 0;
                     int AbilityType = -1;
                     uint fixedPID = 0;
+                    int form = Set.AltForm;
                     C_SAV = new PKHeX.WinForms.Controls.SAVEditor();
                     if (System.IO.Path.GetExtension(file) == ".wc7" || System.IO.Path.GetExtension(file) == ".wc7full")
                     {
@@ -432,6 +433,7 @@ namespace PKHeX.WinForms.Controls
                     
 
                     eventpk.Species = Set.Species;
+                    eventpk.AltForm = form;
                     eventpk.Nickname = eventpk.IsNicknamed ? eventpk.Nickname : PKX.GetSpeciesNameGeneration(Set.Species, eventpk.Language, C_SAV.SAV.Generation);
                     eventpk.HeldItem = SSet.HeldItem < 0 ? 0 : SSet.HeldItem;
                     eventpk.Nature = SSet.Nature < 0 ? 0 : Set.Nature;
