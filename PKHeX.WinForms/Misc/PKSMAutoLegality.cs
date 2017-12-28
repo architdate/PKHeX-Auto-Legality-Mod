@@ -103,6 +103,7 @@ namespace PKHeX.WinForms.Controls
                 Set.AltForm = 0;
                 Set.RefreshAbility(Set.AbilityNumber < 6 ? Set.AbilityNumber >> 1 : 0);
             }
+            if (Set.Species == 774 && Set.AltForm == 0) Set.AltForm = 7; // Minior has to be C-Red and not M-Red outside of battle
             bool shiny = Set.IsShiny;
             bool legendary = false;
             bool eventMon = false;
@@ -158,7 +159,7 @@ namespace PKHeX.WinForms.Controls
                     }
                     Set.MetDate = DateTime.Today;
                     if (Set.Version == (int)GameVersion.RD || Set.Version == (int)GameVersion.BU || Set.Version == (int)GameVersion.YW || Set.Version == (int)GameVersion.GN) Set.SID = 0;
-                    Set.EggMetDate = new DateTime(2000, 1, 1);
+                    Set.EggMetDate = DateTime.Today;
                     Set.Egg_Location = 60002;
                     if (Set.Version == (int)GameVersion.D || Set.Version == (int)GameVersion.P || Set.Version == (int)GameVersion.Pt) Set.Egg_Location = 2002;
                     Set.Met_Level = 1;
