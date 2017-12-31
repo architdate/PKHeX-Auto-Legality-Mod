@@ -47,6 +47,7 @@ It also copies the Showdown Set for the QR team and sets it as your Clipboard te
 
 ## Dependancies
 - [Bouncy Castle](http://www.bouncycastle.org/csharp/licence.html) for their dll file that decrypts AES-CTR
+- The QR decoder is from [ZXing.Net](https://www.nuget.org/packages/ZXing.Net/). It is licensed under the [Apache 2.0 License](http://www.apache.org/licenses/LICENSE-2.0)
 
 ## Credits
 - [SciresM](https://twitter.com/sciresm?lang=en) for his research on how to [decode the QR code](https://gist.github.com/SciresM/f3d20f8c77f5514f2d142c9760939266).
