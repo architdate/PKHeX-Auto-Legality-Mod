@@ -183,6 +183,13 @@ SubRegion:Alberta
 
 *Credits to the several people who requested this in GitHub Issues*
 
+## [OPTIONAL] Addon Legality mods:
+
+The instructions for each one of these will be located within their own folders within the `Addons (Optional)` folder in the repository
+Current Addons:
+- PGL Rental QR Teams auto legal genning. Also copies the Showdown spread to clipboard for convenience.
+- .... Work in Progress :] 
+
 ## Adding Priority to event searches.
 
 - If you would like to have certain events to be scanned first (eg Gen7 events or Gen6 events etc.) do the following:
