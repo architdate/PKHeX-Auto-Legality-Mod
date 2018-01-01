@@ -7,43 +7,18 @@ It also copies the Showdown Set for the QR team and sets it as your Clipboard te
 
 - First of all have the basic mod setup.
 - Open the `.sln` solution file using Visual Studio 17 / Mono Develop.
-- Right click on the `Misc` folder in `PKHeX.WinForms` sub-project and in the `Add` menu select `Existing Item`.
-- Add the `CryptoUtil.cs` file from the `Addons (Optional)/PGL QR Auto Legality/PKHeX.WinForms/Misc` directory to the `Misc` folder.
-- Add the `QRParser.cs` file from the `Addons (Optional)/PGL QR Auto Legality/PKHeX.WinForms/Misc` directory to the `Misc` folder.
-- Add `pokemonAbilities.csv` and `pokemonFormAbilities.csv` file from `Addons (Optional)/PGL QR Auto Legality/PKHeX.WinForms/Resources/text` directory to the `Resources/text` folder.
-- Click on both the above files and set them as an `Embedded Resource` in the property box below.
-- Drag the whole `ZXing` folder inside `PKHeX.WinForms` sub project
+- Add the `PGLRentalLegality` folder by dragging and dropping the `PGLRentalLegality` folder inside `PKHeX.WinForms` subproject.
+- Navigate to `PGLRentalLegality/Resources/text` folder and add `pokemonAbilities.csv` and `pokemonFormAbilities.csv` as an Embedded Resource.
 - Inside `PKHeX.WinForms` sub project, right click `References` and then go to `Add Reference...` option. 
 - Inside the `Assemblies` tab in `Add Reference` search for `System.Numerics` and add it as a reference
 - Inside the `Browse` tab click on the Browse button and browse for `BouncyCastle.CryptoExt.dll` inside the repository and add it as a reference
-- Go to `MainWindow` folder and expand `Main.cs` and open the `Main` code section.
-- Create a new function after `ClickShowdownImportPKM` function for PGL Showdown Set as follows
-```csharp
-        private void PGLShowdownSet(object sender, EventArgs e)
-        {
-            if (!Clipboard.ContainsImage()) return;
-            Misc.RentalTeam rentalTeam = new Misc.QRParser().decryptQRCode(Clipboard.GetImage());
-            string data = "";
-            foreach (Misc.Pokemon p in rentalTeam.team)
-            {
-                data += p.ToShowdownFormat(false) + "\n\r";
-            }
+- Go to `MainWindow` folder and open the `Main.Designer.cs` file.
+- Search for the line `this.Menu_Showdown.DropDownItems` using `Ctrl + F`.
+- After the semicolon (`;`) write this line of code on the next line
 
-            Clipboard.SetText(data.TrimEnd());
-            ClickShowdownImportPKM(sender, e);
-            WinFormsUtil.Alert("Exported OwO");
-        }
-```
-- Go to `MainWindow` folder and expand `Main.cs` and open `Main.Designer.cs` and search for the following line of code in the file:
 ```csharp
-        this.Menu_ShowdownExportBattleBox.Click += new System.EventHandler(this.ClickShowdownExportBattleBox);
+        this.Menu_Showdown.DropDownItems.Add(EnablePGLRentalLegality(resources));
 ```
-- Replace this line with the following code line:
-```csharp
-        this.Menu_ShowdownExportBattleBox.Click += new System.EventHandler(this.PGLShowdownSet);
-```
-- This will replace the `Export Battle Box` option to generate PKM based on PGL QR codes. This option was chosen to be replaced since it is rarely used practically
-- Alternatively devs can modify this file to just create a new option inside the menu and map the function to the new menu click event. This will not be covered in the scope of this README. This feature will however be included as a new menu in every subsequent release.
 
 ## Dependancies
 - [Bouncy Castle](http://www.bouncycastle.org/csharp/licence.html) for their dll file that decrypts AES-CTR
