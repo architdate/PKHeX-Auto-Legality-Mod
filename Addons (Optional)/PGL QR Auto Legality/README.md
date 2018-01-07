@@ -20,7 +20,7 @@ It also copies the Showdown Set for the QR team and sets it as your Clipboard te
         this.Menu_Showdown.DropDownItems.Add(EnablePGLRentalLegality(resources));
 ```
 
-## Dependancies
+## Dependencies
 - [Bouncy Castle](http://www.bouncycastle.org/csharp/licence.html) for their dll file that decrypts AES-CTR
 - The QR decoder is from [ZXing.Net](https://www.nuget.org/packages/ZXing.Net/). It is licensed under the [Apache 2.0 License](http://www.apache.org/licenses/LICENSE-2.0)
 
