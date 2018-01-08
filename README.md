@@ -80,7 +80,6 @@ SubRegion:Alberta
 The instructions for each one of these will be located within their own folders within the `Addons (Optional)` folder in the repository
 Current Addons:
 - PGL Rental QR Teams auto legal genning. Also copies the Showdown spread to clipboard for convenience.
-- .... Work in Progress :] 
 
 ## Adding Priority to event searches.
 
