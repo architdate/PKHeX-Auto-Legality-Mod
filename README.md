@@ -98,3 +98,4 @@ Just me right now, but if you want to contribute, feel free to contact me on Dis
 - My good friend TORNADO for helping me with Test Cases
 - Speed Improvement ideas by [Bernardo Giordano](https://github.com/BernardoGiordano)
 - kwsch for the original PKHeX repository.
+- All the other users who have helped improve this via GitHub issues
