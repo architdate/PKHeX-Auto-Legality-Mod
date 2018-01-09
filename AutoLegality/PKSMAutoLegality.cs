@@ -14,6 +14,7 @@ namespace PKHeX.WinForms.Controls
     {
         PKM backup;
         bool returnSet = false; // Debug bool
+        bool requestedShiny = false;
         public event EventHandler LegalityChanged;
         private Controls.SAVEditor C_SAV;
 
@@ -30,6 +31,7 @@ namespace PKHeX.WinForms.Controls
             }
             if (Set.Species == 774 && Set.AltForm == 0) Set.AltForm = 7; // Minior has to be C-Red and not M-Red outside of battle
             bool shiny = Set.IsShiny;
+            requestedShiny = SSet.Shiny;
             bool legendary = false;
             bool eventMon = false;
             int[] legendaryList = new int[] { 144, 145, 146, 150, 151, 243, 244, 245, 249, 250, 251, 377, 378, 379, 380, 381, 382, 383, 384, 385,
@@ -355,6 +357,14 @@ namespace PKHeX.WinForms.Controls
                             fixedPID = eventpk.PID;
                         }
                     }
+                    else if (System.IO.Path.GetExtension(file) == ".pk3")
+                    {
+                        Generation = 3;
+                        var pk = PKMConverter.GetPKMfromBytes(File.ReadAllBytes(file), prefer: Path.GetExtension(file).Length > 0 ? (Path.GetExtension(file).Last() - '0') & 0xF : C_SAV.SAV.Generation);
+                        if (pk == null) break;
+                        eventpk = PKMConverter.ConvertToType(pk, C_SAV.SAV.PKMType, out string c);
+                    }
+
                     if (SSet.Form != null)
                     {
                         if (SSet.Form.Contains("Mega") || SSet.Form == "Primal" || SSet.Form == "Busted")
@@ -378,7 +388,6 @@ namespace PKHeX.WinForms.Controls
                         if (PIDType == 1) eventpk.PID ^= 0x10000000;
                         else if (PIDType == 2) continue;
                     }
-                    
 
                     eventpk.Species = Set.Species;
                     eventpk.AltForm = form;
@@ -449,6 +458,24 @@ namespace PKHeX.WinForms.Controls
             {
                 pk.PID = fixedPID;
                 report = UpdateReport(pk);
+            }
+            if (report.Contains(V411)) // V411 = Encounter type PID mismatch
+            {
+                if ((usesEventBasedMethod(pk.Species, pk.Moves, "M2") && pk.Version == (int)GameVersion.FR) || (usesEventBasedMethod(pk.Species, pk.Moves, "M2") && pk.Version == (int)GameVersion.LG))
+                {
+                    bool shiny = pk.IsShiny;
+                    pk = M2EventFix(pk, shiny);
+                    if (requestedShiny && !pk.IsShiny) pk.SetShinySID();
+                    report = UpdateReport(pk);
+                }
+
+                if (usesEventBasedMethod(pk.Species, pk.Moves, "BACD_R") && pk.Version == (int)GameVersion.R)
+                {
+                    bool shiny = pk.IsShiny;
+                    pk = BACD_REventFix(pk, pk.IsShiny);
+                    if (requestedShiny && !pk.IsShiny) pk.SetShinySID(); // Make wrong requests fail
+                    report = UpdateReport(pk);
+                }
             }
             if (new LegalityAnalysis(pk).Valid) return true;
             Console.WriteLine(report);
@@ -1366,20 +1393,16 @@ namespace PKHeX.WinForms.Controls
                 {172, new[]{298, 273} }, // Pichu with Teeter Dance
                 {025, new[]{298, 273} },
                 {026, new[]{298, 273} },
-                //{172, new[]{273} }, // Pichu with Wish
                 {280, new[]{204, 273} }, // Ralts with Charm
                 {281, new[]{204, 273} },
                 {282, new[]{204, 273} },
                 {475, new[]{204, 273} }, 
-                //{280, new[]{273} }, // Ralts with Wish
                 {359, new[]{180, 273} }, // Absol with Spite
-                //{359, new[]{273} }, // Absol with Wish
                 {371, new[]{334, 273} }, // Bagon with Iron Defense
                 {372, new[]{334, 273} },
                 {373, new[]{334, 273} },
-                //{371, new[]{273} }, // Bagon with Wish
+                {385, new[]{273} }
             }
         };
-
     }
 }
