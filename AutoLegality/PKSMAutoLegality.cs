@@ -447,7 +447,11 @@ namespace PKHeX.WinForms.Controls
             LegalityAnalysis la = new LegalityAnalysis(pk);
             var report = la.Report(false);
             Console.WriteLine(fixedPID);
-
+            if (pk.Species == 658 && pk.Ability == 210) // Ash-Greninja Fix
+            {
+                pk.Version = (int)GameVersion.SN;
+                pk.IVs = new int[] { 20, 31, 20, 31, 31, 20 };
+            }
             if (report.Contains(V20)) // V20: Nickname does not match species name
             {
                 pk.IsNicknamed = false;
@@ -905,7 +909,12 @@ namespace PKHeX.WinForms.Controls
                 pidsid = Misc.IVtoPIDGenerator.XDPID(hp, atk, def, spa, spd, spe, nature, 0);
             }
             else { pidsid = Misc.IVtoPIDGenerator.M1PID(hp, atk, def, spa, spd, spe, nature, 0); }
-            if (pk.Species == 490 && pk.Gen4) pk.WasEgg = true; pk.Egg_Location = 2002; pk.FatefulEncounter = true;
+            if (pk.Species == 490 && pk.Gen4)
+            {
+                pk.WasEgg = true;
+                pk.Egg_Location = 2002;
+                pk.FatefulEncounter = true;
+            }
             pk.PID = Util.GetHexValue(pidsid[0]);
             if (pk.GenNumber < 5) pk.EncryptionConstant = pk.PID;
             pk.SID = Convert.ToInt32(pidsid[1]);
