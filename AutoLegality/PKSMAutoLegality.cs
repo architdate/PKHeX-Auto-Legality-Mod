@@ -1410,7 +1410,7 @@ namespace PKHeX.WinForms.Controls
                 {371, new[]{334, 273} }, // Bagon with Iron Defense
                 {372, new[]{334, 273} },
                 {373, new[]{334, 273} },
-                {385, new[]{273} }
+                {385, new[]{034, 273} }
             }
         };
     }
