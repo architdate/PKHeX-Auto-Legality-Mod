@@ -50,6 +50,12 @@ $ git clone https://github.com/kwsch/PKHeX.git
 - Right click on the main PKHeX project and click Rebuild all.
 - The output of the PKHeX file should be in `PKHeX\PKHeX.WinForms\bin\Debug` folder.
 
+## Tutorial Video
+
+- Thanks to [ZMarotrix](https://www.youtube.com/user/zmarotrix) for the updated video tutorial.
+
+https://www.youtube.com/watch?v=Yak_eNAUO7I&feature=youtu.be
+
 ## [OPTIONAL] Custom TID, SID, OT settings.
 
 - Create a new text file called `trainerdata.txt` in the same directory as `PKHeX.exe`
