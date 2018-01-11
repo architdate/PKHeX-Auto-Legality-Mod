@@ -19,17 +19,13 @@ The teambuilder for the Pokemon templates can be found on:
 - Mystery Gift Legality based on `mgdb` database provided
 - Supports HaX easter egg in PKHeX
 - Supports box/team imports (Sets it to the current box)
-- Supports custom OT, TID, SID setting whereever possible.
+- Supports custom OT, TID, SID, Gender, Country, SubRegion and 3DSRegion setting wherever possible.
 - Supports error handling for -Mega and -Busted pokemon (All megas and mimikyu)
-
-## Known Issues
-
-- ~~Issues with legalizing Shiny Groudon and Shiny Kyogre. This is because of PID mismatches in Gen 4 Games. (Its being resolved)~~ [RESOLVED]
-- ~~No proper error handling for -Mega or -Busted forms. (This should be added in the next commit)~~ [RESOLVED]
-
-(Requires a C# IDE such as Visual Studio 17 or Mono Develop)
+- Custom import short cut for Auto-mod: `Ctrl + I`
 
 ## How to quick set-up the mod.
+
+- (Requires a C# IDE such as Visual Studio 17 or Mono Develop)
 
 - First of all download PKHeX by doing the following.
 
