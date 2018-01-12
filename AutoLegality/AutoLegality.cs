@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Windows.Forms;
@@ -51,6 +52,16 @@ namespace PKHeX.WinForms
 
             if (result.Length > 1)
             {
+                List<int> emptySlots = new List<int> { };
+                for (int i = 0; i < C_SAV.Box.BoxSlotCount; i++)
+                {
+                    if ((C_SAV.Box.SlotPictureBoxes[i] as PictureBox)?.Image == null) emptySlots.Add(i);
+                }
+                if (emptySlots.Count < result.Length)
+                {
+                    WinFormsUtil.Alert("Not enough space in the box");
+                    return;
+                }
                 for (int i = 0; i < result.Length; i++)
                 {
                     ShowdownSet Set = new ShowdownSet(result[i]);
@@ -77,7 +88,7 @@ namespace PKHeX.WinForms
                         PKME_Tabs.SetRegions(Country, SubRegion, ConsoleRegion);
                     }
                     PKM pk = PreparePKM();
-                    PKME_Tabs.ClickSet(C_SAV.Box.SlotPictureBoxes[0], i);
+                    PKME_Tabs.ClickSet(C_SAV.Box.SlotPictureBoxes[0], emptySlots[i]);
                 }
             }
             else
