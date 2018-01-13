@@ -84,7 +84,7 @@ SubRegion:Alberta
 - Gender can be specified as `M` or `F` or `Male` or `Female`
 - Country, SubRegion and 3DSRegion have to be spelt exactly as one of the options on PKHeX. Any spelling errors WILL fail.
 - To ensure proper legality in regards to Country, SubRegion and 3DSRegion, make sure that the SubRegion actually belongs to the Country, and the Country actually lies in the 3DSRegion.
-- Note: If the first line of the `trainerdata.txt` is `auto`, it will check for the above values in the SAV file first. If it cannot find those values, it will use the values specified below in the rest of the file
+- **Note**: If the first line of the `trainerdata.txt` is `auto`, it will check for the above values in the SAV file first. If it cannot find those values, it will use the values specified below in the rest of the file
 
 *Credits to the several people who requested this in GitHub Issues*
 
