@@ -13,8 +13,23 @@ namespace PKHeX.WinForms
     {        
         private void ClickShowdownImportPKMModded(object sender, EventArgs e)
         {
-            if (!Clipboard.ContainsText())
-            { WinFormsUtil.Alert("Clipboard does not contain text."); return; }
+            if (!showdownData())
+            {
+                if (WinFormsUtil.OpenSAVPKMDialog(new string[] { "txt" }, out string path))
+                {
+                    Clipboard.SetText(File.ReadAllText(path).TrimEnd());
+                    if (!showdownData())
+                    {
+                        WinFormsUtil.Alert("Text file with invalid data provided. Please provide a text file with proper Showdown data");
+                        return;
+                    }
+                }
+                else
+                {
+                    WinFormsUtil.Alert("No data provided.");
+                    return;
+                }
+            }
 
             if (!Directory.Exists(MGDatabasePath)) Directory.CreateDirectory(MGDatabasePath);
 
@@ -23,6 +38,7 @@ namespace PKHeX.WinForms
             int TID = Convert.ToInt32(tdataVals[0]);
             int SID = Convert.ToInt32(tdataVals[1]);
             string OT = tdataVals[2];
+            if (OT == "PKHeX") OT = "Archit(TCD)"; // Avoids secondary handler error
             int gender = 0;
             if (tdataVals[3] == "F" || tdataVals[3] == "Female") gender = 1;
             string Country = tdataVals[4];
@@ -116,6 +132,19 @@ namespace PKHeX.WinForms
                     PKME_Tabs.SetRegions(Country, SubRegion, ConsoleRegion);
                 }
             }
+        }
+
+        private bool showdownData()
+        {
+            if (!Clipboard.ContainsText()) return false;
+            string source = Clipboard.GetText().TrimEnd();
+            string[] stringSeparators = new string[] { "\n\r" };
+            string[] result;
+
+            // ...
+            result = source.Split(stringSeparators, StringSplitOptions.None);
+            if (new ShowdownSet(result[0]).Species < 0) return false;
+            return true;
         }
     }
 }

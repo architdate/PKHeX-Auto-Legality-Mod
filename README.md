@@ -24,8 +24,11 @@ The teambuilder for the Pokemon templates can be found on:
 - Supports HaX easter egg in PKHeX
 - Supports multiple Pokemon import to the first `n` available slots in the current box (`n` is the number of pokemon being imported)
 - Supports custom OT, TID, SID, Gender, Country, SubRegion and 3DSRegion setting wherever possible.
+- Also allows automatic filling of the above settings if detected in a save file
 - Supports error handling for -Mega and -Busted pokemon (All megas and mimikyu)
 - Custom import short cut for Auto-mod: `Ctrl + I`
+- Ability to gen Pokemon from a `txt` file as long as it is properly formatted.
+- Additional features from the Addon mods
 
 ## How to quick set-up the mod.
 
