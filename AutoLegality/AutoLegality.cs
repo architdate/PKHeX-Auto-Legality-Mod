@@ -18,29 +18,16 @@ namespace PKHeX.WinForms
 
             if (!Directory.Exists(MGDatabasePath)) Directory.CreateDirectory(MGDatabasePath);
 
-            int TID = -1;
-            int SID = -1;
-            string OT = "";
+            string[] tdataVals = PKME_Tabs.parseTrainerData(C_SAV);
+
+            int TID = Convert.ToInt32(tdataVals[0]);
+            int SID = Convert.ToInt32(tdataVals[1]);
+            string OT = tdataVals[2];
             int gender = 0;
-            string Country = "";
-            string SubRegion = "";
-            string ConsoleRegion = "";
-            if (File.Exists(System.IO.Path.GetDirectoryName(Application.ExecutablePath) + "\\trainerdata.txt"))
-            {
-                string text = File.ReadAllText(System.IO.Path.GetDirectoryName(Application.ExecutablePath) + "\\trainerdata.txt", System.Text.Encoding.UTF8);
-                string[] lines = text.Split(new string[] { Environment.NewLine }, StringSplitOptions.None);
-                TID = Convert.ToInt32(lines[0].Split(':')[1].Trim());
-                SID = Convert.ToInt32(lines[1].Split(':')[1].Trim());
-                OT = lines[2].Split(':')[1].Trim();
-                if (lines[3].Split(':')[1].Trim() == "F" || lines[3].Split(':')[1].Trim() == "Female") gender = 1;
-                try
-                {
-                    Country = lines[4].Split(':')[1].Trim();
-                    SubRegion = lines[5].Split(':')[1].Trim();
-                    ConsoleRegion = lines[6].Split(':')[1].Trim();
-                }
-                catch { }
-            }
+            if (tdataVals[3] == "F" || tdataVals[3] == "Female") gender = 1;
+            string Country = tdataVals[4];
+            string SubRegion = tdataVals[5];
+            string ConsoleRegion = tdataVals[6];
 
             string source = Clipboard.GetText().TrimEnd();
             string[] stringSeparators = new string[] { "\n\r" };

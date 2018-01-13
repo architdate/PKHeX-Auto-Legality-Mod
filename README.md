@@ -60,9 +60,15 @@ $ git clone https://github.com/kwsch/PKHeX.git
 
 https://www.youtube.com/watch?v=Yak_eNAUO7I&feature=youtu.be
 
-## [OPTIONAL] Custom TID, SID, OT settings.
+## [OPTIONAL] TID, SID, OT, Country, Sub Region, Console Region settings.
 
 - Create a new text file called `trainerdata.txt` in the same directory as `PKHeX.exe`
+
+**Automatic TID, SID, OT, Country, Sub Region, Console Region settings**
+- Inside `trainerdata.txt` write `auto` and save.
+- This will try and automatically pull Trainer and Region values from your loaded save file
+
+**Specific/Fallback TID, SID, OT, Country, Sub Region, Console Region settings**
 - Inside the directory paste your TID, SID ,OT, Gender, Country, SubRegion and 3DSRegion based on the sample given below.
 - Note: Follow the format of the sample given below. DO NOT change the format. Just edit the values.
 - The `trainerdata.txt` format should be as follows:
@@ -78,6 +84,7 @@ SubRegion:Alberta
 - Gender can be specified as `M` or `F` or `Male` or `Female`
 - Country, SubRegion and 3DSRegion have to be spelt exactly as one of the options on PKHeX. Any spelling errors WILL fail.
 - To ensure proper legality in regards to Country, SubRegion and 3DSRegion, make sure that the SubRegion actually belongs to the Country, and the Country actually lies in the 3DSRegion.
+- Note: If the first line of the `trainerdata.txt` is `auto`, it will check for the above values in the SAV file first. If it cannot find those values, it will use the values specified below in the rest of the file
 
 *Credits to the several people who requested this in GitHub Issues*
 
