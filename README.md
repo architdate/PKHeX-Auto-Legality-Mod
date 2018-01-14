@@ -23,6 +23,7 @@ The teambuilder for the Pokemon templates can be found on:
 - Mystery Gift Legality based on `mgdb` database provided
 - Supports HaX easter egg in PKHeX
 - Supports multiple Pokemon import to the first `n` available slots in the current box (`n` is the number of pokemon being imported)
+- Hold `Ctrl` key while mass importing to replace the first `n` slots in the box
 - Supports custom OT, TID, SID, Gender, Country, SubRegion and 3DSRegion setting wherever possible.
 - Also allows automatic filling of the above settings if detected in a save file
 - Supports error handling for -Mega and -Busted pokemon (All megas and mimikyu)

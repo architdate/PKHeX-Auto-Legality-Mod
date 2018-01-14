@@ -56,14 +56,21 @@ namespace PKHeX.WinForms
             if (result.Length > 1)
             {
                 List<int> emptySlots = new List<int> { };
-                for (int i = 0; i < C_SAV.Box.BoxSlotCount; i++)
+                if ((ModifierKeys & Keys.Control) == Keys.Control) // Hold Ctrl while clicking to replace
                 {
-                    if ((C_SAV.Box.SlotPictureBoxes[i] as PictureBox)?.Image == null) emptySlots.Add(i);
+                    for (int i = 0; i < result.Length; i++) emptySlots.Add(i);
                 }
-                if (emptySlots.Count < result.Length)
+                else
                 {
-                    WinFormsUtil.Alert("Not enough space in the box");
-                    return;
+                    for (int i = 0; i < C_SAV.Box.BoxSlotCount; i++)
+                    {
+                        if ((C_SAV.Box.SlotPictureBoxes[i] as PictureBox)?.Image == null) emptySlots.Add(i);
+                    }
+                    if (emptySlots.Count < result.Length)
+                    {
+                        WinFormsUtil.Alert("Not enough space in the box");
+                        return;
+                    }
                 }
                 for (int i = 0; i < result.Length; i++)
                 {
