@@ -1,6 +1,6 @@
 # PKHeX Automatic Legality Mod
 
-Come join the dedicated server for this bot! Ask questions, give suggestions, get help, or just hang out. Don't be shy, we don't bite:
+Come join the dedicated server for this mod! Ask questions, give suggestions, get help, or just hang out. Don't be shy, we don't bite:
 
 [<img src="https://canary.discordapp.com/api/guilds/401014193211441153/widget.png?style=banner2">](https://discord.gg/9ptDkpV)
 
