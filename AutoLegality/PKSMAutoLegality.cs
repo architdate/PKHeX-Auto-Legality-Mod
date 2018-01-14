@@ -418,7 +418,18 @@ namespace PKHeX.WinForms.Controls
                     eventpk.Move2 = SSet.Moves[1];
                     eventpk.Move3 = SSet.Moves[2];
                     eventpk.Move4 = SSet.Moves[3];
-                    
+
+                    // PP Ups!
+                    eventpk.Move1_PPUps = SSet.Moves[0] != 0 ? 3 : 0;
+                    eventpk.Move2_PPUps = SSet.Moves[1] != 0 ? 3 : 0;
+                    eventpk.Move3_PPUps = SSet.Moves[2] != 0 ? 3 : 0;
+                    eventpk.Move4_PPUps = SSet.Moves[3] != 0 ? 3 : 0;
+
+                    eventpk.Move1_PP = eventpk.GetMovePP(eventpk.Move1, eventpk.Move1_PPUps);
+                    eventpk.Move2_PP = eventpk.GetMovePP(eventpk.Move2, eventpk.Move2_PPUps);
+                    eventpk.Move3_PP = eventpk.GetMovePP(eventpk.Move3, eventpk.Move3_PPUps);
+                    eventpk.Move4_PP = eventpk.GetMovePP(eventpk.Move4, eventpk.Move4_PPUps);
+
                     if (new LegalityAnalysis(eventpk).Valid) return eventpk;
 
                     eventpk = SetWCXPID(eventpk, PIDType, Generation, AbilityType, shiny);
