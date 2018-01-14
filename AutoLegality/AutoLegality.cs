@@ -13,7 +13,7 @@ namespace PKHeX.WinForms
     {        
         private void ClickShowdownImportPKMModded(object sender, EventArgs e)
         {
-            if (!showdownData())
+            if (!showdownData() || (ModifierKeys & Keys.Shift) == Keys.Shift)
             {
                 if (WinFormsUtil.OpenSAVPKMDialog(new string[] { "txt" }, out string path))
                 {
