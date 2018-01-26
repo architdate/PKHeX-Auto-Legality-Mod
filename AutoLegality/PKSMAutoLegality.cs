@@ -87,7 +87,8 @@ namespace PKHeX.WinForms.Controls
                     Set.MetDate = DateTime.Today;
                     if (Set.Version == (int)GameVersion.RD || Set.Version == (int)GameVersion.BU || Set.Version == (int)GameVersion.YW || Set.Version == (int)GameVersion.GN) Set.SID = 0;
                     Set.EggMetDate = DateTime.Today;
-                    Set.Egg_Location = 60002;
+                    if (Set.Version < (int)GameVersion.W) Set.Egg_Location = 2002;
+                    else Set.Egg_Location = 60002;
                     if (Set.Version == (int)GameVersion.D || Set.Version == (int)GameVersion.P || Set.Version == (int)GameVersion.Pt) Set.Egg_Location = 2002;
                     Set.Met_Level = 1;
                     Set.ConsoleRegion = 2;
@@ -134,6 +135,7 @@ namespace PKHeX.WinForms.Controls
                         }
                     }
                     catch { continue; }
+                    if (Set.Version == (int)GameVersion.HG) return Set;
                 }
             }
 
