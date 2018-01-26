@@ -37,9 +37,9 @@ namespace PKHeX.WinForms.Controls
             int[] legendaryList = new int[] { 144, 145, 146, 150, 151, 243, 244, 245, 249, 250, 251, 377, 378, 379, 380, 381, 382, 383, 384, 385,
                                               386, 480, 481, 482, 483, 484, 485, 486, 487, 488, 491, 492, 493, 494, 638, 639, 640, 642, 641, 643,
                                               644, 645, 646, 647, 648, 649, 716, 717, 718, 719, 720, 721, 785, 786, 787, 788, 789, 790, 791, 792,
-                                              793, 794, 795, 796, 797, 798, 799, 800, 801 };
+                                              793, 794, 795, 796, 797, 798, 799, 800, 801, 132 };
 
-            int[] eventList = new int[] { 251, 719, 649, 720, 385, 647, 648, 721, 801, 802 };
+            int[] eventList = new int[] { 719, 649, 720, 385, 647, 648, 721, 801, 802 };
 
             int[] GameVersionList = new int[] { (int)GameVersion.UM, (int)GameVersion.US, (int)GameVersion.MN, (int)GameVersion.SN, (int)GameVersion.AS,
                                                 (int)GameVersion.OR, (int)GameVersion.X, (int)GameVersion.Y, (int)GameVersion.B, (int)GameVersion.B2,
