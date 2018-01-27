@@ -135,7 +135,6 @@ namespace PKHeX.WinForms.Controls
                         }
                     }
                     catch { continue; }
-                    if (Set.Version == (int)GameVersion.HG) return Set;
                 }
             }
 
@@ -338,7 +337,7 @@ namespace PKHeX.WinForms.Controls
                         var temp = mg.ConvertToPKM(C_SAV.SAV);
                         eventpk = PKMConverter.ConvertToType(temp, C_SAV.SAV.PKMType, out string c);
                     }
-                    else if (System.IO.Path.GetExtension(file) == ".pgt" || System.IO.Path.GetExtension(file) == ".pcd")
+                    else if (System.IO.Path.GetExtension(file) == ".pgt" || System.IO.Path.GetExtension(file) == ".pcd" || System.IO.Path.GetExtension(file) == ".wc4")
                     {
                         try
                         {
