@@ -6,6 +6,7 @@ using System.Reflection;
 
 using PKHeX.Core;
 using static PKHeX.Core.LegalityCheckStrings;
+using PKHeX.AutoLegality;
 using System.IO;
 
 namespace PKHeX.WinForms.Controls
@@ -227,13 +228,24 @@ namespace PKHeX.WinForms.Controls
                                 Set = returnval;
                                 Set.SetShinyPID();
                                 if (new LegalityAnalysis(Set).Valid) return Set;
-                                else return returnval;
                             }
                             else return returnval;
                         }
                         else
                         {
+                            List<EncounterStatic> edgeLegality = edgeMons(Set.Version, Set);
+                            foreach (EncounterStatic el in edgeLegality)
+                            {
+                                Set.Met_Location = el.Location;
+                                Set.Met_Level = el.Level;
+                                Set.CurrentLevel = 100;
+                                Set.FatefulEncounter = el.Fateful;
+                                if (el.Shiny == true) Set.SetShinyPID();
+                                else if (el.Shiny == false && Set.IsShiny) Set.PID ^= 0x10000000;
+                                else Set.SetPIDGender(Set.Gender);
+                            }
                             LegalityAnalysis la = new LegalityAnalysis(Set);
+                            if (la.Valid) return Set;
                             Console.WriteLine(la.Report(false));
                         }
                     }
@@ -452,6 +464,28 @@ namespace PKHeX.WinForms.Controls
                 Set = prevevent;
             }
             return Set;
+        }
+
+        private List<EncounterStatic> edgeMons(int Game, PKM pk)
+        {
+            List<EncounterStatic> edgecase = new List<EncounterStatic>();
+            EdgeCaseLegality el = new EdgeCaseLegality();
+            var edgecasearray = new EncounterStatic[] { };
+            if (Game == (int)GameVersion.B || Game == (int)GameVersion.W)
+            {
+                edgecasearray = el.BWEntreeForest;
+            }
+            else if (Game == (int)GameVersion.B2 || Game == (int)GameVersion.W2)
+            {
+                edgecasearray = el.B2W2EntreeForest;
+            }
+            foreach (EncounterStatic e in edgecasearray) {
+                if (e.Species == pk.Species)
+                {
+                    if (!e.Moves.Except(pk.Moves).Any()) edgecase.Add(e);
+                }
+            }
+            return edgecase;
         }
 
         private bool eventErrorHandling(PKM pk, int PIDType, int AbilityType, int Generation, uint fixedPID)
