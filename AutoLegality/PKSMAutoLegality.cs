@@ -858,26 +858,6 @@ namespace PKHeX.WinForms.Controls
                 pk.Met_Level = pk.Met_Level - 1;
                 report = UpdateReport(pk);
             }
-            if (report.Contains(V41)) // V41 = Can't Hyper Train a Pokémon with perfect IVs.
-            {
-                pk.HT_HP = false;
-                pk.HT_ATK = false;
-                pk.HT_DEF = false;
-                pk.HT_SPA = false;
-                pk.HT_SPD = false;
-                pk.HT_SPE = false;
-                report = UpdateReport(pk);
-            }
-            if (report.Contains(V42)) // V42 = Can't Hyper Train a perfect IV.
-            {
-                if (pk.IV_HP == 31) pk.HT_HP = false;
-                if (pk.IV_ATK == 31) pk.HT_ATK = false;
-                if (pk.IV_DEF == 31) pk.HT_DEF = false;
-                if (pk.IV_SPA == 31) pk.HT_SPA = false;
-                if (pk.IV_SPD == 31) pk.HT_SPD = false;
-                if (pk.IV_SPE == 31) pk.HT_SPE = false;
-                report = UpdateReport(pk);
-            }
             if (report.Contains(V411)) //V411 = Encounter Type PID mismatch.
             {
                 if (pk.Version == (int)GameVersion.CXD)
@@ -909,6 +889,26 @@ namespace PKHeX.WinForms.Controls
                         return false;
                     }
                 }
+            }
+            if (report.Contains(V41)) // V41 = Can't Hyper Train a Pokémon with perfect IVs.
+            {
+                pk.HT_HP = false;
+                pk.HT_ATK = false;
+                pk.HT_DEF = false;
+                pk.HT_SPA = false;
+                pk.HT_SPD = false;
+                pk.HT_SPE = false;
+                report = UpdateReport(pk);
+            }
+            if (report.Contains(V42)) // V42 = Can't Hyper Train a perfect IV.
+            {
+                if (pk.IV_HP == 31) pk.HT_HP = false;
+                if (pk.IV_ATK == 31) pk.HT_ATK = false;
+                if (pk.IV_DEF == 31) pk.HT_DEF = false;
+                if (pk.IV_SPA == 31) pk.HT_SPA = false;
+                if (pk.IV_SPD == 31) pk.HT_SPD = false;
+                if (pk.IV_SPE == 31) pk.HT_SPE = false;
+                report = UpdateReport(pk);
             }
             if (report.Contains(string.Format(V28, 3))) //V28 = Should have at least {0} IVs = 31.
             {
