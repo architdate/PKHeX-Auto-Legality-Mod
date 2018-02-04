@@ -33,18 +33,7 @@ namespace PKHeX.WinForms
                 }
             }
 
-            if (!Directory.Exists(MGDatabasePath))
-            {
-                Directory.CreateDirectory(MGDatabasePath);
-                string mgdbURL = @"https://github.com/projectpokemon/EventsGallery/archive/master.zip";
-
-                WebClient client = new WebClient();
-
-                string mgdbZipPath = @"mgdb.zip";
-                client.DownloadFile(new Uri(mgdbURL), mgdbZipPath);
-
-                ZipFile.ExtractToDirectory(mgdbZipPath, MGDatabasePath);
-            }
+            if (!Directory.Exists(MGDatabasePath)) Directory.CreateDirectory(MGDatabasePath);
 
 
             string[] tdataVals = PKME_Tabs.parseTrainerData(C_SAV);
