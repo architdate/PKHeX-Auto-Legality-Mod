@@ -150,6 +150,58 @@ namespace PKHeX.WinForms.Controls
             CB_3DSReg.Text = ConsoleRegion;
         }
 
+        public string[] parseTrainerData(SAVEditor C_SAV)
+        {
+            // Defaults
+            string TID = "23456";
+            string SID = "34567";
+            string OT = "Archit";
+            string Gender = "M";
+            string Country = "Canada";
+            string SubRegion = "Alberta";
+            string ConsoleRegion = "Americas (NA/SA)";
+            if (!System.IO.File.Exists(System.IO.Path.GetDirectoryName(Application.ExecutablePath) + "\\trainerdata.txt"))
+            {
+                return new string[] { TID, SID, OT, Gender, Country, SubRegion, ConsoleRegion}; // Default No trainerdata.txt handling
+            }
+            string[] trainerdataLines = System.IO.File.ReadAllText(System.IO.Path.GetDirectoryName(Application.ExecutablePath) + "\\trainerdata.txt", System.Text.Encoding.UTF8)
+                .Split(new string[] { Environment.NewLine }, StringSplitOptions.None);
+            List<string> lstlines = trainerdataLines.OfType<string>().ToList();
+            int count = lstlines.Count;
+            for (int i =0; i < count; i++)
+            {
+                string item = lstlines[0];
+                if (item.TrimEnd() == "" || item.TrimEnd() == "auto") continue;
+                string key = item.Split(':')[0].TrimEnd();
+                string value = item.Split(':')[1].TrimEnd();
+                lstlines.RemoveAt(0);
+                if (key == "TID") TID = value;
+                else if (key == "SID") SID = value;
+                else if (key == "OT") OT = value;
+                else if (key == "Gender") Gender = value;
+                else if (key == "Country") Country = value;
+                else if (key == "SubRegion") SubRegion = value;
+                else if (key == "3DSRegion") ConsoleRegion = value;
+                else continue;
+            }
+            // Automatic loading
+            if (trainerdataLines[0] == "auto")
+            {
+                try
+                {
+                    if (C_SAV.SAV.Gender == 1) Gender = "F";
+                    return new string[] { C_SAV.SAV.TID.ToString("00000"), C_SAV.SAV.SID.ToString("00000"),
+                                          C_SAV.SAV.OT, Gender, CB_Country.GetItemText(CB_Country.Items[C_SAV.SAV.Country]),
+                                          CB_SubRegion.GetItemText(CB_SubRegion.Items[C_SAV.SAV.SubRegion]), CB_3DSReg.GetItemText(CB_3DSReg.Items[C_SAV.SAV.ConsoleRegion])};
+                }
+                catch
+                {
+                    return new string[] { TID, SID, OT, Gender, Country, SubRegion, ConsoleRegion };
+                }
+            }
+            return new string[] { TID, SID, OT, Gender, Country, SubRegion, ConsoleRegion };
+        }
+
     }
 
 }
