@@ -1,10 +1,13 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Windows.Forms;
 
 using PKHeX.Core;
 using PKHeX.WinForms.Controls;
+using System.Net;
+using System.IO.Compression;
 
 namespace PKHeX.WinForms
 {
@@ -12,34 +15,49 @@ namespace PKHeX.WinForms
     {        
         private void ClickShowdownImportPKMModded(object sender, EventArgs e)
         {
-            if (!Clipboard.ContainsText())
-            { WinFormsUtil.Alert("Clipboard does not contain text."); return; }
-
-            if (!Directory.Exists(MGDatabasePath)) Directory.CreateDirectory(MGDatabasePath);
-
-            int TID = -1;
-            int SID = -1;
-            string OT = "";
-            int gender = 0;
-            string Country = "";
-            string SubRegion = "";
-            string ConsoleRegion = "";
-            if (File.Exists(System.IO.Path.GetDirectoryName(Application.ExecutablePath) + "\\trainerdata.txt"))
+            if (!showdownData() || (ModifierKeys & Keys.Shift) == Keys.Shift)
             {
-                string text = File.ReadAllText(System.IO.Path.GetDirectoryName(Application.ExecutablePath) + "\\trainerdata.txt", System.Text.Encoding.UTF8);
-                string[] lines = text.Split(new string[] { Environment.NewLine }, StringSplitOptions.None);
-                TID = Convert.ToInt32(lines[0].Split(':')[1].Trim());
-                SID = Convert.ToInt32(lines[1].Split(':')[1].Trim());
-                OT = lines[2].Split(':')[1].Trim();
-                if (lines[3].Split(':')[1].Trim() == "F" || lines[3].Split(':')[1].Trim() == "Female") gender = 1;
-                try
+                if (WinFormsUtil.OpenSAVPKMDialog(new string[] { "txt" }, out string path))
                 {
-                    Country = lines[4].Split(':')[1].Trim();
-                    SubRegion = lines[5].Split(':')[1].Trim();
-                    ConsoleRegion = lines[6].Split(':')[1].Trim();
+                    Clipboard.SetText(File.ReadAllText(path).TrimEnd());
+                    if (!showdownData())
+                    {
+                        WinFormsUtil.Alert("Text file with invalid data provided. Please provide a text file with proper Showdown data");
+                        return;
+                    }
                 }
-                catch { }
+                else
+                {
+                    WinFormsUtil.Alert("No data provided.");
+                    return;
+                }
             }
+
+            if (!Directory.Exists(MGDatabasePath))
+            {
+                Directory.CreateDirectory(MGDatabasePath);
+                string mgdbURL = @"https://github.com/projectpokemon/EventsGallery/archive/master.zip";
+
+                WebClient client = new WebClient();
+
+                string mgdbZipPath = @"mgdb.zip";
+                client.DownloadFile(new Uri(mgdbURL), mgdbZipPath);
+
+                ZipFile.ExtractToDirectory(mgdbZipPath, MGDatabasePath);
+            }
+
+
+            string[] tdataVals = PKME_Tabs.parseTrainerData(C_SAV);
+
+            int TID = Convert.ToInt32(tdataVals[0]);
+            int SID = Convert.ToInt32(tdataVals[1]);
+            string OT = tdataVals[2];
+            if (OT == "PKHeX") OT = "Archit(TCD)"; // Avoids secondary handler error
+            int gender = 0;
+            if (tdataVals[3] == "F" || tdataVals[3] == "Female") gender = 1;
+            string Country = tdataVals[4];
+            string SubRegion = tdataVals[5];
+            string ConsoleRegion = tdataVals[6];
 
             string source = Clipboard.GetText().TrimEnd();
             string[] stringSeparators = new string[] { "\n\r" };
@@ -51,6 +69,23 @@ namespace PKHeX.WinForms
 
             if (result.Length > 1)
             {
+                List<int> emptySlots = new List<int> { };
+                if ((ModifierKeys & Keys.Control) == Keys.Control) // Hold Ctrl while clicking to replace
+                {
+                    for (int i = 0; i < result.Length; i++) emptySlots.Add(i);
+                }
+                else
+                {
+                    for (int i = 0; i < C_SAV.Box.BoxSlotCount; i++)
+                    {
+                        if ((C_SAV.Box.SlotPictureBoxes[i] as PictureBox)?.Image == null) emptySlots.Add(i);
+                    }
+                    if (emptySlots.Count < result.Length)
+                    {
+                        WinFormsUtil.Alert("Not enough space in the box");
+                        return;
+                    }
+                }
                 for (int i = 0; i < result.Length; i++)
                 {
                     ShowdownSet Set = new ShowdownSet(result[i]);
@@ -77,7 +112,7 @@ namespace PKHeX.WinForms
                         PKME_Tabs.SetRegions(Country, SubRegion, ConsoleRegion);
                     }
                     PKM pk = PreparePKM();
-                    PKME_Tabs.ClickSet(C_SAV.Box.SlotPictureBoxes[0], i);
+                    PKME_Tabs.ClickSet(C_SAV.Box.SlotPictureBoxes[0], emptySlots[i]);
                 }
             }
             else
@@ -118,6 +153,19 @@ namespace PKHeX.WinForms
                     PKME_Tabs.SetRegions(Country, SubRegion, ConsoleRegion);
                 }
             }
+        }
+
+        private bool showdownData()
+        {
+            if (!Clipboard.ContainsText()) return false;
+            string source = Clipboard.GetText().TrimEnd();
+            string[] stringSeparators = new string[] { "\n\r" };
+            string[] result;
+
+            // ...
+            result = source.Split(stringSeparators, StringSplitOptions.None);
+            if (new ShowdownSet(result[0]).Species < 0) return false;
+            return true;
         }
     }
 }
