@@ -25,13 +25,6 @@ namespace PKHeX.WinForms.Controls
             bool trainerinfo = TID > 0;
             List<List<string>> evoChart = generateEvoLists2();
             int abilitynum = Set.AbilityNumber < 6 ? Set.AbilityNumber >> 1 : 0;
-            Console.WriteLine(SSet.Form);
-            string[] types = Util.GetTypesList("en");
-            string[] forms = Util.GetFormsList("en");
-            string[] genderForms = { "", "F", "" };
-            string[] Forms = PKX.GetFormList(Set.Species, types, forms, genderForms, Set.Format);
-            Console.WriteLine(Forms);
-            Set.AltForm = Array.IndexOf(Forms,SSet.Form.Substring(1));
             if (resetForm)
             {
                 Set.AltForm = 0;
