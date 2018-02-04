@@ -47,6 +47,8 @@ $ git clone https://github.com/kwsch/PKHeX.git
 - Add the `AutoLegality` folder by dragging and dropping the `AutoLegality` folder inside `PKHeX.WinForms` subproject.
 - Inside the `AutoLegality/Resources/byte` folder click on `reset.pk7` file and set it as an `Embedded Resource` in the property box below.
 - Inside the `AutoLegality/Resources/test` folder click on `evolutions.txt` file and set it as an `Embedded Resource` in the property box below.
+- Right click on the `PKHeX.WinForms` subproject, and select `Add>Reference`
+- Check the box for `System.IO.Compression` and `System.IO.Compression.FileSystem`. Click OK.
 - Go to `MainWindow` folder and open the `Main.Designer.cs` file.
 - Search for the line `this.Menu_Showdown.DropDownItems` using `Ctrl + F`.
 - After the semicolon (`;`) write this line of code on the next line
