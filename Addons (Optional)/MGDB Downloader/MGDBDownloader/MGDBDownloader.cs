@@ -21,14 +21,52 @@ namespace PKHeX.WinForms
             }
             if (!Directory.Exists(MGDatabasePath))
             {
-                string mgdbURL = @"https://github.com/projectpokemon/EventsGallery/archive/master.zip";
+                bool latestCommit = false; // change to true if you want to download an entire commit
+                if (latestCommit)
+                {
+                    string mgdbURL = @"https://github.com/projectpokemon/EventsGallery/archive/master.zip";
 
-                WebClient client = new WebClient();
+                    WebClient client = new WebClient();
 
-                string mgdbZipPath = @"mgdb.zip";
-                client.DownloadFile(new Uri(mgdbURL), mgdbZipPath);
-                ZipFile.ExtractToDirectory(mgdbZipPath, MGDatabasePath);
-                WinFormsUtil.Alert("Download Finished");
+                    string mgdbZipPath = @"mgdb.zip";
+                    client.DownloadFile(new Uri(mgdbURL), mgdbZipPath);
+                    ZipFile.ExtractToDirectory(mgdbZipPath, MGDatabasePath);
+                    File.Delete("mgdb.zip");
+                    DeleteDirectory(Path.Combine(MGDatabasePath, "EventsGallery-master", "Unreleased"));
+                    DeleteDirectory(Path.Combine(MGDatabasePath, "EventsGallery-master", "Extras"));
+                    File.Delete(Path.Combine(MGDatabasePath, "EventsGallery-master", ".gitignore"));
+                    File.Delete(Path.Combine(MGDatabasePath, "EventsGallery-master", "README.md"));
+                    WinFormsUtil.Alert("Download Finished");
+                }
+                else
+                {
+                    WebClient client = new WebClient();
+                    string json_data = DownloadString("https://api.github.com/repos/projectpokemon/EventsGallery/releases/latest");
+                    string mgdbURL = json_data.Split(new string[] { "browser_download_url" }, StringSplitOptions.None)[1].Substring(3).Split('"')[0];
+                    Console.WriteLine(mgdbURL);
+                    string mgdbZipPath = @"mgdb.zip";
+                    client.DownloadFile(new Uri(mgdbURL), mgdbZipPath);
+                    ZipFile.ExtractToDirectory(mgdbZipPath, MGDatabasePath);
+                    File.Delete("mgdb.zip");
+                    WinFormsUtil.Alert("Download Finished");
+                }
+            }
+        }
+        
+        public static string DownloadString(string address)
+        {
+            using (WebClient client = new WebClient())
+            {
+                HttpWebRequest request = (HttpWebRequest)WebRequest.Create("https://api.github.com/repos/projectpokemon/EventsGallery/releases/latest");
+                request.Method = "GET";
+                request.UserAgent = "Foo";
+                request.Accept = "application/json";
+                WebResponse response = request.GetResponse(); //Error Here
+                Stream dataStream = response.GetResponseStream();
+                StreamReader reader = new StreamReader(dataStream);
+                string result = reader.ReadToEnd();
+                
+                return result;
             }
         }
         public static void DeleteDirectory(string target_dir)
