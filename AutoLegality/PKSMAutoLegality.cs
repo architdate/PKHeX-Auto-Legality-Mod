@@ -390,76 +390,79 @@ namespace PKHeX.WinForms.Controls
                             }
                         }
                     }
-                    if ((PIDType == 0 && eventpk.IsShiny && shiny == false && Generation > 4) || (PIDType == 0 && !eventpk.IsShiny && shiny == true && Generation > 4)) continue;
-                    if (shiny == true && !eventpk.IsShiny && Generation > 4)
+                    try
                     {
-                        if (PIDType == 1) eventpk.SetShinyPID();
-                        else if (PIDType == 3) continue;
-                    }
-                    if (shiny == false && eventpk.IsShiny && Generation > 4)
-                    {
-                        if (PIDType == 1) eventpk.PID ^= 0x10000000;
-                        else if (PIDType == 2) continue;
-                    }
+                        if ((PIDType == 0 && eventpk.IsShiny && shiny == false && Generation > 4) || (PIDType == 0 && !eventpk.IsShiny && shiny == true && Generation > 4)) continue;
+                        if (shiny == true && !eventpk.IsShiny && Generation > 4)
+                        {
+                            if (PIDType == 1) eventpk.SetShinyPID();
+                            else if (PIDType == 3) continue;
+                        }
+                        if (shiny == false && eventpk.IsShiny && Generation > 4)
+                        {
+                            if (PIDType == 1) eventpk.PID ^= 0x10000000;
+                            else if (PIDType == 2) continue;
+                        }
+                        eventpk.Species = Set.Species;
+                        eventpk.AltForm = form;
+                        eventpk.Nickname = eventpk.IsNicknamed ? eventpk.Nickname : PKX.GetSpeciesNameGeneration(Set.Species, eventpk.Language, C_SAV.SAV.Generation);
+                        eventpk.HeldItem = SSet.HeldItem < 0 ? 0 : SSet.HeldItem;
+                        eventpk.Nature = SSet.Nature < 0 ? 0 : Set.Nature;
+                        eventpk.Ability = SSet.Ability;
 
-                    eventpk.Species = Set.Species;
-                    eventpk.AltForm = form;
-                    eventpk.Nickname = eventpk.IsNicknamed ? eventpk.Nickname : PKX.GetSpeciesNameGeneration(Set.Species, eventpk.Language, C_SAV.SAV.Generation);
-                    eventpk.HeldItem = SSet.HeldItem < 0 ? 0 : SSet.HeldItem;
-                    eventpk.Nature = SSet.Nature < 0 ? 0 : Set.Nature;
-                    eventpk.Ability = SSet.Ability;
+                        // Set IVs
+                        eventpk.IV_HP = Set.IVs[0];
+                        eventpk.IV_ATK = Set.IVs[1];
+                        eventpk.IV_DEF = Set.IVs[2];
+                        eventpk.IV_SPA = Set.IVs[4];
+                        eventpk.IV_SPD = Set.IVs[5];
+                        eventpk.IV_SPE = Set.IVs[3];
 
-                    // Set IVs
-                    eventpk.IV_HP = Set.IVs[0];
-                    eventpk.IV_ATK = Set.IVs[1];
-                    eventpk.IV_DEF = Set.IVs[2];
-                    eventpk.IV_SPA = Set.IVs[4];
-                    eventpk.IV_SPD = Set.IVs[5];
-                    eventpk.IV_SPE = Set.IVs[3];
+                        // Set EVs
+                        eventpk.EV_HP = Set.EVs[0];
+                        eventpk.EV_ATK = Set.EVs[1];
+                        eventpk.EV_DEF = Set.EVs[2];
+                        eventpk.EV_SPA = Set.EVs[4];
+                        eventpk.EV_SPD = Set.EVs[5];
+                        eventpk.EV_SPE = Set.EVs[3];
 
-                    // Set EVs
-                    eventpk.EV_HP = Set.EVs[0];
-                    eventpk.EV_ATK = Set.EVs[1];
-                    eventpk.EV_DEF = Set.EVs[2];
-                    eventpk.EV_SPA = Set.EVs[4];
-                    eventpk.EV_SPD = Set.EVs[5];
-                    eventpk.EV_SPE = Set.EVs[3];
-                    
 
-                    eventpk.CurrentLevel = 100;
-                    eventpk.Move1 = SSet.Moves[0];
-                    eventpk.Move2 = SSet.Moves[1];
-                    eventpk.Move3 = SSet.Moves[2];
-                    eventpk.Move4 = SSet.Moves[3];
+                        eventpk.CurrentLevel = 100;
+                        eventpk.Move1 = SSet.Moves[0];
+                        eventpk.Move2 = SSet.Moves[1];
+                        eventpk.Move3 = SSet.Moves[2];
+                        eventpk.Move4 = SSet.Moves[3];
 
-                    // PP Ups!
-                    eventpk.Move1_PPUps = SSet.Moves[0] != 0 ? 3 : 0;
-                    eventpk.Move2_PPUps = SSet.Moves[1] != 0 ? 3 : 0;
-                    eventpk.Move3_PPUps = SSet.Moves[2] != 0 ? 3 : 0;
-                    eventpk.Move4_PPUps = SSet.Moves[3] != 0 ? 3 : 0;
+                        // PP Ups!
+                        eventpk.Move1_PPUps = SSet.Moves[0] != 0 ? 3 : 0;
+                        eventpk.Move2_PPUps = SSet.Moves[1] != 0 ? 3 : 0;
+                        eventpk.Move3_PPUps = SSet.Moves[2] != 0 ? 3 : 0;
+                        eventpk.Move4_PPUps = SSet.Moves[3] != 0 ? 3 : 0;
 
-                    eventpk.Move1_PP = eventpk.GetMovePP(eventpk.Move1, eventpk.Move1_PPUps);
-                    eventpk.Move2_PP = eventpk.GetMovePP(eventpk.Move2, eventpk.Move2_PPUps);
-                    eventpk.Move3_PP = eventpk.GetMovePP(eventpk.Move3, eventpk.Move3_PPUps);
-                    eventpk.Move4_PP = eventpk.GetMovePP(eventpk.Move4, eventpk.Move4_PPUps);
+                        eventpk.Move1_PP = eventpk.GetMovePP(eventpk.Move1, eventpk.Move1_PPUps);
+                        eventpk.Move2_PP = eventpk.GetMovePP(eventpk.Move2, eventpk.Move2_PPUps);
+                        eventpk.Move3_PP = eventpk.GetMovePP(eventpk.Move3, eventpk.Move3_PPUps);
+                        eventpk.Move4_PP = eventpk.GetMovePP(eventpk.Move4, eventpk.Move4_PPUps);
 
-                    if (new LegalityAnalysis(eventpk).Valid) return eventpk;
-
-                    eventpk = SetWCXPID(eventpk, PIDType, Generation, AbilityType, shiny);
-                    LegalityAnalysis la2 = new LegalityAnalysis(eventpk);
-                    if (!la2.Valid)
-                    {
-                        Console.WriteLine(la2.Report(false));
-                        AlternateAbilityRefresh(eventpk);
                         if (new LegalityAnalysis(eventpk).Valid) return eventpk;
-                        if (eventErrorHandling(eventpk, PIDType, AbilityType, Generation, fixedPID)) return eventpk;
-                        prevevent = eventpk;
-                        continue;
+
+                        eventpk = SetWCXPID(eventpk, PIDType, Generation, AbilityType, shiny);
+                        LegalityAnalysis la2 = new LegalityAnalysis(eventpk);
+                        if (!la2.Valid)
+                        {
+                            Console.WriteLine(la2.Report(false));
+                            AlternateAbilityRefresh(eventpk);
+                            if (new LegalityAnalysis(eventpk).Valid) return eventpk;
+                            if (eventErrorHandling(eventpk, PIDType, AbilityType, Generation, fixedPID)) return eventpk;
+                            prevevent = eventpk;
+                            continue;
+                        }
+                        else
+                        {
+                            return eventpk;
+                        }
                     }
-                    else
-                    {
-                        return eventpk;
-                    }
+                    catch { continue; }
                 }
                 Set = prevevent;
             }
