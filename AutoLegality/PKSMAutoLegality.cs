@@ -105,6 +105,7 @@ namespace PKHeX.WinForms.Controls
                     }
                     else { Set = clickMetLocationModPKSM(Set); }
                     if (Set.GenNumber > 4) Set.Met_Level = 1;
+                    setMarkings(Set);
                     try
                     {
                         Set.CurrentHandler = 1;
@@ -173,6 +174,7 @@ namespace PKHeX.WinForms.Controls
                         }
                     }
                     Set.MetDate = DateTime.Today;
+                    setMarkings(Set);
                     try
                     {
                         Set.RelearnMove1 = 0;
@@ -443,6 +445,8 @@ namespace PKHeX.WinForms.Controls
                         eventpk.Move3_PP = eventpk.GetMovePP(eventpk.Move3, eventpk.Move3_PPUps);
                         eventpk.Move4_PP = eventpk.GetMovePP(eventpk.Move4, eventpk.Move4_PPUps);
 
+                        setMarkings(eventpk);
+
                         if (new LegalityAnalysis(eventpk).Valid) return eventpk;
 
                         eventpk = SetWCXPID(eventpk, PIDType, Generation, AbilityType, shiny);
@@ -466,6 +470,28 @@ namespace PKHeX.WinForms.Controls
                 Set = prevevent;
             }
             return Set;
+        }
+
+        private void setMarkings(PKM pk)
+        {
+            if (pk.IV_HP == 31) pk.MarkCircle = 1;
+            if (pk.IV_ATK == 31) pk.MarkTriangle = 1;
+            if (pk.IV_DEF == 31) pk.MarkSquare = 1;
+            if (pk.IV_SPA == 31) pk.MarkHeart = 1;
+            if (pk.IV_SPD == 31) pk.MarkStar = 1;
+            if (pk.IV_SPE == 31) pk.MarkDiamond = 1;
+            if (pk.IV_HP == 30 || pk.IV_HP == 29) pk.MarkCircle = 2;
+            if (pk.IV_ATK == 30 || pk.IV_ATK == 29) pk.MarkTriangle = 2;
+            if (pk.IV_DEF == 30 || pk.IV_DEF == 29) pk.MarkSquare = 2;
+            if (pk.IV_SPA == 30 || pk.IV_SPA == 29) pk.MarkHeart = 2;
+            if (pk.IV_SPD == 30 || pk.IV_SPD == 29) pk.MarkStar = 2;
+            if (pk.IV_SPE == 30 || pk.IV_SPE == 29) pk.MarkDiamond = 2;
+            if (pk.IV_HP < 29) pk.MarkCircle = 1;
+            if (pk.IV_ATK < 29) pk.MarkTriangle = 1;
+            if (pk.IV_DEF < 29) pk.MarkSquare = 1;
+            if (pk.IV_SPA < 29) pk.MarkHeart = 1;
+            if (pk.IV_SPD < 29) pk.MarkStar = 1;
+            if (pk.IV_SPE < 29) pk.MarkDiamond = 1;
         }
 
         private List<EncounterStatic> edgeMons(int Game, PKM pk)
