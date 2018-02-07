@@ -17,7 +17,7 @@ namespace PKHeX.WinForms.Controls
         bool returnSet = false; // Debug bool
         bool requestedShiny = false;
         public event EventHandler LegalityChanged;
-        private Controls.SAVEditor C_SAV;
+        public Controls.SAVEditor C_SAV;
 
         public PKM LoadShowdownSetModded_PKSM(PKM Set, ShowdownSet SSet, bool resetForm = false, int TID = -1, int SID = -1, string OT = "", int gender = 0)
         {
@@ -294,7 +294,6 @@ namespace PKHeX.WinForms.Controls
                     int AbilityType = -1;
                     uint fixedPID = 0;
                     int form = Set.AltForm;
-                    C_SAV = new PKHeX.WinForms.Controls.SAVEditor();
                     if (System.IO.Path.GetExtension(file) == ".wc7" || System.IO.Path.GetExtension(file) == ".wc7full")
                     {
                         var mg = (WC7)MysteryGift.GetMysteryGift(System.IO.File.ReadAllBytes(file), System.IO.Path.GetExtension(file));
@@ -507,7 +506,7 @@ namespace PKHeX.WinForms.Controls
                 pk.Nickname = PKX.GetSpeciesNameGeneration(pk.Species, pk.Language, Generation);
                 report = UpdateReport(pk);
             }
-            if(report.Contains(V410)) // V410 = Mystery Gift fixed PID mismatch.
+            if (report.Contains(V410)) // V410 = Mystery Gift fixed PID mismatch.
             {
                 pk.PID = fixedPID;
                 report = UpdateReport(pk);
@@ -713,7 +712,20 @@ namespace PKHeX.WinForms.Controls
             pk.AbilityNumber = finalabilitynum;
             pk.RefreshAbility(pk.AbilityNumber < 6 ? pk.AbilityNumber >> 1 : 0);
         }
-
+        private PKM FixMemoriesPKM(PKM pk)
+        {
+            if (C_SAV.SAV.PKMType == typeof(PK7))
+            {
+                ((PK7)pk).FixMemories();
+                return pk;
+            }
+            else if (C_SAV.SAV.PKMType == typeof(PK6))
+            {
+                ((PK6)pk).FixMemories();
+                return pk;
+            }
+            return pk;
+        }
         private bool CommonErrorHandling2(PKM pk)
         {
             string hp = pk.IV_HP.ToString();
@@ -727,13 +739,13 @@ namespace PKHeX.WinForms.Controls
             var report = la.Report(false);
 
             // fucking M2
-            if((usesEventBasedMethod(pk.Species,pk.Moves, "M2") && pk.Version == (int)GameVersion.FR) || (usesEventBasedMethod(pk.Species, pk.Moves, "M2") && pk.Version == (int)GameVersion.LG))
+            if ((usesEventBasedMethod(pk.Species, pk.Moves, "M2") && pk.Version == (int)GameVersion.FR) || (usesEventBasedMethod(pk.Species, pk.Moves, "M2") && pk.Version == (int)GameVersion.LG))
             {
                 pk = M2EventFix(pk, pk.IsShiny);
                 report = UpdateReport(pk);
             }
 
-            if(usesEventBasedMethod(pk.Species, pk.Moves, "BACD_R") && pk.Version == (int)GameVersion.R)
+            if (usesEventBasedMethod(pk.Species, pk.Moves, "BACD_R") && pk.Version == (int)GameVersion.R)
             {
                 pk = BACD_REventFix(pk, pk.IsShiny);
                 report = UpdateReport(pk);
@@ -830,6 +842,28 @@ namespace PKHeX.WinForms.Controls
                 pk.OT_Name = "ARCH";
                 report = UpdateReport(pk);
             }
+            if (report.Contains(V146))
+            {
+                pk.Geo1_Country = 1; // Prev residence
+                report = UpdateReport(pk);
+            }
+            if (report.Contains(V150)) //V150 = Memory: Handling Trainer Memory missing.
+            {
+                pk.HT_Memory = 3;
+                pk.HT_TextVar = 9;
+                pk.HT_Intensity = 1;
+                pk.HT_Feeling = Util.Rand.Next(0, 10); // 0-9
+                pk.HT_Friendship = pk.OT_Friendship;
+                report = UpdateReport(pk);
+            }
+            if (report.Contains(V152)) //V152 = Memory: Original Trainer Memory missing.
+            {
+                pk.OT_Memory = 3;
+                pk.OT_TextVar = 9;
+                pk.OT_Intensity = 1;
+                pk.OT_Feeling = Util.Rand.Next(0, 10); // 0-9
+                report = UpdateReport(pk);
+            }
             if (report.Contains(V137)) //V137 = GeoLocation Memory: Memories should be present.
             {
                 pk.Geo1_Country = 1;
@@ -838,6 +872,13 @@ namespace PKHeX.WinForms.Controls
             if (report.Contains(V118)) //V118 = Can't have ball for encounter type.
             {
                 pk.Ball = 4;
+                report = UpdateReport(pk);
+            }
+            if (report.Contains(V302)) //Geolocation: Country is not in 3DS region.
+            {
+                pk.Country = 0;
+                pk.Region = 0;
+                pk.ConsoleRegion = 2;
                 report = UpdateReport(pk);
             }
             if (report.Contains(V310)) //V310 = Form cannot exist outside of a battle.

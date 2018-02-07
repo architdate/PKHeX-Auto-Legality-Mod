@@ -94,6 +94,7 @@ namespace PKHeX.WinForms
                     PKM p = PreparePKM();
                     p.Version = (int)GameVersion.MN;
                     Blah b = new Blah();
+                    b.C_SAV = C_SAV;
                     PKM legal = b.LoadShowdownSetModded_PKSM(p, Set, resetForm, TID, SID, OT, gender);
                     PKME_Tabs.PopulateFields(legal);
                     if (Country != "" && SubRegion != "" && ConsoleRegion != "")
@@ -135,6 +136,7 @@ namespace PKHeX.WinForms
                 PKM p = PreparePKM();
                 p.Version = (int)GameVersion.MN;
                 Blah b = new Blah();
+                b.C_SAV = C_SAV;
                 PKM legal = b.LoadShowdownSetModded_PKSM(p, Set, resetForm, TID, SID, OT, gender);
                 PKME_Tabs.PopulateFields(legal);
                 if (Country != "" && SubRegion != "" && ConsoleRegion != "")
