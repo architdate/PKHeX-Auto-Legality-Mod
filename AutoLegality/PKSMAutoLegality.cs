@@ -896,6 +896,14 @@ namespace PKHeX.WinForms.Controls
                 pk.OT_Feeling = Util.Rand.Next(0, 10); // 0-9
                 report = UpdateReport(pk);
             }
+            if (report.Contains(V130)) //V130 = Can't have any OT Memory.
+            {
+                pk.OT_Memory = 0;
+                pk.OT_TextVar = 0;
+                pk.OT_Intensity = 0;
+                pk.OT_Feeling = 0;
+                report = UpdateReport(pk);
+            }
             if (report.Contains(V137)) //V137 = GeoLocation Memory: Memories should be present.
             {
                 pk.Geo1_Country = 1;
