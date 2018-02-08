@@ -242,7 +242,9 @@ namespace PKHeX.WinForms.Controls
                                 Set.Met_Level = el.Level;
                                 Set.CurrentLevel = 100;
                                 Set.FatefulEncounter = el.Fateful;
-                                if (el.Shiny == true) Set.SetShinyPID();
+                                if (el.RibbonWishing) ReflectUtil.SetValue(Set, "RibbonWishing", -1);
+                                Set.RelearnMoves = el.Relearn;
+                                if (el.Shiny == true || el.Shiny == null) Set.SetShinyPID();
                                 else if (el.Shiny == false && Set.IsShiny) Set.PID ^= 0x10000000;
                                 else Set.SetPIDGender(Set.Gender);
                             }
@@ -507,10 +509,14 @@ namespace PKHeX.WinForms.Controls
             {
                 edgecasearray = el.B2W2EntreeForest;
             }
+            else if (Game == (int)GameVersion.US || Game == (int)GameVersion.UM)
+            {
+                edgecasearray = el.USUMEdgeEnc;
+            }
             foreach (EncounterStatic e in edgecasearray) {
                 if (e.Species == pk.Species)
                 {
-                    if (!e.Moves.Except(pk.Moves).Any()) edgecase.Add(e);
+                    edgecase.Add(e);
                 }
             }
             return edgecase;

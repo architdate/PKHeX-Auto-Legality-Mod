@@ -14,6 +14,7 @@ namespace PKHeX.AutoLegality
     {
         public EncounterStatic[] BWEntreeForest = MarkG5DreamWorld(BW_DreamWorld);
         public EncounterStatic[] B2W2EntreeForest = MarkG5DreamWorld(B2W2_DreamWorld);
+        public EncounterStatic[] USUMEdgeEnc = MarkEncountersGeneration(USUMEdgeEncounters, 7);
 
         ///<summary>
         ///Gen 5 Dreamworld wack events
@@ -338,6 +339,24 @@ namespace PKHeX.AutoLegality
             new EncounterStatic { Species=575, Level = 32, Moves = new[]{286}, Gender = 0, }, //Gothorita  
         }).ToArray();
 
+        static EncounterStatic[] USUMEdgeEncounters = new EncounterStatic[]
+        {
+            new EncounterStatic // Pikachu (Pretty Wing), should probably be a fake mystery gift as it has OT details
+            {
+                Gift = true, Species = 25, Level = 21, Location = 40005, Form = 7, HeldItem = 571, Ability = 1,
+                Fateful = true, RibbonWishing = true, Relearn = new[] {85, 98, 87, 231}, Nature = Nature.Hardy,
+            },
+        };
+
+        private static EncounterStatic[] MarkEncountersGeneration(EncounterStatic[] t, int Generation)
+        {
+            foreach (EncounterStatic s in t)
+            {
+                s.Generation = Generation;
+            }
+            return t;
+        }
+
         private static EncounterStatic[] MarkG5DreamWorld(EncounterStatic[] t)
         {
             foreach (EncounterStatic s in t)
@@ -368,6 +387,9 @@ namespace PKHeX.AutoLegality
             t = list.ToArray();
             return t;
         }
-
+        internal static EncounterStatic[] GetStaticEncounters(IEnumerable<EncounterStatic> source, GameVersion game)
+        {
+            return source.Where(s => s.Version.Contains(game)).ToArray();
+        }
     }
 }
