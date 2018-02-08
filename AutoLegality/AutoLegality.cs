@@ -138,7 +138,7 @@ namespace PKHeX.WinForms
                 Blah b = new Blah();
                 b.C_SAV = C_SAV;
                 PKM legal = b.LoadShowdownSetModded_PKSM(p, Set, resetForm, TID, SID, OT, gender);
-                PKME_Tabs.PopulateFields(legal, true, false);
+                PKME_Tabs.PopulateFields(legal);
                 if (Country != "" && SubRegion != "" && ConsoleRegion != "")
                 {
                     PKME_Tabs.SetRegions(Country, SubRegion, ConsoleRegion);
