@@ -38,9 +38,9 @@ namespace PKHeX.WinForms.Controls
             int[] legendaryList = new int[] { 144, 145, 146, 150, 151, 243, 244, 245, 249, 250, 251, 377, 378, 379, 380, 381, 382, 383, 384, 385,
                                               386, 480, 481, 482, 483, 484, 485, 486, 487, 488, 491, 492, 493, 494, 638, 639, 640, 642, 641, 643,
                                               644, 645, 646, 647, 648, 649, 716, 717, 718, 719, 720, 721, 785, 786, 787, 788, 789, 790, 791, 792,
-                                              793, 794, 795, 796, 797, 798, 799, 800, 801, 132 };
+                                              793, 794, 795, 796, 797, 798, 799, 800, 801, 802, 803, 804, 805, 806, 807, 132 };
 
-            int[] eventList = new int[] { 719, 649, 720, 385, 647, 648, 721, 801, 802 };
+            int[] eventList = new int[] { 719, 649, 720, 385, 647, 648, 721, 801, 802, 807 };
 
             int[] GameVersionList = new int[] { (int)GameVersion.UM, (int)GameVersion.US, (int)GameVersion.MN, (int)GameVersion.SN, (int)GameVersion.AS,
                                                 (int)GameVersion.OR, (int)GameVersion.X, (int)GameVersion.Y, (int)GameVersion.B, (int)GameVersion.B2,
@@ -164,7 +164,7 @@ namespace PKHeX.WinForms.Controls
                         Set.TID = 24521;
                         Set.SID = 42312;
                     }
-                    if (Set.Species == 793 || Set.Species == 794 || Set.Species == 795 || Set.Species == 796 || Set.Species == 797 || Set.Species == 798 || Set.Species == 799) Set.Ball = 26;
+                    if (Set.Species == 793 || Set.Species == 794 || Set.Species == 795 || Set.Species == 796 || Set.Species == 797 || Set.Species == 798 || Set.Species == 799 || Set.Species == 805 || Set.Species == 806) Set.Ball = 26;
                     if (Set.Version == (int)GameVersion.RD || Set.Version == (int)GameVersion.BU || Set.Version == (int)GameVersion.YW || Set.Version == (int)GameVersion.GN || Set.Version == (int)GameVersion.GD || Set.Version == (int)GameVersion.SV || Set.Version == (int)GameVersion.C)
                     {
                         Set.SID = 0;
