@@ -18,6 +18,7 @@ namespace PKHeX.WinForms.Controls
         bool requestedShiny = false;
         public event EventHandler LegalityChanged;
         public Controls.SAVEditor C_SAV;
+        bool legalized = false;
 
         public PKM LoadShowdownSetModded_PKSM(PKM Set, ShowdownSet SSet, bool resetForm = false, int TID = -1, int SID = -1, string OT = "", int gender = 0)
         {
@@ -124,7 +125,8 @@ namespace PKHeX.WinForms.Controls
                             if (shiny && !Set.IsShiny) Set.SetShinyPID();
                             return Set;
                         }
-                        if (Set.GenNumber < 6) Set.EncryptionConstant = Set.PID;
+                        if (new LegalityAnalysis(Set).Valid) legalized = true;
+                        if (Set.GenNumber < 6 && !legalized) Set.EncryptionConstant = Set.PID;
                         if (new LegalityAnalysis(Set).Valid)
                         {
                             if (shiny && !Set.IsShiny) Set.SetShinySID();
@@ -217,8 +219,9 @@ namespace PKHeX.WinForms.Controls
                             if (shiny) Set.SetShinyPID();
                             return Set;
                         }
+                        if (new LegalityAnalysis(Set).Valid) legalized = true;
                         AlternateAbilityRefresh(Set);
-                        if (Set.GenNumber < 6) Set.EncryptionConstant = Set.PID;
+                        if (Set.GenNumber < 6 && !legalized) Set.EncryptionConstant = Set.PID;
                         if (new LegalityAnalysis(Set).Valid)
                         {
                             PKM returnval = Set;
@@ -821,7 +824,14 @@ namespace PKHeX.WinForms.Controls
                 if (shiny) pk.SetShinySID();
                 report = UpdateReport(pk);
             }
-            if (report.Contains(V216))//V216 = PID should be equal to EC!
+            if (report.Contains(V208)) //V208 = Encryption Constant matches PID.
+            {
+                int wIndex = Array.IndexOf(Legal.WurmpleEvolutions, pk.Species);
+                uint EC = wIndex < 0 ? Util.Rand32() : PKX.GetWurmpleEC(wIndex / 2);
+                pk.EncryptionConstant = EC;
+                report = UpdateReport(pk);
+            }
+            if (report.Contains(V216)) //V216 = PID should be equal to EC!
             {
                 pk.EncryptionConstant = pk.PID;
                 report = UpdateReport(pk);
