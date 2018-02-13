@@ -129,6 +129,7 @@ namespace PKHeX.WinForms
                 if (Set.Form == null) { }
                 else if (Set.Form.Contains("Mega") || Set.Form == "Primal" || Set.Form == "Busted")
                 {
+                    Set = new ShowdownSet(Set.Text.Replace("-" + Set.Form, ""));
                     resetForm = true;
                     Console.WriteLine(Set.Species);
                 }
