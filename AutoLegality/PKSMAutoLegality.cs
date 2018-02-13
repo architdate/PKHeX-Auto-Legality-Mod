@@ -417,12 +417,12 @@ namespace PKHeX.WinForms.Controls
                         eventpk.Ability = SSet.Ability;
 
                         // Set IVs
-                        eventpk.IV_HP = Set.IVs[0];
-                        eventpk.IV_ATK = Set.IVs[1];
-                        eventpk.IV_DEF = Set.IVs[2];
-                        eventpk.IV_SPA = Set.IVs[4];
-                        eventpk.IV_SPD = Set.IVs[5];
-                        eventpk.IV_SPE = Set.IVs[3];
+                        eventpk.IV_HP = SSet.IVs[0];
+                        eventpk.IV_ATK = SSet.IVs[1];
+                        eventpk.IV_DEF = SSet.IVs[2];
+                        eventpk.IV_SPA = SSet.IVs[4];
+                        eventpk.IV_SPD = SSet.IVs[5];
+                        eventpk.IV_SPE = SSet.IVs[3];
 
                         // Set EVs
                         eventpk.EV_HP = Set.EVs[0];
