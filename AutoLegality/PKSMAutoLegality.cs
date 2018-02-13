@@ -652,6 +652,10 @@ namespace PKHeX.WinForms.Controls
                     }
                     pk.PID = pid1 | (pid2 << 16);
                 }
+                // Handle PKX events that are not IV locked to PID
+                pk.SetPIDGender(pk.Gender);
+                if (new LegalityAnalysis(pk).Valid) return pk;
+                else Console.WriteLine(new LegalityAnalysis(pk).Report(false));
                 PK4 pk4 = new PK4();
                 // Generate IVs
                 if (pk4.IV32 == 0)
@@ -666,7 +670,6 @@ namespace PKHeX.WinForms.Controls
                 pk.IV_SPA = pk4.IV_SPA;
                 pk.IV_SPD = pk4.IV_SPD;
                 pk.IV_SPE = pk4.IV_SPE;
-                pk.SetPIDGender(pk.Gender);
                 return pk;
             }
             else
