@@ -115,6 +115,6 @@ Just me right now, but if you want to contribute, feel free to contact me on Dis
 - IV to PID conversion code taken [RNGReporter](https://github.com/Admiral-Fish/RNGReporter) by [Admiral-Fish](https://github.com/Admiral-Fish) which is under the GNU General Public License v2.0.
 - My good friend TORNADO for helping me with Test Cases
 - Speed Improvement ideas by [Bernardo Giordano](https://github.com/BernardoGiordano)
-- kamronbatman for his Event Gallery
+- [Project Pokémon](https://github.com/projectpokemon/) for their Event Gallery
 - kwsch for the original PKHeX repository.
 - All the other users who have helped improve this via GitHub issues
