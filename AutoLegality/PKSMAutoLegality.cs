@@ -129,6 +129,7 @@ namespace PKHeX.WinForms.Controls
                         if (Set.GenNumber < 6 && !legalized) Set.EncryptionConstant = Set.PID;
                         if (new LegalityAnalysis(Set).Valid)
                         {
+                            setHappiness(Set);
                             if (shiny && !Set.IsShiny) Set.SetShinySID();
                             return Set;
                         }
@@ -224,6 +225,7 @@ namespace PKHeX.WinForms.Controls
                         if (Set.GenNumber < 6 && !legalized) Set.EncryptionConstant = Set.PID;
                         if (new LegalityAnalysis(Set).Valid)
                         {
+                            setHappiness(Set);
                             PKM returnval = Set;
                             if (shiny && Set.IsShiny) return Set;
                             if (shiny && !Set.IsShiny)
@@ -451,6 +453,7 @@ namespace PKHeX.WinForms.Controls
                         eventpk.Move4_PP = eventpk.GetMovePP(eventpk.Move4, eventpk.Move4_PPUps);
 
                         setMarkings(eventpk);
+                        setHappiness(eventpk);
 
                         if (new LegalityAnalysis(eventpk).Valid) return eventpk;
 
@@ -497,6 +500,12 @@ namespace PKHeX.WinForms.Controls
             if (pk.IV_SPA < 29) pk.MarkHeart = 1;
             if (pk.IV_SPD < 29) pk.MarkStar = 1;
             if (pk.IV_SPE < 29) pk.MarkDiamond = 1;
+        }
+
+        private void setHappiness(PKM pk)
+        {
+            if (pk.Moves.Contains(218)) pk.CurrentFriendship = 0;
+            else pk.CurrentFriendship = 255;
         }
 
         private List<EncounterStatic> edgeMons(int Game, PKM pk)
