@@ -96,6 +96,13 @@ namespace PKHeX.WinForms
                     Blah b = new Blah();
                     b.C_SAV = C_SAV;
                     PKM legal = b.LoadShowdownSetModded_PKSM(p, Set, resetForm, TID, SID, OT, gender);
+                    if (int.TryParse(Country, out int n) && int.TryParse(SubRegion, out int m) && int.TryParse(ConsoleRegion, out int o))
+                    {
+                        legal = PKME_Tabs.SetPKMRegions(n, m, o, legal);
+                        Country = "";
+                        SubRegion = "";
+                        ConsoleRegion = "";
+                    }
                     PKME_Tabs.PopulateFields(legal);
                     if (Country != "" && SubRegion != "" && ConsoleRegion != "")
                     {
@@ -139,6 +146,13 @@ namespace PKHeX.WinForms
                 Blah b = new Blah();
                 b.C_SAV = C_SAV;
                 PKM legal = b.LoadShowdownSetModded_PKSM(p, Set, resetForm, TID, SID, OT, gender);
+                if (int.TryParse(Country, out int n) && int.TryParse(SubRegion, out int m) && int.TryParse(ConsoleRegion, out int o))
+                {
+                    legal = PKME_Tabs.SetPKMRegions(n, m, o, legal);
+                    Country = "";
+                    SubRegion = "";
+                    ConsoleRegion = "";
+                }
                 PKME_Tabs.PopulateFields(legal);
                 if (Country != "" && SubRegion != "" && ConsoleRegion != "")
                 {

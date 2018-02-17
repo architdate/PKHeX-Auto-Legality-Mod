@@ -150,6 +150,14 @@ namespace PKHeX.WinForms.Controls
             CB_3DSReg.Text = ConsoleRegion;
         }
 
+        public PKM SetPKMRegions(int Country, int SubRegion, int ConsoleRegion, PKM pk)
+        {
+            pk.Country = Country;
+            pk.Region = SubRegion;
+            pk.ConsoleRegion = ConsoleRegion;
+            return pk;
+        }
+
         public string[] parseTrainerData(SAVEditor C_SAV)
         {
             // Defaults
@@ -189,10 +197,13 @@ namespace PKHeX.WinForms.Controls
             {
                 try
                 {
+                    int ct = PKMConverter.Country;
+                    int sr = PKMConverter.Region;
+                    int cr = PKMConverter.ConsoleRegion;
                     if (C_SAV.SAV.Gender == 1) Gender = "F";
                     return new string[] { C_SAV.SAV.TID.ToString("00000"), C_SAV.SAV.SID.ToString("00000"),
-                                          C_SAV.SAV.OT, Gender, CB_Country.GetItemText(CB_Country.Items[C_SAV.SAV.Country]),
-                                          CB_SubRegion.GetItemText(CB_SubRegion.Items[C_SAV.SAV.SubRegion]), CB_3DSReg.GetItemText(CB_3DSReg.Items[C_SAV.SAV.ConsoleRegion])};
+                                          C_SAV.SAV.OT, Gender, ct.ToString(),
+                                          sr.ToString(), cr.ToString()};
                 }
                 catch
                 {
