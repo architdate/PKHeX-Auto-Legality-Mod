@@ -122,9 +122,11 @@ namespace PKHeX.WinForms.Controls
                         if (Set.GenNumber < 6) Set.EncryptionConstant = Set.PID;
                         if (CommonErrorHandling2(Set))
                         {
+                            HyperTrain(Set);
                             if (shiny && !Set.IsShiny) Set.SetShinyPID();
                             return Set;
                         }
+                        HyperTrain(Set);
                         if (new LegalityAnalysis(Set).Valid) legalized = true;
                         if (Set.GenNumber < 6 && !legalized) Set.EncryptionConstant = Set.PID;
                         if (new LegalityAnalysis(Set).Valid)
@@ -194,7 +196,7 @@ namespace PKHeX.WinForms.Controls
                             Set.Met_Location = 30017;
                             Set.Met_Level = 100;
                         }
-                        else if (Set.Version == (int)GameVersion.CXD)
+                        else if (Set.Version == (int)GameVersion.CXD || Set.Version == (int)GameVersion.SS || Set.Version == (int)GameVersion.R)
                         {
                             Set.Met_Location = 30001;
                             Set.Met_Level = 100;
@@ -217,9 +219,11 @@ namespace PKHeX.WinForms.Controls
                         if (Set.GenNumber < 6) Set.EncryptionConstant = Set.PID;
                         if (CommonErrorHandling2(Set))
                         {
+                            HyperTrain(Set);
                             if (shiny) Set.SetShinyPID();
                             return Set;
                         }
+                        HyperTrain(Set);
                         if (new LegalityAnalysis(Set).Valid) legalized = true;
                         AlternateAbilityRefresh(Set);
                         if (Set.GenNumber < 6 && !legalized) Set.EncryptionConstant = Set.PID;
@@ -454,6 +458,7 @@ namespace PKHeX.WinForms.Controls
 
                         setMarkings(eventpk);
                         setHappiness(eventpk);
+                        HyperTrain(eventpk);
 
                         if (new LegalityAnalysis(eventpk).Valid) return eventpk;
 
@@ -781,7 +786,6 @@ namespace PKHeX.WinForms.Controls
             string spa = pk.IV_SPA.ToString();
             string spd = pk.IV_SPD.ToString();
             string spe = pk.IV_SPE.ToString();
-            bool HTworkaround = false;
             LegalityAnalysis la = new LegalityAnalysis(pk);
             var report = la.Report(false);
 
@@ -973,7 +977,6 @@ namespace PKHeX.WinForms.Controls
                 {
                     return false;
                 }
-                if (pk.HT_HP) { HTworkaround = true; }
                 report = UpdateReport(pk);
                 if (report.Equals(V411)) // V411 = Encounter Type PID mismatch.
                 {
@@ -1103,12 +1106,6 @@ namespace PKHeX.WinForms.Controls
                     pk.IV_SPD = (int)spd;
                     pk.IV_SPE = (int)spe;
                 }
-                if (hp >= 30 && pk.IV_HP != 31) pk.HT_HP = true;
-                if (atk >= 30 && pk.IV_ATK != 31) pk.HT_ATK = true;
-                if (def >= 30 && pk.IV_DEF != 31) pk.HT_DEF = true;
-                if (spa >= 30 && pk.IV_SPA != 31) pk.HT_SPA = true;
-                if (spd >= 30 && pk.IV_SPD != 31) pk.HT_SPD = true;
-                if (spe >= 30 && pk.IV_SPE != 31) pk.HT_SPE = true;
                 if (shiny) pk.SetShinySID();
                 recheckLA = new LegalityAnalysis(pk);
                 updatedReport = recheckLA.Report(false);
@@ -1146,12 +1143,6 @@ namespace PKHeX.WinForms.Controls
                         pk = M2EventFix(pk, shiny);
                         if (!new LegalityAnalysis(pk).Report(false).Contains("PID mismatch") || usesEventBasedMethod(pk.Species, pk.Moves, "M2")) return pk;
                     }
-                    pk.HT_HP = false;
-                    pk.HT_ATK = false;
-                    pk.HT_DEF = false;
-                    pk.HT_SPA = false;
-                    pk.HT_SPD = false;
-                    pk.HT_SPE = false;
                     pk.IV_HP = (int)hp;
                     pk.IV_ATK = (int)atk;
                     pk.IV_DEF = (int)def;
@@ -1315,6 +1306,17 @@ namespace PKHeX.WinForms.Controls
             }
             file.Close();
             return evoList;
+        }
+
+        private void HyperTrain(PKM pk)
+        {
+            if (C_SAV.SAV.Generation < 7) return;
+            if (pk.IV_HP != 0 && pk.IV_HP != 1 && pk.IV_HP != 31) pk.HT_HP = true;
+            if (pk.IV_ATK != 0 && pk.IV_ATK != 1 && pk.IV_ATK != 31) pk.HT_ATK = true;
+            if (pk.IV_DEF != 0 && pk.IV_DEF != 1 && pk.IV_DEF != 31) pk.HT_DEF = true;
+            if (pk.IV_SPA != 0 && pk.IV_SPA != 1 && pk.IV_SPA != 31) pk.HT_SPA = true;
+            if (pk.IV_SPD != 0 && pk.IV_SPD != 1 && pk.IV_SPD != 31) pk.HT_SPD = true;
+            if (pk.IV_SPE != 0 && pk.IV_SPE != 1 && pk.IV_SPE != 31) pk.HT_SPE = true;
         }
 
         private void UpdateLegality(PKM pkm, bool skipMoveRepop = false)

@@ -83,7 +83,7 @@ namespace PKHeX.WinForms
 
                     // Set Species & Nickname
                     bool resetForm = false;
-                    PKME_Tabs.hardReset();
+                    PKME_Tabs.hardReset(C_SAV.SAV);
                     if (Set.Form == null) { }
                     else if (Set.Form.Contains("Mega") || Set.Form == "Primal" || Set.Form == "Busted")
                     {
@@ -132,7 +132,8 @@ namespace PKHeX.WinForms
                 // Set Species & Nickname
                 //PKME_Tabs.LoadShowdownSet(Set);
                 bool resetForm = false;
-                PKME_Tabs.hardReset();
+                PKME_Tabs.hardReset(C_SAV.SAV);
+                
                 if (Set.Form == null) { }
                 else if (Set.Form.Contains("Mega") || Set.Form == "Primal" || Set.Form == "Busted")
                 {
@@ -146,6 +147,7 @@ namespace PKHeX.WinForms
                 Blah b = new Blah();
                 b.C_SAV = C_SAV;
                 PKM legal = b.LoadShowdownSetModded_PKSM(p, Set, resetForm, TID, SID, OT, gender);
+                Console.WriteLine(legal.Met_Location);
                 if (int.TryParse(Country, out int n) && int.TryParse(SubRegion, out int m) && int.TryParse(ConsoleRegion, out int o))
                 {
                     legal = PKME_Tabs.SetPKMRegions(n, m, o, legal);
@@ -153,7 +155,9 @@ namespace PKHeX.WinForms
                     SubRegion = "";
                     ConsoleRegion = "";
                 }
+                Console.WriteLine(legal.Met_Location);
                 PKME_Tabs.PopulateFields(legal);
+                if (legal.Format < 7) PKME_Tabs.LoadFieldsFromPKM2(legal, true, false);
                 if (Country != "" && SubRegion != "" && ConsoleRegion != "")
                 {
                     PKME_Tabs.SetRegions(Country, SubRegion, ConsoleRegion);

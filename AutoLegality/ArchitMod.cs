@@ -7,6 +7,7 @@ using System.Reflection;
 
 using PKHeX.Core;
 using PKHeX.WinForms.Properties;
+using PKHeX.WinForms.AutoLegality;
 
 namespace PKHeX.WinForms.Controls
 {
@@ -68,26 +69,90 @@ namespace PKHeX.WinForms.Controls
             m.SE.RedoStack.Clear(); m.SE.Menu_Redo.Enabled = false;
         }
 
-        public void hardReset()
+        public void hardReset(SaveFile SAV = null)
         {
-            var assembly = Assembly.GetExecutingAssembly();
-            var resourceName = "PKHeX.WinForms.AutoLegality.Resources.byte.reset.pk7";
-            System.IO.Stream stream = assembly.GetManifestResourceStream(resourceName);
-            System.IO.StreamReader filestr = new System.IO.StreamReader(stream);
-            System.IO.MemoryStream ms = new System.IO.MemoryStream();
-            stream.CopyTo(ms);
-            byte[] pk7reset = ms.ToArray();
-            CurrentSAV = new PKHeX.WinForms.Controls.SAVEditor();
-            CurrentSAV.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-            | System.Windows.Forms.AnchorStyles.Right)));
-            CurrentSAV.Location = new System.Drawing.Point(292, 26);
-            CurrentSAV.Name = "C_SAV";
-            CurrentSAV.Size = new System.Drawing.Size(310, 326);
-            CurrentSAV.TabIndex = 104;
-            if (TryLoadPKM(pk7reset, "", "pk7", CurrentSAV.SAV))
+            SaveFile CURRSAV = new SAVEditor().SAV;
+            if (SAV != null) CURRSAV = SAV;
+            else
             {
-                return;
+                CurrentSAV = new PKHeX.WinForms.Controls.SAVEditor();
+                CurrentSAV.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+                | System.Windows.Forms.AnchorStyles.Right)));
+                CurrentSAV.Location = new System.Drawing.Point(292, 26);
+                CurrentSAV.Name = "C_SAV";
+                CurrentSAV.Size = new System.Drawing.Size(310, 326);
+                CurrentSAV.TabIndex = 104;
+                CURRSAV = CurrentSAV.SAV;
             }
+            if (CURRSAV.USUM || CURRSAV.SM)
+            {
+                if (TryLoadPKM(new ConstData().resetpk7, "", "pk7", CURRSAV))
+                {
+                    return;
+                }
+            }
+            else if (CURRSAV.ORAS)
+            {
+                if (TryLoadPKM(new ConstData().resetpk6, "", "pk6", CURRSAV))
+                {
+                    return;
+                }
+            }
+        }
+
+        public void PrintByteArray(byte[] bytes)
+        {
+            var sb = new System.Text.StringBuilder("new byte[] { ");
+            foreach (var b in bytes)
+            {
+                sb.Append(b + ", ");
+            }
+            sb.Append("}");
+            Console.WriteLine(sb.ToString());
+        }
+
+        public void LoadFieldsFromPKM2(PKM pk, bool focus = true, bool skipConversionCheck = true)
+        {
+            if (pk == null) { WinFormsUtil.Error("Attempted to load a null file."); return; }
+            if (focus)
+                Tab_Main.Focus();
+
+            if (!skipConversionCheck && !PKMConverter.TryMakePKMCompatible(pk, CurrentPKM, out string c, out pk))
+            { WinFormsUtil.Alert(c); return; }
+
+            bool oldInit = fieldsInitialized;
+            fieldsInitialized = fieldsLoaded = false;
+
+            pkm = pk.Clone();
+
+            try { GetFieldsfromPKM(); }
+            finally { fieldsInitialized = oldInit; }
+
+            UpdateIVs(null, null);
+            UpdatePKRSInfected(null, null);
+            UpdatePKRSCured(null, null);
+
+            if (HaX) // Load original values from pk not pkm
+            {
+                MT_Level.Text = (pk.Stat_HPMax != 0 ? pk.Stat_Level : PKX.GetLevel(pk.Species, pk.EXP)).ToString();
+                TB_EXP.Text = pk.EXP.ToString();
+                MT_Form.Text = pk.AltForm.ToString();
+                if (pk.Stat_HPMax != 0) // stats present
+                {
+                    Stat_HP.Text = pk.Stat_HPCurrent.ToString();
+                    Stat_ATK.Text = pk.Stat_ATK.ToString();
+                    Stat_DEF.Text = pk.Stat_DEF.ToString();
+                    Stat_SPA.Text = pk.Stat_SPA.ToString();
+                    Stat_SPD.Text = pk.Stat_SPD.ToString();
+                    Stat_SPE.Text = pk.Stat_SPE.ToString();
+                }
+            }
+            fieldsLoaded = true;
+
+            SetMarkings();
+            UpdateLegality();
+            UpdateSprite();
+            LastData = PreparePKM()?.Data;
         }
 
         private bool TryLoadPKM(byte[] input, string path, string ext, SaveFile SAV)
