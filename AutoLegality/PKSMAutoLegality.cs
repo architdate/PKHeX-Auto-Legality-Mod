@@ -196,7 +196,7 @@ namespace PKHeX.WinForms.Controls
                             Set.Met_Location = 30017;
                             Set.Met_Level = 100;
                         }
-                        else if (Set.Version == (int)GameVersion.CXD || Set.Version == (int)GameVersion.SS || Set.Version == (int)GameVersion.R)
+                        else if (Set.Version == (int)GameVersion.CXD)
                         {
                             Set.Met_Location = 30001;
                             Set.Met_Level = 100;
