@@ -91,7 +91,7 @@ namespace PKHeX.WinForms.Controls
                     return;
                 }
             }
-            else if (CURRSAV.ORAS)
+            else if (CURRSAV.ORAS || CURRSAV.XY)
             {
                 if (TryLoadPKM(new ConstData().resetpk6, "", "pk6", CURRSAV))
                 {
