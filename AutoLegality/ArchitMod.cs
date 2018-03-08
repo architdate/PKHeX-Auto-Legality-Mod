@@ -120,15 +120,15 @@ namespace PKHeX.WinForms.Controls
             if (!skipConversionCheck && !PKMConverter.TryMakePKMCompatible(pk, CurrentPKM, out string c, out pk))
             { WinFormsUtil.Alert(c); return; }
 
-            bool oldInit = fieldsInitialized;
-            fieldsInitialized = fieldsLoaded = false;
+            bool oldInit = FieldsInitialized;
+            FieldsInitialized = FieldsLoaded = false;
 
             pkm = pk.Clone();
 
             try { GetFieldsfromPKM(); }
-            finally { fieldsInitialized = oldInit; }
+            finally { FieldsInitialized = oldInit; }
 
-            UpdateIVs(null, null);
+            Stats.UpdateIVs(null, null);
             UpdatePKRSInfected(null, null);
             UpdatePKRSCured(null, null);
 
@@ -139,15 +139,10 @@ namespace PKHeX.WinForms.Controls
                 MT_Form.Text = pk.AltForm.ToString();
                 if (pk.Stat_HPMax != 0) // stats present
                 {
-                    Stat_HP.Text = pk.Stat_HPCurrent.ToString();
-                    Stat_ATK.Text = pk.Stat_ATK.ToString();
-                    Stat_DEF.Text = pk.Stat_DEF.ToString();
-                    Stat_SPA.Text = pk.Stat_SPA.ToString();
-                    Stat_SPD.Text = pk.Stat_SPD.ToString();
-                    Stat_SPE.Text = pk.Stat_SPE.ToString();
+                    Stats.LoadPartyStats(pk);
                 }
             }
-            fieldsLoaded = true;
+            FieldsLoaded = true;
 
             SetMarkings();
             UpdateLegality();
