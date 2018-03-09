@@ -379,13 +379,29 @@ namespace PKHeX.AutoLegality
                 var loc = s.Location;
                 for (int i = 0; i < s.Moves.Length; i++)
                 {
-                    var clone = s.Clone(loc);
+                    var clone = Cloner(s, loc);
                     clone.Moves = new[] { s.Moves[i] };
                     list.Add(clone);
                 }
             }
             t = list.ToArray();
             return t;
+        }
+        internal static EncounterStatic Cloner(EncounterStatic s, int location)
+        {
+            var result = CloneObject(s);
+            result.Location = location;
+            return result;
+        }
+        internal static EncounterStatic CloneObject(EncounterStatic s)
+        {
+            if (s == null) return null;
+            System.Reflection.MethodInfo inst = s.GetType().GetMethod("MemberwiseClone",
+                System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
+            if (inst != null)
+                return (EncounterStatic)inst.Invoke(s, null);
+            else
+                return null;
         }
         internal static EncounterStatic[] GetStaticEncounters(IEnumerable<EncounterStatic> source, GameVersion game)
         {
