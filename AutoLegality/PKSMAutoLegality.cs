@@ -1310,7 +1310,7 @@ namespace PKHeX.WinForms.Controls
 
         private void HyperTrain(PKM pk)
         {
-            if (C_SAV.SAV.Generation < 7) return;
+            if (C_SAV.SAV.Generation < 7 || pk.CurrentLevel != 100) return;
             if (pk.IV_HP != 0 && pk.IV_HP != 1 && pk.IV_HP != 31) pk.HT_HP = true;
             if (pk.IV_ATK != 0 && pk.IV_ATK != 1 && pk.IV_ATK != 31) pk.HT_ATK = true;
             if (pk.IV_DEF != 0 && pk.IV_DEF != 1 && pk.IV_DEF != 31) pk.HT_DEF = true;
