@@ -17,6 +17,8 @@ The teambuilder for the Pokemon templates can be found on:
 
 ## Features
 
+**A COMPLETE LIST OF FEATURES CAN BE SEEN [HERE](https://github.com/architdate/PKHeX-Auto-Legality-Mod/blob/master/Features.md)**
+
 - Legality for all egg based Pokemon
 - Legality for all legendary Pokemon from all generations
 - Auto Legality support for all Pokemon in all generations except Colosseum and XD
