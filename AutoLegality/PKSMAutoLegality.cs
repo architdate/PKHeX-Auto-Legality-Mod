@@ -253,8 +253,8 @@ namespace PKHeX.WinForms.Controls
                                 Set.FatefulEncounter = el.Fateful;
                                 if (el.RibbonWishing) ReflectUtil.SetValue(Set, "RibbonWishing", -1);
                                 Set.RelearnMoves = el.Relearn;
-                                if (el.Shiny == true || el.Shiny == null) Set.SetShinyPID();
-                                else if (el.Shiny == false && Set.IsShiny) Set.PID ^= 0x10000000;
+                                if (SSet.Shiny && (el.Shiny == Shiny.Always || el.Shiny == Shiny.Random)) Set.SetShinyPID();
+                                else if (el.Shiny == Shiny.Never && Set.IsShiny) Set.PID ^= 0x10000000;
                                 else Set.SetPIDGender(Set.Gender);
                             }
                             LegalityAnalysis la = new LegalityAnalysis(Set);
@@ -310,22 +310,22 @@ namespace PKHeX.WinForms.Controls
                     if (System.IO.Path.GetExtension(file) == ".wc7" || System.IO.Path.GetExtension(file) == ".wc7full")
                     {
                         var mg = (WC7)MysteryGift.GetMysteryGift(System.IO.File.ReadAllBytes(file), System.IO.Path.GetExtension(file));
-                        PIDType = mg.PIDType;
+                        PIDType = (int)mg.PIDType;
                         AbilityType = mg.AbilityType;
                         Generation = 7;
                         fixedPID = mg.PID;
-                        if (!ValidShiny(mg.PIDType, shiny)) continue;
+                        if (!ValidShiny((int)mg.PIDType, shiny)) continue;
                         var temp = mg.ConvertToPKM(C_SAV.SAV);
                         eventpk = PKMConverter.ConvertToType(temp, C_SAV.SAV.PKMType, out string c);
                     }
                     else if (System.IO.Path.GetExtension(file) == ".wc6" || System.IO.Path.GetExtension(file) == ".wc6full")
                     {
                         var mg = (WC6)MysteryGift.GetMysteryGift(System.IO.File.ReadAllBytes(file), System.IO.Path.GetExtension(file));
-                        PIDType = mg.PIDType;
+                        PIDType = (int)mg.PIDType;
                         AbilityType = mg.AbilityType;
                         Generation = 6;
                         fixedPID = mg.PID;
-                        if (!ValidShiny(mg.PIDType, shiny)) continue;
+                        if (!ValidShiny((int)mg.PIDType, shiny)) continue;
                         var temp = mg.ConvertToPKM(C_SAV.SAV);
                         eventpk = PKMConverter.ConvertToType(temp, C_SAV.SAV.PKMType, out string c);
                     }

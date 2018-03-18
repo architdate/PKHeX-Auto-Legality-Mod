@@ -266,7 +266,7 @@ namespace PKHeX.AutoLegality
             new EncounterStatic { Species=387, Level = 10, Gender = 0, }, //Turtwig
             new EncounterStatic { Species=390, Level = 10, Gender = 0, }, //Chimchar
             new EncounterStatic { Species=393, Level = 10, Gender = 0, }, //Piplup
-            new EncounterStatic { Species=493, Level = 100, Shiny = false },             //Arceus
+            new EncounterStatic { Species=493, Level = 100, Shiny = Shiny.Never },             //Arceus
             new EncounterStatic { Species=252, Level = 10, Gender = 0, }, //Treecko
             new EncounterStatic { Species=255, Level = 10, Gender = 0, }, //Torchic
             new EncounterStatic { Species=258, Level = 10, Gender = 0, }, //Mudkip
@@ -363,7 +363,7 @@ namespace PKHeX.AutoLegality
             {
                 s.Location = 75;  //Entree Forest
                 s.Ability = PersonalTable.B2W2.GetAbilities(s.Species, s.Form)[2] == 0 ? 1 : 4; // Check if has HA
-                s.Shiny = false;
+                s.Shiny = Shiny.Never;
             }
 
             // Split encounters with multiple permitted special moves -- a pkm can only be obtained with 1 of the special moves!
