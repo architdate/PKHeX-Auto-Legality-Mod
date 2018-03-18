@@ -291,7 +291,7 @@ namespace PKHeX.WinForms.Controls
                 {
                     foreach (string mon in chain)
                     {
-                        if (file.Contains(mon) || Path.GetExtension(file) == ".pl6")
+                        if (file.ToLower().Contains(mon.ToLower()) || Path.GetExtension(file) == ".pl6")
                         {
                             fileList.Add(file);
                             Console.WriteLine(file);
