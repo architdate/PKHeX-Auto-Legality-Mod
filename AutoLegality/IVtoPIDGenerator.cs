@@ -313,12 +313,6 @@ namespace PKHeX.WinForms.Misc
         private uint id;
         private int maleOnlySpecies;
         private uint number;
-        private uint par1;
-        private uint par2;
-        private uint par3;
-        private uint inh1;
-        private uint inh2;
-        private uint inh3;
         private uint pid;
         private uint seed;
         private uint sid;
@@ -606,12 +600,6 @@ namespace PKHeX.WinForms.Misc
             uint pid2,
             uint dv1,
             uint dv2,
-            uint inh1,
-            uint inh2,
-            uint inh3,
-            uint par1,
-            uint par2,
-            uint par3,
             uint id,
             uint sid,
             uint offset)
@@ -625,12 +613,6 @@ namespace PKHeX.WinForms.Misc
                 id = id,
                 sid = sid,
                 Pid = (pid2 << 16) | pid1,
-                inh1 = inh1,
-                inh2 = inh2,
-                inh3 = inh3,
-                par1 = par1,
-                par2 = par2,
-                par3 = par3,
                 Dv = (dv2 << 16) | dv1
             };
 
@@ -677,23 +659,9 @@ namespace PKHeX.WinForms.Misc
 
     internal class FrameCompare
     {
-        private readonly bool ABcheck;
         private readonly int ability;
         private readonly CompareType atkCompare;
         private readonly uint atkValue;
-        private readonly uint compareAtkA;
-        private readonly uint compareAtkB;
-        private readonly uint compareDefA;
-        private readonly uint compareDefB;
-        private readonly uint compareHpA;
-        private readonly uint compareHpB;
-        private readonly uint compareSpaA;
-        private readonly uint compareSpaB;
-        private readonly uint compareSpdA;
-        private readonly uint compareSpdB;
-        private readonly uint compareSpeA;
-        private readonly uint compareSpeB;
-        private readonly List<FrameCompare> comparers;
         private readonly CompareType defCompare;
         private readonly uint defValue;
 
@@ -937,7 +905,6 @@ namespace PKHeX.WinForms.Misc
                                     rngList[0],
                                     rngList[2],
                                     rngList[3],
-                                    0, 0, 0, 0, 0, 0,
                                     id, sid, cnt);
 
                             break;
@@ -953,7 +920,6 @@ namespace PKHeX.WinForms.Misc
                                     rngList[1],
                                     rngList[3],
                                     rngList[4],
-                                    0, 0, 0, 0, 0, 0,
                                     id, sid, cnt);
 
                             break;
