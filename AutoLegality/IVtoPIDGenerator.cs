@@ -117,12 +117,6 @@ namespace PKHeX.WinForms.Misc
         HiddenTrickRoom
     };
 
-    internal enum GenderCriteria
-    {
-        DontCareGenderless,
-        Male,
-        Female
-    }
     internal class IVFilter
     {
         public CompareType atkCompare;
@@ -172,34 +166,6 @@ namespace PKHeX.WinForms.Misc
             speCompare = CompareType.None;
         }
     }
-
-    public enum EncounterType
-    {
-        Wild,
-        WildSurfing,
-        WildOldRod,
-        WildGoodRod,
-        WildSuperRod,
-        WildWaterSpot,
-        WildSwarm,
-        WildShakerGrass,
-        WildCaveSpot,
-        Stationary,
-        Roamer,
-        Gift,
-        Entralink,
-        LarvestaEgg,
-        AllEncounterShiny,
-        BugCatchingContest,
-        BugCatchingContestPreDex,
-        BugBugCatchingContestTues,
-        BugCatchingContestThurs,
-        BugCatchingContestSat,
-        SafariZone,
-        Headbutt,
-        Manaphy,
-        HiddenGrotto
-    };
 
     public class Frame
     {
@@ -385,7 +351,7 @@ namespace PKHeX.WinForms.Misc
         private readonly CompareType speCompare;
         private readonly uint speValue;
 
-        public FrameCompare(IVFilter ivBase, List<uint> natures)
+        public FrameCompare(IVFilter ivBase, uint nature)
         {
             if (ivBase != null)
             {
@@ -402,15 +368,14 @@ namespace PKHeX.WinForms.Misc
                 speValue = ivBase.speValue;
                 speCompare = ivBase.speCompare;
             }
-            Natures = natures;
+            Nature = nature;
         }
 
-        public List<uint> Natures { get; private set; }
+        public uint Nature { get; private set; }
 
         public bool Compare(Frame frame)
         {
-            bool test = Natures.Any(nature => nature == frame.Nature);
-            if (!test)
+            if (Nature != frame.Nature)
                 return false;
 
             if (!CompareIV(hpCompare, frame.Hp, hpValue))
@@ -508,13 +473,9 @@ namespace PKHeX.WinForms.Misc
         public FrameGenerator()
         {
             maxResults = 1000000;
-            Compatibility = 20;
             InitialFrame = 1;
             InitialSeed = 0;
-            SynchNature = -1;
         }
-
-        public uint Calibration { get; set; }
 
         public FrameType FrameType
         {
@@ -525,46 +486,9 @@ namespace PKHeX.WinForms.Misc
             }
         }
 
-        public EncounterType EncounterType { get; set; }
-
-        public bool Everstone { get; set; }
-
-        public int SynchNature { get; set; }
-
         public ulong InitialSeed { get; set; }
 
         public uint InitialFrame { get; set; }
-
-        public uint MaxResults
-        {
-            get { return maxResults; }
-            set
-            {
-                maxResults = value;
-            }
-        }
-
-        public byte MotherAbility { get; set; }
-
-        public bool DittoUsed { get; set; }
-
-        public bool MaleOnlySpecies { get; set; }
-
-        public bool ShinyCharm { get; set; }
-
-        public uint[] ParentA { get; set; }
-
-        public uint[] ParentB { get; set; }
-
-        public uint[] RNGIVs { get; set; }
-
-        public bool isBW2 { get; set; }
-
-        //a static portion of the PID
-        //either lower (R/S eggs) or the entire PID (E eggs)
-        public uint StaticPID { get; set; }
-
-        public uint Compatibility { get; set; }
 
         // by declaring these only once you get a huge performance boost
 
@@ -690,26 +614,6 @@ namespace PKHeX.WinForms.Misc
 
             return frames;
         }
-
-        private static uint ForceShiny(uint pid, uint tid, uint sid)
-        {
-            uint lowByte = pid & 0x000000ff;
-            return ((lowByte ^ tid ^ sid) << 16) | lowByte;
-        }
-
-        private static uint ForceNonShiny(uint pid, uint tid, uint sid)
-        {
-            if (((pid >> 16) ^ (pid & 0xffff) ^ sid ^ tid) < 8)
-                pid = pid ^ 0x10000000;
-
-            return pid;
-        }
-
-        #region Nested type: Compare
-
-        protected delegate bool Compare(uint x);
-
-        #endregion
     }
 
     /// <summary>
@@ -718,93 +622,7 @@ namespace PKHeX.WinForms.Misc
     internal class IVtoSeed
     {
         //  We need a function to return a list of monster seeds,
-        //  which will be updated to include a method.  
-
-
-        public static List<Seed> GetXDSeeds(
-            uint hp,
-            uint atk,
-            uint def,
-            uint spa,
-            uint spd,
-            uint spe,
-            uint nature,
-            uint id)
-        {
-            var seeds = new List<Seed>();
-
-            uint ivs1 = hp + (atk << 5) + (def << 10);
-            uint ivs1_2 = ivs1 ^ 0x8000;
-            uint ivs2 = spe | (spa << 5) | (spd << 10);
-            uint ivs2_2 = ivs2 ^ 0x8000;
-            uint x_testXD = ivs1 << 16;
-
-            //  Now we want to start with IV2 and call the RNG for
-            //  values between 0 and FFFF in the low order bits.
-            for (uint cnt = 0; cnt <= 0xFFFF; cnt++)
-            {
-                //  Set our test seed here so we can start
-                //  working backwards to see if the rest
-                //  of the information we were provided 
-                //  is a match.
-
-                uint seed = x_testXD | cnt;
-                var rngXD = new XdRng(seed);
-                uint rng1XD = rngXD.GetNext16BitNumber();
-
-                //Check if ivs line up
-                if (rng1XD == ivs2 || rng1XD == ivs2_2)
-                {
-
-                    var rngXDR = new XdRngR(seed);
-                    uint XDColoSeed = rngXDR.GetNext32BitNumber();
-
-                    //  Right now, this simply assumes method
-                    //  1 and gets the value previous to check
-                    //  for  match.  We need a clean way to do
-                    //  this for all of our methods.
-
-                    //  We have a max of 5 total RNG calls
-                    //  to make a pokemon and we already have
-                    //  one so lets go ahead and get 4 more.
-                    uint rng2XD = rngXD.GetNext16BitNumber();
-                    uint rng3XD = rngXD.GetNext16BitNumber();
-                    uint rng4XD = rngXD.GetNext16BitNumber();
-                    uint pid = (rng3XD << 16) + rng4XD;
-
-                    //  Check Colosseum\XD
-                    // [IVs] [IVs] [xxx] [PID] [PID]
-                    // [START] [rng1] [rng3] [rng4]
-
-                    if (pid % 25 == nature)
-                    {
-                        var newSeed = new Seed
-                        {
-                            Method = "Colosseum/XD",
-                            Pid = pid,
-                            MonsterSeed = XDColoSeed
-                        };
-                        seeds.Add(newSeed);
-                    }
-
-                    //  Check Colosseum\XD XOR
-                    // [IVs] [IVs] [xxx] [PID] [PID]
-                    // [START] [rng1] [rng3] [rng4]
-                    pid ^= 0x80008000;
-                    if (pid % 25 == nature)
-                    {
-                        var newSeed = new Seed
-                        {
-                            Method = "Colosseum/XD",
-                            Pid = pid,
-                            MonsterSeed = XDColoSeed ^ 0x80000000
-                        };
-                        seeds.Add(newSeed);
-                    }
-                }
-            }
-            return seeds;
-        }
+        //  which will be updated to include a method.
 
         public static List<Seed> GetSeeds(
             uint hp,
@@ -819,14 +637,11 @@ namespace PKHeX.WinForms.Misc
             var seeds = new List<Seed>();
 
             uint ivs2 = spe | (spa << 5) | (spd << 10);
-            uint ivs2_2 = ivs2 ^ 0x8000;
             uint ivs1 = hp | (atk << 5) | (def << 10);
-            uint ivs1_2 = ivs1 ^ 0x8000;
 
             uint x_test = ivs2 << 16;
             uint x_testXD = ivs1 << 16;
             uint pid, pidXor, sid;
-            bool pass = false;
 
             //  Now we want to start with IV2 and call the RNG for
             //  values between 0 and FFFF in the low order bits.
@@ -838,7 +653,7 @@ namespace PKHeX.WinForms.Misc
                 var rngXDR = new XdRngR(seedXD);
                 uint rng1XD = rngXD.GetNext16BitNumber();
 
-                if (rng1XD == ivs2 || rng1XD == ivs2_2)
+                if ((rng1XD & 0x7FFF) == ivs2)
                 {
                     //Grab rest of RNG calls for XDColo
                     uint rng2XD = rngXD.GetNext16BitNumber();
@@ -886,7 +701,7 @@ namespace PKHeX.WinForms.Misc
                 var rng = new PokeRngR(seed);
                 uint rng1 = rng.GetNext16BitNumber();
                 //Checks that ivs line up
-                if (rng1 == ivs1 || rng1 == ivs1_2)
+                if ((rng1 & 0x7FFF) == ivs1)
                 {
                     //  We have a max of 5 total RNG calls
                     //  to make a pokemon and we already have
@@ -901,7 +716,6 @@ namespace PKHeX.WinForms.Misc
                     rng.GetNext16BitNumber();
                     uint method234Seed = rng.Seed;
                     uint method234SeedXor = method234Seed ^ 0x80000000;
-                    uint choppedPID;
 
                     //  Check Method 1
                     // [PID] [PID] [IVs] [IVs]
@@ -1053,483 +867,9 @@ namespace PKHeX.WinForms.Misc
                         };
                         seeds.Add(newSeed);
                     }
-
-                    //  DPPt Cute Charm
-                    if (rng3 / 0x5556 != 0)
-                    {
-                        //  Check DPPt Cute Charm
-                        //  [CC Check] [PID] [IVs] [IVs]
-                        //  [rng3] [rng2] [rng1] [START]
-
-                        choppedPID = rng2 / 0xA3E;
-                        pass = choppedPID % 25 == nature;
-                        if (pass)
-                        {
-                            var newSeed = new Seed
-                            {
-                                Method = "Cute Charm (DPPt)",
-                                Pid = choppedPID,
-                                MonsterSeed = method1Seed,
-                                Sid = (choppedPID ^ id) & 0xFFF8
-                            };
-                            seeds.Add(newSeed);
-                        }
-
-                        //  Check DPPt Cute Charm (50% male)
-                        //  [CC Check] [PID] [IVs] [IVs]
-                        //  [rng3] [rng2] [rng1] [START]
-
-                        //choppedPID = rng2 / 0xA3E + 0x96;
-                        if (pass)
-                        {
-                            choppedPID += 0x96;
-                            var newSeed = new Seed
-                            {
-                                Method = "Cute Charm (DPPt)",
-                                Pid = choppedPID,
-                                MonsterSeed = method1Seed,
-                                Sid = (choppedPID ^ id) & 0xFFF8
-                            };
-                            seeds.Add(newSeed);
-                        }
-
-                        //  Check DPPt Cute Charm (25% male)
-                        //  [CC Check] [PID] [IVs] [IVs]
-                        //  [rng3] [rng2] [rng1] [START]
-
-                        //choppedPID = rng2 / 0xA3E + 0xC8;
-                        if (pass)
-                        {
-                            choppedPID += 0x32;
-                            var newSeed = new Seed
-                            {
-                                Method = "Cute Charm (DPPt)",
-                                Pid = choppedPID,
-                                MonsterSeed = method1Seed,
-                                Sid = (choppedPID ^ id) & 0xFFF8
-                            };
-                            seeds.Add(newSeed);
-                        }
-
-                        //  Check DPPt Cute Charm (75% male)
-                        //  [CC Check] [PID] [IVs] [IVs]
-                        //  [rng3] [rng2] [rng1] [START]
-
-                        //choppedPID = rng2 / 0xA3E + 0x4B;
-                        if (pass)
-                        {
-                            choppedPID -= 0x7D;
-                            var newSeed = new Seed
-                            {
-                                Method = "Cute Charm (DPPt)",
-                                Pid = choppedPID,
-                                MonsterSeed = method1Seed,
-                                Sid = (choppedPID ^ id) & 0xFFF8
-                            };
-                            seeds.Add(newSeed);
-                        }
-
-                        //  Check DPPt Cute Charm (87.5% male)
-                        //  [CC Check] [PID] [IVs] [IVs]
-                        //  [rng3] [rng2] [rng1] [START]
-
-                        //choppedPID = rng2 / 0xA3E + 0x32;
-                        if (pass)
-                        {
-                            choppedPID -= 0x19;
-                            var newSeed = new Seed
-                            {
-                                Method = "Cute Charm (DPPt)",
-                                Pid = choppedPID,
-                                MonsterSeed = method1Seed,
-                                Sid = (choppedPID ^ id) & 0xFFF8
-                            };
-                            seeds.Add(newSeed);
-                        }
-                    }
-
-                    //  HGSS Cute Charm
-                    if (rng3 % 3 != 0)
-                    {
-                        //  Check HGSS Cute Charm
-                        //  [CC Check] [PID] [IVs] [IVs]
-                        //  [rng3] [rng2] [rng1] [START]
-
-                        choppedPID = rng2 % 25;
-                        pass = choppedPID == nature;
-                        if (pass)
-                        {
-                            var newSeed = new Seed
-                            {
-                                Method = "Cute Charm (HGSS)",
-                                Pid = choppedPID,
-                                MonsterSeed = method1Seed,
-                                Sid = (choppedPID ^ id) & 0xFFF8
-                            };
-                            seeds.Add(newSeed);
-                        }
-
-                        //  Check HGSS Cute Charm (50% male)
-                        //  [CC Check] [PID] [IVs] [IVs]
-                        //  [rng3] [rng2] [rng1] [START]
-
-                        //choppedPID = rng2 % 25 + 0x96;
-                        if (pass)
-                        {
-                            choppedPID += 0x96;
-                            var newSeed = new Seed
-                            {
-                                Method = "Cute Charm (HGSS)",
-                                Pid = choppedPID,
-                                MonsterSeed = method1Seed,
-                                Sid = (choppedPID ^ id) & 0xFFF8
-                            };
-                            seeds.Add(newSeed);
-                        }
-
-                        //  Check HGSS Cute Charm (25% male)
-                        //  [CC Check] [PID] [IVs] [IVs]
-                        //  [rng3] [rng2] [rng1] [START]
-
-                        //choppedPID = rng2 % 25 + 0xC8;
-                        if (pass)
-                        {
-                            choppedPID += 0x32;
-                            var newSeed = new Seed
-                            {
-                                Method = "Cute Charm (HGSS)",
-                                Pid = choppedPID,
-                                MonsterSeed = method1Seed,
-                                Sid = (choppedPID ^ id) & 0xFFF8
-                            };
-                            seeds.Add(newSeed);
-                        }
-
-                        //  Check HGSS Cute Charm (75% male)
-                        //  [CC Check] [PID] [IVs] [IVs]
-                        //  [rng3] [rng2] [rng1] [START]
-
-                        //choppedPID = rng2 % 25 + 0x4B;
-                        if (pass)
-                        {
-                            choppedPID -= 0x7D;
-                            var newSeed = new Seed
-                            {
-                                Method = "Cute Charm (HGSS)",
-                                Pid = choppedPID,
-                                MonsterSeed = method1Seed,
-                                Sid = (choppedPID ^ id) & 0xFFF8
-                            };
-                            seeds.Add(newSeed);
-                        }
-
-                        //  Check HGSS Cute Charm (87.5% male)
-                        //  [CC Check] [PID] [IVs] [IVs]
-                        //  [rng3] [rng2] [rng1] [START]
-
-                        //choppedPID = rng2 % 25 + 0x32;
-                        if (pass)
-                        {
-                            choppedPID -= 0x19;
-                            var newSeed = new Seed
-                            {
-                                Method = "Cute Charm (HGSS)",
-                                Pid = choppedPID,
-                                MonsterSeed = method1Seed,
-                                Sid = (choppedPID ^ id) & 0xFFF8
-                            };
-                            seeds.Add(newSeed);
-                        }
-                    }
-
-                    //  DPPt Cute Charm XOR
-                    rng3 ^= 0x8000;
-                    rng2 ^= 0x8000;
-                    if (rng3 / 0x5556 != 0)
-                    {
-                        //  Check DPPt Cute Charm
-                        //  [CC Check] [PID] [IVs] [IVs]
-                        //  [rng3] [rng2] [rng1] [START]
-
-                        choppedPID = rng2 / 0xA3E;
-                        pass = choppedPID % 25 == nature;
-                        if (pass)
-                        {
-                            var newSeed = new Seed
-                            {
-                                Method = "Cute Charm (DPPt)",
-                                Pid = choppedPID,
-                                MonsterSeed = method1SeedXor,
-                                Sid = (choppedPID ^ id) & 0xFFF8
-                            };
-                            seeds.Add(newSeed);
-                        }
-
-                        //  Check DPPt Cute Charm (50% male)
-                        //  [CC Check] [PID] [IVs] [IVs]
-                        //  [rng3] [rng2] [rng1] [START]
-
-                        //choppedPID = rng2 / 0xA3E + 0x96;
-                        if (pass)
-                        {
-                            choppedPID += 0x96;
-                            var newSeed = new Seed
-                            {
-                                Method = "Cute Charm (DPPt)",
-                                Pid = choppedPID,
-                                MonsterSeed = method1SeedXor,
-                                Sid = (choppedPID ^ id) & 0xFFF8
-                            };
-                            seeds.Add(newSeed);
-                        }
-
-                        //  Check DPPt Cute Charm (25% male)
-                        //  [CC Check] [PID] [IVs] [IVs]
-                        //  [rng3] [rng2] [rng1] [START]
-
-                        //choppedPID = rng2 / 0xA3E + 0xC8;
-                        if (pass)
-                        {
-                            choppedPID += 0x32;
-                            var newSeed = new Seed
-                            {
-                                Method = "Cute Charm (DPPt)",
-                                Pid = choppedPID,
-                                MonsterSeed = method1SeedXor,
-                                Sid = (choppedPID ^ id) & 0xFFF8
-                            };
-                            seeds.Add(newSeed);
-                        }
-
-                        //  Check DPPt Cute Charm (75% male)
-                        //  [CC Check] [PID] [IVs] [IVs]
-                        //  [rng3] [rng2] [rng1] [START]
-
-                        //choppedPID = rng2 / 0xA3E + 0x4B;
-                        if (pass)
-                        {
-                            choppedPID -= 0x7D;
-                            var newSeed = new Seed
-                            {
-                                Method = "Cute Charm (DPPt)",
-                                Pid = choppedPID,
-                                MonsterSeed = method1SeedXor,
-                                Sid = (choppedPID ^ id) & 0xFFF8
-                            };
-                            seeds.Add(newSeed);
-                        }
-
-                        //  Check DPPt Cute Charm (87.5% male)
-                        //  [CC Check] [PID] [IVs] [IVs]
-                        //  [rng3] [rng2] [rng1] [START]
-
-                        //choppedPID = rng2 / 0xA3E + 0x32;
-                        if (pass)
-                        {
-                            choppedPID -= 0x19;
-                            var newSeed = new Seed
-                            {
-                                Method = "Cute Charm (DPPt)",
-                                Pid = choppedPID,
-                                MonsterSeed = method1SeedXor,
-                                Sid = (choppedPID ^ id) & 0xFFF8
-                            };
-                            seeds.Add(newSeed);
-                        }
-                    }
-
-                    //  HGSS Cute Charm XOR
-                    if (rng3 % 3 != 0)
-                    {
-                        //  Check HGSS Cute Charm
-                        //  [CC Check] [PID] [IVs] [IVs]
-                        //  [rng3] [rng2] [rng1] [START]
-
-                        choppedPID = rng2 % 25;
-                        pass = choppedPID == nature;
-                        if (pass)
-                        {
-                            var newSeed = new Seed
-                            {
-                                Method = "Cute Charm (HGSS)",
-                                Pid = choppedPID,
-                                MonsterSeed = method1SeedXor,
-                                Sid = (choppedPID ^ id) & 0xFFF8
-                            };
-                            seeds.Add(newSeed);
-                        }
-
-                        //  Check HGSS Cute Charm (50% male)
-                        //  [CC Check] [PID] [IVs] [IVs]
-                        //  [rng3] [rng2] [rng1] [START]
-
-                        //choppedPID = rng2 % 25 + 0x96;
-                        if (pass)
-                        {
-                            choppedPID += 0x96;
-                            var newSeed = new Seed
-                            {
-                                Method = "Cute Charm (HGSS)",
-                                Pid = choppedPID,
-                                MonsterSeed = method1SeedXor,
-                                Sid = (choppedPID ^ id) & 0xFFF8
-                            };
-                            seeds.Add(newSeed);
-                        }
-
-                        //  Check HGSS Cute Charm (25% male)
-                        //  [CC Check] [PID] [IVs] [IVs]
-                        //  [rng3] [rng2] [rng1] [START]
-
-                        //choppedPID = rng2 % 25 + 0xC8;
-                        if (pass)
-                        {
-                            choppedPID += 0x32;
-                            var newSeed = new Seed
-                            {
-                                Method = "Cute Charm (HGSS)",
-                                Pid = choppedPID,
-                                MonsterSeed = method1SeedXor,
-                                Sid = (choppedPID ^ id) & 0xFFF8
-                            };
-                            seeds.Add(newSeed);
-                        }
-
-                        //  Check HGSS Cute Charm (75% male)
-                        //  [CC Check] [PID] [IVs] [IVs]
-                        //  [rng3] [rng2] [rng1] [START]
-
-                        //choppedPID = rng2 % 25 + 0x4B;
-                        if (pass)
-                        {
-                            choppedPID -= 0x7D;
-                            var newSeed = new Seed
-                            {
-                                Method = "Cute Charm (HGSS)",
-                                Pid = choppedPID,
-                                MonsterSeed = method1SeedXor,
-                                Sid = (choppedPID ^ id) & 0xFFF8
-                            };
-                            seeds.Add(newSeed);
-                        }
-
-                        //  Check HGSS Cute Charm (87.5% male)
-                        //  [CC Check] [PID] [IVs] [IVs]
-                        //  [rng3] [rng2] [rng1] [START]
-
-                        //choppedPID = rng2 % 25 + 0x32;
-                        if (pass)
-                        {
-                            choppedPID -= 0x19;
-                            var newSeed = new Seed
-                            {
-                                Method = "Cute Charm (HGSS)",
-                                Pid = choppedPID,
-                                MonsterSeed = method1SeedXor,
-                                Sid = (choppedPID ^ id) & 0xFFF8
-                            };
-                            seeds.Add(newSeed);
-                        }
-                    }
                 }
             }
             return seeds;
-        }
-
-
-        // Overloaded method for SeedFinder's Open Search
-        public static List<Seed> GetSeeds(
-            uint hp,
-            uint atk,
-            uint def,
-            uint spa,
-            uint spd,
-            uint spe,
-            uint nature)
-        {
-            var seeds = new List<Seed>();
-
-            uint ivs2 = spe | (spa << 5) | (spd << 10);
-            uint ivs2_2 = ivs2 ^ 0x8000;
-
-            uint ivs1 = hp | (atk << 5) | (def << 10);
-            uint ivs1_2 = ivs1 ^ 0x8000;
-
-            uint x_test = ivs2 << 16;
-
-            //  Now we want to start with IV2 and call the RNG for
-            //  values between 0 and FFFF in the low order bits.
-            for (uint cnt = 0; cnt <= 0xFFFF; cnt++)
-            {
-                //  Set our test seed here so we can start
-                //  working backwards to see if the rest
-                //  of the information we were provided 
-                //  is a match.
-
-                uint seed = x_test | (cnt & 0xFFFF);
-
-                var rng = new PokeRngR(seed);
-
-                //  Right now, this simply assumes method
-                //  1 and gets the value previous to check
-                //  for  match.  We need a clean way to do
-                //  this for all of our methods.
-
-                uint rng1 = rng.GetNext16BitNumber();
-
-                //Check if ivs line up
-                if (rng1 == ivs1 || rng1 == ivs1_2)
-                {
-                    //  We have a max of 5 total RNG calls
-                    //  to make a pokemon and we already have
-                    //  one so lets go ahead and get 4 more.
-                    uint rng2 = rng.GetNext16BitNumber();
-                    uint rng3 = rng.GetNext16BitNumber();
-                    uint rng4 = rng.GetNext16BitNumber();
-                    uint pid = (rng2 << 16) + rng3;
-                    uint method1Seed = rng.Seed;
-
-                    //  Check Method 1
-                    // [PID] [PID] [IVs] [IVs]
-                    // [rng3] [rng2] [rng1] [START]
-                    if (pid % 25 == nature)
-                    {
-                        //  Build a seed to add to our collection
-                        var newSeed = new Seed
-                        {
-                            Method = "Method 1",
-                            Pid = pid,
-                            MonsterSeed = method1Seed
-                        };
-                        seeds.Add(newSeed);
-                    }
-
-                    // Check Method 1 XOR
-                    // [PID] [PID] [IVs] [IVs]
-                    // [rng3] [rng2] [rng1] [START]
-                    pid ^= 0x80008000;
-                    if (pid % 25 == nature)
-                    {
-                        //  Build a seed to add to our collection
-                        var newSeed = new Seed
-                        {
-                            Method = "Method 1",
-                            Pid = pid,
-                            MonsterSeed = method1Seed ^ 0x80000000
-                        };
-                        seeds.Add(newSeed);
-                    }
-                }
-            }
-            return seeds;
-        }
-
-        public static bool CheckPID(uint pid2, uint pid1, uint nature)
-        {
-            //  Do a nature comparison with what we have selected
-            //  in the dropdown and if we have a good match we can
-            //  go ahead and add this to our starting seeds.
-            return nature == ((pid2 << 16) | pid1) % 25;
         }
     }
 
@@ -1594,7 +934,7 @@ namespace PKHeX.WinForms.Misc
             return ans;
         }
 
-        public string[] generateWishmkr(List<uint> natureList)
+        public string[] generateWishmkr(uint targetNature)
         {
             uint finalPID = 0;
             uint finalHP = 0;
@@ -1610,7 +950,7 @@ namespace PKHeX.WinForms.Misc
                 uint pid = (pid1 & 0xFFFF0000) | (pid2 >> 16);
                 uint nature = pid % 25;
 
-                if (natureList == null || natureList.Contains(nature))
+                if (nature == targetNature)
                 {
                     uint ivs1 = forward(pid2);
                     uint ivs2 = forward(ivs1);
@@ -1644,31 +984,12 @@ namespace PKHeX.WinForms.Misc
 
             for (int x = 0; x < 3; x++)
             {
-                int q = x * 5;
-                uint iv = (iv1 >> q) & 31;
-                if (iv >= 0 && iv <= 31)
-                    ivs[x] = iv;
-                else
-                    return null;
+                ivs[x] = (iv1 >> (x * 5)) & 31;
             }
 
-            uint iV = (ivs2 >> 5) & 31;
-            if (iV >= 0 && iV <= 31)
-                ivs[3] = iV;
-            else
-                return null;
-
-            iV = (ivs2 >> 10) & 31;
-            if (iV >= 0 && iV <= 31)
-                ivs[4] = iV;
-            else
-                return null;
-
-            iV = ivs2 & 31;
-            if (iV >= 0 && iV <= 31)
-                ivs[5] = iV;
-            else
-                return null;
+            ivs[3] = (ivs2 >> 5) & 31;
+            ivs[4] = (ivs2 >> 10) & 31;
+            ivs[5] = ivs2 & 31;
 
             return ivs;
         }
@@ -1793,11 +1114,9 @@ namespace PKHeX.WinForms.Misc
                     FrameType = FrameType.Method1Reverse
                 };
                 IVtoPIDGenerator bacdr = new IVtoPIDGenerator();
-                return bacdr.generateWishmkr(new List<uint> { nature });
+                return bacdr.generateWishmkr(nature);
             }
-            FrameCompare frameCompare = new FrameCompare(
-                    hptofilter(hiddenpower),
-                    new List<uint> { nature });
+            FrameCompare frameCompare = new FrameCompare(hptofilter(hiddenpower), nature);
             List<Frame> frames = generator.Generate(frameCompare, 0, 0);
             Console.WriteLine("Num frames: " + frames.Count);
             return new string[] { frames[0].Pid.ToString("X"), frames[0].Hp.ToString(), frames[0].Atk.ToString(), frames[0].Def.ToString(), frames[0].Spa.ToString(), frames[0].Spd.ToString(), frames[0].Spe.ToString() };
