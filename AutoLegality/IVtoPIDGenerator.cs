@@ -80,6 +80,7 @@ namespace PKHeX.WinForms.Misc
         Method1,
         Method1Reverse,
         Method2,
+        Method4,
         ColoXD,
         Channel
     };
@@ -334,6 +335,46 @@ namespace PKHeX.WinForms.Misc
 
             return frame;
         }
+
+        // for channel
+        public static Frame GenerateFrame(
+            uint seed,
+            FrameType frameType,
+            uint number,
+            uint rngResult,
+            uint pid1,
+            uint pid2,
+            uint dv1,
+            uint dv2,
+            uint dv3,
+            uint dv4,
+            uint dv5,
+            uint dv6,
+            uint id,
+            uint sid)
+        {
+            if ((pid2 > 7 ? 0 : 1) != (pid1 ^ 40122 ^ sid))
+                pid1 ^= 0x8000;
+
+            var frame = new Frame(frameType)
+            {
+                seed = seed,
+                number = number,
+                RngResult = rngResult,
+                id = id,
+                sid = sid,
+                Pid = (pid1 << 16) | pid2
+            };
+
+            frame.Hp = dv1;
+            frame.Atk = dv2;
+            frame.Def = dv3;
+            frame.Spa = dv4;
+            frame.Spd = dv5;
+            frame.Spe = dv6;
+
+            return frame;
+        }
     }
 
     internal class FrameCompare
@@ -510,21 +551,45 @@ namespace PKHeX.WinForms.Misc
                 for (uint cnt = 1; cnt < InitialFrame; cnt++)
                     rng.GetNext32BitNumber();
 
-                for (uint cnt = 0; cnt < 5; cnt++)
+                for (uint cnt = 0; cnt < 12; cnt++)
                     rngList.Add(rng.GetNext16BitNumber());
 
                 for (uint cnt = 0; cnt < maxResults; cnt++, rngList.RemoveAt(0), rngList.Add(rng.GetNext16BitNumber()))
                 {
-                    frame = Frame.GenerateFrame(
-                        0,
-                        FrameType.ColoXD,
-                        cnt + InitialFrame,
-                        rngList[0],
-                        rngList[4],
-                        rngList[3],
-                        rngList[0],
-                        rngList[1],
-                        id, sid);
+                    switch (frameType)
+                    {
+                        case FrameType.ColoXD:
+                            frame = Frame.GenerateFrame(
+                                0,
+                                FrameType.ColoXD,
+                                cnt + InitialFrame,
+                                rngList[0],
+                                rngList[4],
+                                rngList[3],
+                                rngList[0],
+                                rngList[1],
+                                id, sid);
+
+                            break;
+
+                        case FrameType.Channel:
+                            frame = Frame.GenerateFrame(
+                                0,
+                                FrameType.Channel,
+                                cnt + InitialFrame,
+                                rngList[0],
+                                rngList[1],
+                                rngList[2],
+                                (rngList[6]) >> 11,
+                                (rngList[7]) >> 11,
+                                (rngList[8]) >> 11,
+                                (rngList[10]) >> 11,
+                                (rngList[11]) >> 11,
+                                (rngList[9]) >> 11,
+                                40122, rngList[0]);
+
+                            break;
+                    }
 
 
                     if (frameCompare.Compare(frame))
@@ -572,7 +637,7 @@ namespace PKHeX.WinForms.Misc
                             frame =
                                 Frame.GenerateFrame(
                                     0,
-                                    FrameType.Method1,
+                                    FrameType.Method1Reverse,
                                     cnt + InitialFrame,
                                     rngList[0],
                                     rngList[1],
@@ -598,7 +663,21 @@ namespace PKHeX.WinForms.Misc
 
                             break;
 
-                    }    
+                        case FrameType.Method4:
+                            frame =
+                                Frame.GenerateFrame(
+                                    0,
+                                    FrameType.Method4,
+                                    cnt + InitialFrame,
+                                    rngList[0],
+                                    rngList[0],
+                                    rngList[1],
+                                    rngList[2],
+                                    rngList[4],
+                                    id, sid, cnt);
+
+                            break;
+                    }
 
 
                     //  Now we need to filter and decide if we are going
@@ -632,243 +711,400 @@ namespace PKHeX.WinForms.Misc
             uint spd,
             uint spe,
             uint nature,
-            uint id)
+            uint tid,
+            FrameType type)
         {
             var seeds = new List<Seed>();
+            Dictionary<uint, uint> keys;
+            var rng = new PokeRngR(0);
+            var forward = new XdRng(0);
+            var back = new XdRngR(0);
 
-            uint ivs2 = spe | (spa << 5) | (spd << 10);
-            uint ivs1 = hp | (atk << 5) | (def << 10);
+            uint first = (hp | (atk << 5) | (def << 10)) << 16;
+            uint second = (spe | (spa << 5) | (spd << 10)) << 16;
 
-            uint x_test = ivs2 << 16;
-            uint x_testXD = ivs1 << 16;
-            uint pid, pidXor, sid;
+            uint pid1, pid2, pid, seed;
 
-            //  Now we want to start with IV2 and call the RNG for
-            //  values between 0 and FFFF in the low order bits.
-            for (uint cnt = 0; cnt <= 0xFFFF; cnt++)
+            uint search1, search2;
+
+            ulong t, kmax;
+
+            switch (type)
             {
-                //Check to see if the iv calls line up
-                uint seedXD = x_testXD | cnt;
-                var rngXD = new XdRng(seedXD);
-                var rngXDR = new XdRngR(seedXD);
-                uint rng1XD = rngXD.GetNext16BitNumber();
-
-                if ((rng1XD & 0x7FFF) == ivs2)
-                {
-                    //Grab rest of RNG calls for XDColo
-                    uint rng2XD = rngXD.GetNext16BitNumber();
-                    uint rng3XD = rngXD.GetNext16BitNumber();
-                    uint rng4XD = rngXD.GetNext16BitNumber();
-                    uint XDColoSeed = rngXDR.GetNext32BitNumber();
-                    uint XDColoSeedXor = XDColoSeed ^ 0x80000000;
-                    sid = (rng4XD ^ rng3XD ^ id) & 0xFFF8;
-
-                    //  Check Colosseum\XD
-                    // [IVs] [IVs] [xxx] [PID] [PID]
-                    // [START] [rng1] [rng3]
-                    pid = (rng3XD << 16) | rng4XD;
-                    if (pid % 25 == nature)
+                case FrameType.Method1:
+                    keys = new Dictionary<uint, uint>();
+                    for (uint i = 0; i < 256; i++)
                     {
-                        var newSeed = new Seed
-                        {
-                            Method = "Colosseum/XD",
-                            Pid = pid,
-                            MonsterSeed = XDColoSeed,
-                            Sid = sid
-                        };
-                        seeds.Add(newSeed);
+                        uint right = 0x41c64e6d * i + 0x6073;
+                        ushort val = (ushort)(right >> 16);
+
+                        keys[val] = i;
+                        keys[--val] = i;
                     }
 
-                    //  Check Colosseum\XD XOR
-                    // [IVs] [IVs] [xxx] [PID] [PID]
-                    // [START] [rng1] [rng3]
-                    pidXor = pid ^ 0x80008000;
-                    if (pidXor % 25 == nature)
+                    search1 = second - first * 0x41c64e6d;
+                    search2 = second - (first ^ 0x80000000) * 0x41c64e6d;
+                    for (uint cnt = 0; cnt < 256; ++cnt, search1 -= 0xc64e6d00, search2 -= 0xc64e6d00)
                     {
-                        var newSeed = new Seed
+                        uint test = search1 >> 16;
+
+                        if (keys.ContainsKey(test))
                         {
-                            Method = "Colosseum/XD",
-                            Pid = pid,
-                            MonsterSeed = XDColoSeedXor,
-                            Sid = sid
-                        };
-                        seeds.Add(newSeed);
-                    }
-                }
+                            rng.Seed = (first | (cnt << 8) | keys[test]);
+                            if (((rng.Seed * 0x41c64e6d + 0x6073) & 0x7FFF0000) == second)
+                            {
+                                pid2 = rng.GetNext16BitNumber();
+                                pid1 = rng.GetNext16BitNumber();
+                                pid = (pid1 << 16) | pid2;
+                                seed = rng.GetNext32BitNumber();
+                                if (pid % 25 == nature)
+                                {
+                                    var newSeed = new Seed
+                                    {
+                                        Method = "Method 1",
+                                        Pid = pid,
+                                        MonsterSeed = seed,
+                                        Sid = (tid ^ pid1 ^ pid2)
+                                    };
+                                    seeds.Add(newSeed);
+                                }
 
-                //  Now test rest of methods
-                uint seed = x_test | cnt;
-                var rng = new PokeRngR(seed);
-                uint rng1 = rng.GetNext16BitNumber();
-                //Checks that ivs line up
-                if ((rng1 & 0x7FFF) == ivs1)
-                {
-                    //  We have a max of 5 total RNG calls
-                    //  to make a pokemon and we already have
-                    //  one so lets go ahead and get 4 more.
-                    uint rng2 = rng.GetNext16BitNumber();
-                    uint rng3 = rng.GetNext16BitNumber();
-                    uint rng4 = rng.GetNext16BitNumber();
-                    uint method1Seed = rng.Seed;
-                    uint method1SeedXor = method1Seed ^ 0x80000000;
-                    sid = (rng2 ^ rng3 ^ id) & 0xFFF8;
+                                pid ^= 0x80000000;
+                                if (pid % 25 == nature)
+                                {
+                                    var newSeed = new Seed
+                                    {
+                                        Method = "Method 1",
+                                        Pid = pid,
+                                        MonsterSeed = seed ^ 0x80000000,
+                                        Sid = (tid ^ pid1 ^ pid2)
+                                    };
+                                    seeds.Add(newSeed);
+                                }
+                            }
+                        }
 
-                    rng.GetNext16BitNumber();
-                    uint method234Seed = rng.Seed;
-                    uint method234SeedXor = method234Seed ^ 0x80000000;
+                        test = search2 >> 16;
 
-                    //  Check Method 1
-                    // [PID] [PID] [IVs] [IVs]
-                    // [rng3] [rng2] [rng1] [START]
-                    pid = (rng2 << 16) + rng3;
-                    if (pid % 25 == nature)
-                    {
-                        //  Build a seed to add to our collection
-                        var newSeed = new Seed
+                        if (keys.ContainsKey(test))
                         {
-                            Method = "Method 1",
-                            Pid = pid,
-                            MonsterSeed = method1Seed,
-                            Sid = sid
-                        };
-                        seeds.Add(newSeed);
-                    }
+                            rng.Seed = (first | (cnt << 8) | keys[test]);
+                            if (((rng.Seed * 0x41c64e6d + 0x6073) & 0x7FFF0000) == second)
+                            {
+                                pid2 = rng.GetNext16BitNumber();
+                                pid1 = rng.GetNext16BitNumber();
+                                pid = (pid1 << 16) | pid2;
+                                seed = rng.GetNext32BitNumber();
+                                if (pid % 25 == nature)
+                                {
+                                    var newSeed = new Seed
+                                    {
+                                        Method = "Method 1",
+                                        Pid = pid,
+                                        MonsterSeed = seed,
+                                        Sid = (tid ^ pid1 ^ pid2)
+                                    };
+                                    seeds.Add(newSeed);
+                                }
 
-                    //  Check Method 1 XOR
-                    // [PID] [PID] [IVs] [IVs]
-                    // [rng3] [rng2] [rng1] [START]
-                    pidXor = pid ^ 0x80008000;
-                    if (pidXor % 25 == nature)
-                    {
-                        //  Build a seed to add to our collection
-                        var newSeed = new Seed
-                        {
-                            Method = "Method 1",
-                            Pid = pidXor,
-                            MonsterSeed = method1SeedXor,
-                            Sid = sid
-                        };
-                        seeds.Add(newSeed);
-                    }
-
-                    //  Check Reverse Method 1
-                    // [PID] [PID] [IVs] [IVs]
-                    // [rng2] [rng3] [rng1] [START]
-                    pid = (rng3 << 16) + rng2;
-                    if (pid % 25 == nature)
-                    {
-                        //  Build a seed to add to our collection
-                        var newSeed = new Seed
-                        {
-                            Method = "Reverse Method 1",
-                            Pid = pid,
-                            MonsterSeed = method1Seed,
-                            Sid = sid
-                        };
-                        seeds.Add(newSeed);
+                                pid ^= 0x80000000;
+                                if (pid % 25 == nature)
+                                {
+                                    var newSeed = new Seed
+                                    {
+                                        Method = "Method 1",
+                                        Pid = pid,
+                                        MonsterSeed = seed ^ 0x80000000,
+                                        Sid = (tid ^ pid1 ^ pid2)
+                                    };
+                                    seeds.Add(newSeed);
+                                }
+                            }
+                        }
                     }
 
-                    //  Check Reverse Method 1 XOR
-                    // [PID] [PID] [IVs] [IVs]
-                    // [rng2] [rng3] [rng1] [START]
-                    pid = pid ^ 0x80008000;
-                    if (pid % 25 == nature)
+                    break;
+
+                case FrameType.Method2:
+                    keys = new Dictionary<uint, uint>();
+                    for (uint i = 0; i < 256; i++)
                     {
-                        //  Build a seed to add to our collection
-                        var newSeed = new Seed
-                        {
-                            Method = "Reverse Method 1",
-                            Pid = pid,
-                            MonsterSeed = method1SeedXor,
-                            Sid = sid
-                        };
-                        seeds.Add(newSeed);
+                        uint right = 0x41c64e6d * i + 0x6073;
+                        ushort val = (ushort)(right >> 16);
+
+                        keys[val] = i;
+                        keys[--val] = i;
                     }
 
-
-                    //  Check Method 2
-                    // [PID] [PID] [xxxx] [IVs] [IVs]
-                    // [rng4] [rng3] [xxxx] [rng1] [START]
-                    pid = (rng3 << 16) + rng4;
-                    sid = (rng3 ^ rng4 ^ id) & 0xFFF8;
-                    if (pid % 25 == nature)
+                    search1 = second - first * 0x41c64e6d;
+                    search2 = second - (first ^ 0x80000000) * 0x41c64e6d;
+                    for (uint cnt = 0; cnt < 256; ++cnt, search1 -= 0xc64e6d00, search2 -= 0xc64e6d00)
                     {
-                        //  Build a seed to add to our collection
-                        var newSeed = new Seed
+                        uint test = search1 >> 16;
+
+                        if (keys.ContainsKey(test))
                         {
-                            Method = "Method 2",
-                            Pid = pid,
-                            MonsterSeed = method234Seed,
-                            Sid = sid
-                        };
-                        seeds.Add(newSeed);
+                            rng.Seed = (first | (cnt << 8) | keys[test]);
+                            if (((rng.Seed * 0x41c64e6d + 0x6073) & 0x7FFF0000) == second)
+                            {
+                                rng.GetNext32BitNumber();
+                                pid2 = rng.GetNext16BitNumber();
+                                pid1 = rng.GetNext16BitNumber();
+                                pid = (pid1 << 16) | pid2;
+                                seed = rng.GetNext32BitNumber();
+                                if (pid % 25 == nature)
+                                {
+                                    var newSeed = new Seed
+                                    {
+                                        Method = "Method 2",
+                                        Pid = pid,
+                                        MonsterSeed = seed,
+                                        Sid = (tid ^ pid1 ^ pid2)
+                                    };
+                                    seeds.Add(newSeed);
+                                }
+
+                                pid ^= 0x80000000;
+                                if (pid % 25 == nature)
+                                {
+                                    var newSeed = new Seed
+                                    {
+                                        Method = "Method 2",
+                                        Pid = pid,
+                                        MonsterSeed = seed ^ 0x80000000,
+                                        Sid = (tid ^ pid1 ^ pid2)
+                                    };
+                                    seeds.Add(newSeed);
+                                }
+                            }
+                        }
+
+                        test = search2 >> 16;
+
+                        if (keys.ContainsKey(test))
+                        {
+                            rng.Seed = (first | (cnt << 8) | keys[test]);
+                            if (((rng.Seed * 0x41c64e6d + 0x6073) & 0x7FFF0000) == second)
+                            {
+                                pid2 = rng.GetNext16BitNumber();
+                                pid1 = rng.GetNext16BitNumber();
+                                pid = (pid1 << 16) | pid2;
+                                seed = rng.GetNext32BitNumber();
+                                if (pid % 25 == nature)
+                                {
+                                    var newSeed = new Seed
+                                    {
+                                        Method = "Method 2",
+                                        Pid = pid,
+                                        MonsterSeed = seed,
+                                        Sid = (tid ^ pid1 ^ pid2)
+                                    };
+                                    seeds.Add(newSeed);
+                                }
+
+                                pid ^= 0x80000000;
+                                if (pid % 25 == nature)
+                                {
+                                    var newSeed = new Seed
+                                    {
+                                        Method = "Method 2",
+                                        Pid = pid,
+                                        MonsterSeed = seed ^ 0x80000000,
+                                        Sid = (tid ^ pid1 ^ pid2)
+                                    };
+                                    seeds.Add(newSeed);
+                                }
+                            }
+                        }
                     }
 
-                    //  Check Method 2
-                    // [PID] [PID] [xxxx] [IVs] [IVs]
-                    // [rng4] [rng3] [xxxx] [rng1] [START]
-                    pidXor = pid ^ 0x80008000;
-                    if (pidXor % 25 == nature)
+                    break;
+
+                case FrameType.Method4:
+                    keys = new Dictionary<uint, uint>();
+                    for (uint i = 0; i < 256; i++)
                     {
-                        //  Build a seed to add to our collection
-                        var newSeed = new Seed
-                        {
-                            Method = "Method 2",
-                            Pid = pidXor,
-                            MonsterSeed = method234SeedXor,
-                            Sid = sid
-                        };
-                        seeds.Add(newSeed);
+                        uint right = 0xc2a29a69 * i + 0xe97e7b6a;
+                        ushort val = (ushort)(right >> 16);
+
+                        keys[val] = i;
+                        keys[--val] = i;
                     }
 
-                    /* Removed because Method 3 doesn't exist in-game
-                    //  Check Method 3
-                    //  [PID] [xxxx] [PID] [IVs] [IVs]
-                    //  [rng4] [xxxx] [rng2] [rng1] [START]
-                    if (Check(rng1, rng2, rng4, hp, atk, def, nature))
+                    search1 = second - first * 0x41c64e6d;
+                    search2 = second - (first ^ 0x80000000) * 0x41c64e6d;
+                    for (uint cnt = 0; cnt < 256; ++cnt, search1 -= 0xc64e6d00, search2 -= 0xc64e6d00)
                     {
-                        //  Build a seed to add to our collection
-                        Seed newSeed = new Seed();
-                        newSeed.Method = "Method 3";
-                        newSeed.Pid = (rng2 << 16) + rng4;
-                        newSeed.MonsterSeed = method234Seed;
-                        newSeed.Sid = (rng2 ^ rng4 ^ id) & 0xFFF8;
-                        seeds.Add(newSeed);
-                    } */
+                        uint test = search1 >> 16;
 
-                    //  Check Method 4
-                    //  [PID] [PID] [IVs] [xxxx] [IVs]
-                    //  [rng4] [rng3] [rng2] [xxxx] [START]
-                    if (pid % 25 == nature)
-                    {
-                        //  Build a seed to add to our collection
-                        var newSeed = new Seed
+                        if (keys.ContainsKey(test))
                         {
-                            Method = "Method 4",
-                            Pid = pid,
-                            MonsterSeed = method234Seed,
-                            Sid = sid
-                        };
-                        seeds.Add(newSeed);
+                            rng.Seed = (first | (cnt << 8) | keys[test]);
+                            if (((rng.Seed * 0x41c64e6d + 0x6073) & 0x7FFF0000) == second)
+                            {
+                                pid2 = rng.GetNext16BitNumber();
+                                pid1 = rng.GetNext16BitNumber();
+                                pid = (pid1 << 16) | pid2;
+                                seed = rng.GetNext32BitNumber();
+                                if (pid % 25 == nature)
+                                {
+                                    var newSeed = new Seed
+                                    {
+                                        Method = "Method 4",
+                                        Pid = pid,
+                                        MonsterSeed = seed,
+                                        Sid = (tid ^ pid1 ^ pid2)
+                                    };
+                                    seeds.Add(newSeed);
+                                }
+
+                                pid ^= 0x80000000;
+                                if (pid % 25 == nature)
+                                {
+                                    var newSeed = new Seed
+                                    {
+                                        Method = "Method 4",
+                                        Pid = pid,
+                                        MonsterSeed = seed ^ 0x80000000,
+                                        Sid = (tid ^ pid1 ^ pid2)
+                                    };
+                                    seeds.Add(newSeed);
+                                }
+                            }
+                        }
+
+                        test = search2 >> 16;
+
+                        if (keys.ContainsKey(test))
+                        {
+                            rng.Seed = (first | (cnt << 8) | keys[test]);
+                            if (((rng.Seed * 0x41c64e6d + 0x6073) & 0x7FFF0000) == second)
+                            {
+                                pid2 = rng.GetNext16BitNumber();
+                                pid1 = rng.GetNext16BitNumber();
+                                pid = (pid1 << 16) | pid2;
+                                seed = rng.GetNext32BitNumber();
+                                if (pid % 25 == nature)
+                                {
+                                    var newSeed = new Seed
+                                    {
+                                        Method = "Method 4",
+                                        Pid = pid,
+                                        MonsterSeed = seed,
+                                        Sid = (tid ^ pid1 ^ pid2)
+                                    };
+                                    seeds.Add(newSeed);
+                                }
+
+                                pid ^= 0x80000000;
+                                if (pid % 25 == nature)
+                                {
+                                    var newSeed = new Seed
+                                    {
+                                        Method = "Method 4",
+                                        Pid = pid,
+                                        MonsterSeed = seed ^ 0x80000000,
+                                        Sid = (tid ^ pid1 ^ pid2)
+                                    };
+                                    seeds.Add(newSeed);
+                                }
+                            }
+                        }
                     }
 
-                    //  Check Method 4 XOR
-                    //  [PID] [PID] [IVs] [xxxx] [IVs]
-                    //  [rng4] [rng3] [rng2] [xxxx] [START]
-                    if (pidXor % 25 == nature)
+                    break;
+
+                case FrameType.ColoXD:
+
+                    t = ((second - 0x343fd * first) - 0x259ec4) & 0xFFFFFFFF;
+                    kmax = (0x343fabc02 - t) / 0x80000000;
+
+                    for (ulong k = 0; k <= kmax; k++, t += 0x80000000)
                     {
-                        //  Build a seed to add to our collection
-                        var newSeed = new Seed
+                        if ((t % 0x343fd) < 0x10000)
                         {
-                            Method = "Method 4",
-                            Pid = pid,
-                            MonsterSeed = method234SeedXor,
-                            Sid = sid
-                        };
-                        seeds.Add(newSeed);
+                            forward.Seed = back.Seed = (uint)(first | (t / 0x343fd));
+                            forward.GetNext32BitNumber(2);
+                            pid1 = forward.GetNext16BitNumber();
+                            pid2 = forward.GetNext16BitNumber();
+                            pid = (pid1 << 16) | pid2;
+                            seed = back.GetNext32BitNumber(); ;
+                            if (pid % 25 == nature)
+                            {
+                                var newSeed = new Seed
+                                {
+                                    Method = "Colosseum/XD",
+                                    Pid = pid,
+                                    MonsterSeed = seed,
+                                    Sid = (tid ^ pid1 ^ pid2)
+                                };
+                                seeds.Add(newSeed);
+                            }
+
+                            pid ^= 0x80008000;
+                            if (pid % 25 == nature)
+                            {
+                                var newSeed = new Seed
+                                {
+                                    Method = "Colosseum/XD",
+                                    Pid = pid,
+                                    MonsterSeed = seed ^ 0x80000000,
+                                    Sid = (tid ^ pid1 ^ pid2)
+                                };
+                                seeds.Add(newSeed);
+                            }
+                        }
                     }
-                }
+
+                    break;
+
+                case FrameType.Channel:
+                    first = hp << 27;
+
+                    t = (((spd << 27) - (0x284A930D * first)) - 0x9A974C78) & 0xFFFFFFFF;
+                    kmax = ((0x142549847b56cf2 - t) / 0x100000000);
+
+                    for (uint k = 0; k <= kmax; k++, t += 0x100000000)
+                    {
+                        if ((t % 0x284A930D) >= 0x8000000)
+                            continue;
+
+                        forward.Seed = back.Seed = first | (uint)(t / 0x284A930D);
+                        if (forward.GetNext32BitNumber() >> 27 != atk)
+                            continue;
+
+                        if (forward.GetNext32BitNumber() >> 27 != def)
+                            continue;
+
+                        if (forward.GetNext32BitNumber() >> 27 != spe)
+                            continue;
+
+                        if (forward.GetNext32BitNumber() >> 27 != spa)
+                            continue;
+
+                        back.GetNext32BitNumber(3);
+                        pid2 = back.GetNext16BitNumber();
+                        pid1 = back.GetNext16BitNumber();
+                        uint sid = back.GetNext16BitNumber();
+                        pid = (pid1 << 16) | pid2;
+                        if ((pid2 > 7 ? 0 : 1) != (pid1 ^ sid ^ 40122))
+                            pid ^= 0x80000000;
+                        if (pid % 25 == nature)
+                        {
+                            var newSeed = new Seed
+                            {
+                                Method = "Channel",
+                                Pid = pid,
+                                MonsterSeed = back.GetNext32BitNumber(),
+                                Sid = (tid ^ pid1 ^ pid2)
+                            };
+                            seeds.Add(newSeed);
+                        }
+                    }
+
+                    break;
             }
+
             return seeds;
         }
     }
@@ -887,21 +1123,17 @@ namespace PKHeX.WinForms.Misc
                     spd,
                     spe,
                     nature,
-                    tid);
-            //Console.WriteLine(hp + " " + atk + " " + def + " " + spa + " " + spd + " " + spe + " " + nature + " " + tid);
-            Seed chosenOne = new Seed();
-            foreach (Seed s in seeds)
+                    tid,
+                    FrameType.Method1);
+
+            if (seeds.Count == 0)
             {
-                //Console.WriteLine(s.Method);
-                if (s.Method == "Method 1")
-                {
-                    chosenOne = s;
-                    break;
-                }
+                return new string[] { "0", "0" };
             }
+
             string[] ans = new string[2];
-            ans[0] = chosenOne.Pid.ToString("X");
-            ans[1] = chosenOne.Sid.ToString();
+            ans[0] = seeds[0].Pid.ToString("X");
+            ans[1] = seeds[0].Sid.ToString();
             return ans;
         }
 
@@ -916,21 +1148,92 @@ namespace PKHeX.WinForms.Misc
                     spd,
                     spe,
                     nature,
-                    tid);
-            Console.WriteLine(hp + " " + atk + " " + def + " " + spa + " " + spd + " " + spe + " " + nature + " " + tid);
-            Seed chosenOne = new Seed();
-            foreach (Seed s in seeds)
+                    tid,
+                    FrameType.Method2);
+
+            if (seeds.Count == 0)
             {
-                Console.WriteLine(s.Method);
-                if (s.Method == "Method 2")
-                {
-                    chosenOne = s;
-                    break;
-                }
+                return new string[] { "0", "0" };
             }
+
             string[] ans = new string[2];
-            ans[0] = chosenOne.Pid.ToString("X");
-            ans[1] = chosenOne.Sid.ToString();
+            ans[0] = seeds[0].Pid.ToString("X");
+            ans[1] = seeds[1].Sid.ToString();
+            return ans;
+        }
+
+        public static string[] M4PID(uint hp, uint atk, uint def, uint spa, uint spd, uint spe, uint nature, uint tid)
+        {
+            List<Seed> seeds =
+                IVtoSeed.GetSeeds(
+                    hp,
+                    atk,
+                    def,
+                    spa,
+                    spd,
+                    spe,
+                    nature,
+                    tid,
+                    FrameType.Method4);
+
+            if (seeds.Count == 0)
+            {
+                return new string[] { "0", "0" };
+            }
+
+            string[] ans = new string[2];
+            ans[0] = seeds[0].Pid.ToString("X");
+            ans[1] = seeds[1].Sid.ToString();
+            return ans;
+        }
+
+        public static string[] XDPID(uint hp, uint atk, uint def, uint spa, uint spd, uint spe, uint nature, uint tid)
+        {
+            List<Seed> seeds =
+                IVtoSeed.GetSeeds(
+                    hp,
+                    atk,
+                    def,
+                    spa,
+                    spd,
+                    spe,
+                    nature,
+                    tid,
+                    FrameType.ColoXD);
+
+            if (seeds.Count == 0)
+            {
+                return new string[] { "0", "0" };
+            }
+
+            string[] ans = new string[2];
+            ans[0] = seeds[0].Pid.ToString("X");
+            ans[1] = seeds[0].Sid.ToString();
+            return ans;
+        }
+
+        public static string[] ChannelPID(uint hp, uint atk, uint def, uint spa, uint spd, uint spe, uint nature, uint tid)
+        {
+            List<Seed> seeds =
+                IVtoSeed.GetSeeds(
+                    hp,
+                    atk,
+                    def,
+                    spa,
+                    spd,
+                    spe,
+                    nature,
+                    tid,
+                    FrameType.Channel);
+
+            if (seeds.Count == 0)
+            {
+                return new string[] { "0", "0" };
+            }
+
+            string[] ans = new string[2];
+            ans[0] = seeds[0].Pid.ToString("X");
+            ans[1] = seeds[0].Sid.ToString();
             return ans;
         }
 
@@ -992,36 +1295,6 @@ namespace PKHeX.WinForms.Misc
             ivs[5] = ivs2 & 31;
 
             return ivs;
-        }
-
-        public static string[] XDPID(uint hp, uint atk, uint def, uint spa, uint spd, uint spe, uint nature, uint tid)
-        {
-            List<Seed> seeds =
-                IVtoSeed.GetSeeds(
-                    hp,
-                    atk,
-                    def,
-                    spa,
-                    spd,
-                    spe,
-                    nature,
-                    tid);
-            //Console.WriteLine("Colo IVS " + hp + " " + atk + " " + def + " " + spa + " " + spd + " " + spe + " " + nature + " " + tid);
-            Seed chosenOne = new Seed();
-            foreach (Seed s in seeds)
-            {
-                //Console.WriteLine(s.Method);
-                if (s.Method == "Colosseum/XD")
-                {
-                    //Console.WriteLine("ColoXD");
-                    chosenOne = s;
-                    break;
-                }
-            }
-            string[] ans = new string[2];
-            ans[0] = chosenOne.Pid.ToString("X");
-            ans[1] = chosenOne.Sid.ToString();
-            return ans;
         }
 
         private static IVFilter hptofilter(string hiddenpower)
@@ -1118,7 +1391,7 @@ namespace PKHeX.WinForms.Misc
             }
             FrameCompare frameCompare = new FrameCompare(hptofilter(hiddenpower), nature);
             List<Frame> frames = generator.Generate(frameCompare, 0, 0);
-            Console.WriteLine("Num frames: " + frames.Count);
+            //Console.WriteLine("Num frames: " + frames.Count);
             return new string[] { frames[0].Pid.ToString("X"), frames[0].Hp.ToString(), frames[0].Atk.ToString(), frames[0].Def.ToString(), frames[0].Spa.ToString(), frames[0].Spd.ToString(), frames[0].Spe.ToString() };
         }
     }
