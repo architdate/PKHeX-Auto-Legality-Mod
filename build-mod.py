@@ -14,19 +14,24 @@ if tree.find("/d:ItemGroup//d:Compile[@Include='AutoLegality\\ArchitMod.cs']", n
 
 ig = tree.find("/d:ItemGroup//d:Compile/..", ns)
 
+mods = ["AutoLegality", "PGLRentalLegality", "MGDBDownloader"]
 new_files = []
+inbuilt_references = ["System.IO.Compression.FileSystem", "System.Numerics"]
+custom_references = {"BouncyCastle.CryptoExt":"..\\..\\PKHeX-Auto-Legality-Mod\\Addons (Optional)\\PGL QR Auto Legality\\BouncyCastle.CryptoExt.dll"}
 user_controls = ["AutoLegality\\ArchitMod.cs", "AutoLegality\\PKSMAutoLegality.cs"]
-forms = ["AutoLegality\\AutoLegality.cs"]
-embedded_resources = ["AutoLegality\\Resources\\text\\evolutions.txt"]
-for root, dirs, files in os.walk("AutoLegality"):
-    for name in files:
-        fullpath = os.path.join(root, name)
-        if not os.path.isdir(fullpath):
-            new_files.append(os.path.join(root, name))
-    for name in dirs:
-        fullpath = os.path.join(root, name)
-        if not os.path.isdir(fullpath):
-            new_files.append(os.path.join(root, name))
+forms = ["AutoLegality\\AutoLegality.cs", "MGDBDownloader\\MGDBDownloader.cs", "PGLRentalLegality\\PGLRentalLegality.cs"]
+embedded_resources = ["AutoLegality\\Resources\\text\\evolutions.txt", "PGLRentalLegality\\Resources\\text\\pokemonAbilities.csv", "PGLRentalLegality\\Resources\\text\\pokemonFormAbilities.csv"]
+
+for mod in mods:
+    for root, dirs, files in os.walk(mod):
+        for name in files:
+            fullpath = os.path.join(root, name)
+            if not os.path.isdir(fullpath):
+                new_files.append(os.path.join(root, name))
+        for name in dirs:
+            fullpath = os.path.join(root, name)
+            if not os.path.isdir(fullpath):
+                new_files.append(os.path.join(root, name))
 
 for file in new_files:
     if file in embedded_resources:
@@ -42,6 +47,22 @@ for file in new_files:
     if file == "AutoLegality\AutoLegality.Designer.cs":
         child2 = etree.SubElement(child, "DependentUpon")
         child2.text = "AutoLegality.cs"
+    if file == "MGDBDownloader\MGDBDownloader.Designer.cs":
+        child2 = etree.SubElement(child, "DependentUpon")
+        child2.text = "MGDBDownloader.cs"
+    if file == "PGLRentalLegality\PGLRentalLegality.Designer.cs":
+        child2 = etree.SubElement(child, "DependentUpon")
+        child2.text = "PGLRentalLegality.cs"
+
+ig3 = tree.find("/d:ItemGroup//d:Reference/..", ns)
+for file in inbuilt_references:
+    child = etree.SubElement(ig3, "Reference")
+    child.set("Include", file)
+for key, value in custom_references.items():
+    child = etree.SubElement(ig3, "Reference")
+    child.set("Include", key)
+    child2 = etree.SubElement(child, "HintPath")
+    child2.text = value
 
 ig2 = tree.find("/d:ItemGroup//d:Content/..", ns)
 for file in embedded_resources:
@@ -54,7 +75,7 @@ with open("MainWindow/Main.Designer.cs", "r+", encoding="utf-8") as fp:
     data=fp.read()
     prog = re.compile("this.Menu_Showdown.DropDownItems.AddRange\(.*{.*}\);\\n", re.DOTALL)
     m = prog.search(data)
-    modified = data[:m.end()] + "            this.Menu_Showdown.DropDownItems.Add(EnableAutoLegality(resources));\n" + data[m.end():]
+    modified = data[:m.end()] + "            this.Menu_Showdown.DropDownItems.Add(EnableAutoLegality(resources));\n            this.Menu_Showdown.DropDownItems.Add(EnablePGLRentalLegality(resources));\n            this.Menu_Showdown.DropDownItems.Add(EnableMGDBDownloader(resources));\n" + data[m.end():]
     fp.seek(0)
     fp.truncate()
     fp.write(modified)
