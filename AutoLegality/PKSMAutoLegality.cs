@@ -14,7 +14,6 @@ namespace PKHeX.WinForms.Controls
     public partial class Blah : UserControl
     {
         PKM backup;
-        bool returnSet = false; // Debug bool
         bool requestedShiny = false;
         public event EventHandler LegalityChanged;
         public Controls.SAVEditor C_SAV;
