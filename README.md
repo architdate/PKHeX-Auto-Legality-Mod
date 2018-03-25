@@ -35,6 +35,7 @@ The teambuilder for the Pokemon templates can be found on:
 
 ## How to quick set-up the mod.
 
+- If you plan to build the mod with all of its sub modules, the instructions below are more helpful (Installing the Mod + Addons)
 - (Requires a C# IDE such as Visual Studio 17 or Mono Develop)
 
 - First of all download PKHeX by doing the following.
@@ -58,6 +59,21 @@ $ git clone https://github.com/kwsch/PKHeX.git
 
 - Right click on the main PKHeX project and click Rebuild all.
 - The output of the PKHeX file should be in `PKHeX\PKHeX.WinForms\bin\Debug` folder.
+
+## Installing the Mod + Addons
+
+- Make sure you have Python 3.x installed. It can be downloaded from pythons website (Make sure to set python in PATH)
+- If you do not have `lxml` installed, use the following command to install `lxml`
+```
+            pip3 install lxml
+```
+- Once you have made sure that you have Python 3.x and lxml installed, copy over the `AutoLegality` folder, the `Addons (Optional)\PGL QR Auto Legality\PGLRentalLegality` folder and the `Addons (Optional)\MGDB Downloader\MGDBDownloader` folder over to `PKHeX.WinForms` folder in your PKHeX directory
+- Also copy over `build-mod.py` to `PKHeX.WinForms`
+- Open Command Line in `PKHeX.WinForms` and type the following command
+```
+            py -3 build-mod.py
+```
+- Once the patching is complete, open the solution in Visual Studio 2017 and build the project.
 
 ## Tutorial Video
 
