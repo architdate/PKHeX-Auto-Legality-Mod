@@ -37,7 +37,6 @@ The teambuilder for the Pokemon templates can be found on:
 
 - If you plan to build the mod with all of its sub modules, the instructions below are more helpful (Installing the Mod + Addons)
 - (Requires a C# IDE such as Visual Studio 17 or Mono Develop)
-
 - First of all download PKHeX by doing the following.
 
 ```
