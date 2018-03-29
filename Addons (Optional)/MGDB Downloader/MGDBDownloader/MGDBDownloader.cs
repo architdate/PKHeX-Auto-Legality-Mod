@@ -9,7 +9,7 @@ namespace PKHeX.WinForms
 {
     public partial class Main : Form
     {
-        public void DownloadMGDB(object o, EventArgs e)
+        public void DownloadMGDB(object o, EventArgs e, bool LatestCommit = false)
         {
             if (Directory.Exists(MGDatabasePath))
             {
@@ -21,7 +21,7 @@ namespace PKHeX.WinForms
             }
             if (!Directory.Exists(MGDatabasePath))
             {
-                bool latestCommit = false; // change to true if you want to download an entire commit
+                bool latestCommit = LatestCommit; // change to true if you want to download an entire commit
                 if (latestCommit)
                 {
                     string mgdbURL = @"https://github.com/projectpokemon/EventsGallery/archive/master.zip";
