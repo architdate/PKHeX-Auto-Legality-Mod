@@ -62,7 +62,7 @@ $ git clone https://github.com/kwsch/PKHeX.git
 
 ## Installing the Mod + Addons
 
-- Make sure you have Python 3.x installed. It can be downloaded from pythons website (Make sure to set python in PATH)
+- Make sure you have Python 3.x installed. It can be downloaded from [Python's website](https://www.python.org/downloads/) (Make sure to set python in PATH)
 - If you do not have `lxml` installed, use the following command to install `lxml`
 ```
             pip3 install lxml
