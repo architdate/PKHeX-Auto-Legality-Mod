@@ -4,6 +4,19 @@ import re
 import os
 import sys
 
+def getopts(argv):
+    opts = {}  # Empty dictionary to store key-value pairs.
+    while argv:  # While there are arguments left to parse...
+        if argv[0][0] == '-':  # Found a "-name value" pair.
+            opts[argv[0]] = argv[1]  # Add key and value to the dictionary.
+        argv = argv[1:]  # Reduce the argument list by copying it starting from index 1.
+    return opts
+
+cmdargs = getopts(sys.argv)
+latestCommit = False
+if '-c' in cmdargs:
+    if str(cmdargs['-c']).lower().strip() == "true":
+        latestCommit = True
 
 ns = {'d': 'http://schemas.microsoft.com/developer/msbuild/2003'}
 tree = etree.parse("PKHeX.WinForms.csproj")
@@ -75,7 +88,7 @@ with open("MainWindow/Main.Designer.cs", "r+", encoding="utf-8") as fp:
     data=fp.read()
     prog = re.compile("this.Menu_Showdown.DropDownItems.AddRange\(.*{.*}\);\\n", re.DOTALL)
     m = prog.search(data)
-    modified = data[:m.end()] + "            this.Menu_Showdown.DropDownItems.Add(EnableAutoLegality(resources));\n            this.Menu_Showdown.DropDownItems.Add(EnablePGLRentalLegality(resources));\n            this.Menu_Showdown.DropDownItems.Add(EnableMGDBDownloader(resources));\n" + data[m.end():]
+    modified = data[:m.end()] + "            this.Menu_Showdown.DropDownItems.Add(EnableAutoLegality(resources));\n            this.Menu_Showdown.DropDownItems.Add(EnablePGLRentalLegality(resources));\n            this.Menu_Showdown.DropDownItems.Add(EnableMGDBDownloader(resources, {0}));\n".format(str(latestCommit).lower()) + data[m.end():]
     fp.seek(0)
     fp.truncate()
     fp.write(modified)
