@@ -4,6 +4,7 @@ import re
 import os
 import sys
 
+
 def getopts(argv):
     opts = {}  # Empty dictionary to store key-value pairs.
     while argv:  # While there are arguments left to parse...
@@ -11,6 +12,7 @@ def getopts(argv):
             opts[argv[0]] = argv[1]  # Add key and value to the dictionary.
         argv = argv[1:]  # Reduce the argument list by copying it starting from index 1.
     return opts
+
 
 cmdargs = getopts(sys.argv)
 latestCommit = False
