@@ -5,6 +5,9 @@ namespace PKHeX.WinForms
     {
         public System.Windows.Forms.ToolStripMenuItem EnableMGDBDownloader(System.ComponentModel.ComponentResourceManager resources, bool LatestCommit = false)
         {
+#if LATESTCOMMIT
+            LatestCommit = true;
+#endif
             this.Menu_MGDBDownloader = new System.Windows.Forms.ToolStripMenuItem();
             this.Menu_MGDBDownloader.Image = ((System.Drawing.Image)(resources.GetObject("Menu_ShowdownImportPKM.Image")));
             this.Menu_MGDBDownloader.Name = "Menu_MGDBDownloader";
