@@ -16,7 +16,12 @@ namespace PKHeX.WinForms.Controls
         // Initialize Current Save file
         private Controls.SAVEditor CurrentSAV;
 
-        // Command to set in box (for multiple imports)
+        /// <summary>
+        /// Function to set a PKM file to a slot in the box
+        /// Slots vary from 1 -30 (30 slots in a box in the latest generations)
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="slot">int value from 1 to 30</param>
         public void ClickSet(object sender, int slot)
         {
             SlotChangeManager m = GetSenderInfo(ref sender, out SlotChange info, slot);
@@ -69,6 +74,10 @@ namespace PKHeX.WinForms.Controls
             m.SE.RedoStack.Clear(); m.SE.Menu_Redo.Enabled = false;
         }
 
+        /// <summary>
+        /// Reset PKM for the generation (for clean slates while moving onto new gens)
+        /// </summary>
+        /// <param name="SAV">Type of save file passed</param>
         public void hardReset(SaveFile SAV = null)
         {
             SaveFile CURRSAV = new SAVEditor().SAV;
@@ -100,6 +109,10 @@ namespace PKHeX.WinForms.Controls
             }
         }
 
+        /// <summary>
+        /// Helper function to print out a byte array as a string that can be used within code
+        /// </summary>
+        /// <param name="bytes">byte array</param>
         public void PrintByteArray(byte[] bytes)
         {
             var sb = new System.Text.StringBuilder("new byte[] { ");
@@ -111,6 +124,14 @@ namespace PKHeX.WinForms.Controls
             Console.WriteLine(sb.ToString());
         }
 
+
+        /// <summary>
+        /// Accessible method to lead Fields from PKM
+        /// The Loading is done in WinForms
+        /// </summary>
+        /// <param name="pk">The PKM file</param>
+        /// <param name="focus">Set input focus to control</param>
+        /// <param name="skipConversionCheck">Default this to true</param>
         public void LoadFieldsFromPKM2(PKM pk, bool focus = true, bool skipConversionCheck = true)
         {
             if (pk == null) { WinFormsUtil.Error("Attempted to load a null file."); return; }
@@ -150,6 +171,14 @@ namespace PKHeX.WinForms.Controls
             LastData = PreparePKM()?.Data;
         }
 
+        /// <summary>
+        /// Load PKM from byte array. The output is a boolean, which is true if a byte array is loaded into WinForms, else false
+        /// </summary>
+        /// <param name="input">Byte array input correlating to the PKM</param>
+        /// <param name="path">Path to the file itself</param>
+        /// <param name="ext">Extension of the file</param>
+        /// <param name="SAV">Type of save file</param>
+        /// <returns></returns>
         private bool TryLoadPKM(byte[] input, string path, string ext, SaveFile SAV)
         {
             var temp = PKMConverter.GetPKMfromBytes(input, prefer: ext.Length > 0 ? (ext.Last() - 0x30) & 7 : SAV.Generation);
@@ -160,7 +189,6 @@ namespace PKHeX.WinForms.Controls
             PKM pk = PKMConverter.ConvertToType(temp, type, out string c);
             if (pk == null)
             {
-                //WinFormsUtil.Alert("Conversion failed.", c);
                 return false;
             }
             if (SAV.Generation < 3 && ((pk as PK1)?.Japanese ?? ((PK2)pk).Japanese) != SAV.Japanese)
@@ -176,6 +204,13 @@ namespace PKHeX.WinForms.Controls
             return true;
         }
 
+        /// <summary>
+        /// Sender information about the box slots etc. For placing Pokemon in boxes
+        /// </summary>
+        /// <param name="sender">Sender</param>
+        /// <param name="loc">Slot locations that will be in the output</param>
+        /// <param name="slot">Slot to pass to loc</param>
+        /// <returns></returns>
         private static SlotChangeManager GetSenderInfo(ref object sender, out SlotChange loc, int slot)
         {
             loc = new SlotChange();
@@ -203,6 +238,12 @@ namespace PKHeX.WinForms.Controls
             return null;
         }
 
+        /// <summary>
+        /// Set Country, SubRegion and Console in WinForms
+        /// </summary>
+        /// <param name="Country">String denoting the exact country</param>
+        /// <param name="SubRegion">String denoting the exact sub region</param>
+        /// <param name="ConsoleRegion">String denoting the exact console region</param>
         public void SetRegions(string Country, string SubRegion, string ConsoleRegion)
         {
             CB_Country.Text = Country;
@@ -210,6 +251,14 @@ namespace PKHeX.WinForms.Controls
             CB_3DSReg.Text = ConsoleRegion;
         }
 
+        /// <summary>
+        /// Set Country, SubRegion and ConsoleRegion in a PKM directly
+        /// </summary>
+        /// <param name="Country">INT value corresponding to the index of the Country</param>
+        /// <param name="SubRegion">INT value corresponding to the index of the sub region</param>
+        /// <param name="ConsoleRegion">INT value corresponding to the index of the console region</param>
+        /// <param name="pk"></param>
+        /// <returns></returns>
         public PKM SetPKMRegions(int Country, int SubRegion, int ConsoleRegion, PKM pk)
         {
             pk.Country = Country;
@@ -218,6 +267,11 @@ namespace PKHeX.WinForms.Controls
             return pk;
         }
 
+        /// <summary>
+        /// Parser for auto and preset trainerdata.txt files
+        /// </summary>
+        /// <param name="C_SAV">SAVEditor of the current save file</param>
+        /// <returns></returns>
         public string[] parseTrainerData(SAVEditor C_SAV)
         {
             // Defaults
