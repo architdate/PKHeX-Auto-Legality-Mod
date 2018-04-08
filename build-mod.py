@@ -29,11 +29,11 @@ if tree.find("/d:ItemGroup//d:Compile[@Include='AutoLegality\\ArchitMod.cs']", n
 
 ig = tree.find("/d:ItemGroup//d:Compile/..", ns)
 
-mods = ["AutoLegality", "PGLRentalLegality", "MGDBDownloader"]
+mods = ["AutoLegality", "PGLRentalLegality", "MGDBDownloader", "URLGenning"]
 new_files = []
 inbuilt_references = ["System.IO.Compression.FileSystem", "System.Numerics"]
 custom_references = {"BouncyCastle.CryptoExt":"..\\..\\PKHeX-Auto-Legality-Mod\\Addons (Optional)\\PGL QR Auto Legality\\BouncyCastle.CryptoExt.dll"}
-user_controls = ["AutoLegality\\ArchitMod.cs", "AutoLegality\\PKSMAutoLegality.cs"]
+user_controls = ["AutoLegality\\ArchitMod.cs", "AutoLegality\\PKSMAutoLegality.cs", "URLGenning\\URLGenning.cs"]
 forms = ["AutoLegality\\AutoLegality.cs", "MGDBDownloader\\MGDBDownloader.cs", "PGLRentalLegality\\PGLRentalLegality.cs"]
 embedded_resources = ["AutoLegality\\Resources\\text\\evolutions.txt", "PGLRentalLegality\\Resources\\text\\pokemonAbilities.csv", "PGLRentalLegality\\Resources\\text\\pokemonFormAbilities.csv"]
 
@@ -59,15 +59,18 @@ for file in new_files:
     if file in forms:
         child2 = etree.SubElement(child, "SubType")
         child2.text = "Form"
-    if file == "AutoLegality\AutoLegality.Designer.cs":
+    if file == "AutoLegality\\AutoLegality.Designer.cs":
         child2 = etree.SubElement(child, "DependentUpon")
         child2.text = "AutoLegality.cs"
-    if file == "MGDBDownloader\MGDBDownloader.Designer.cs":
+    if file == "MGDBDownloader\\MGDBDownloader.Designer.cs":
         child2 = etree.SubElement(child, "DependentUpon")
         child2.text = "MGDBDownloader.cs"
-    if file == "PGLRentalLegality\PGLRentalLegality.Designer.cs":
+    if file == "PGLRentalLegality\\PGLRentalLegality.Designer.cs":
         child2 = etree.SubElement(child, "DependentUpon")
         child2.text = "PGLRentalLegality.cs"
+    if file == "URLGenning\\URLGenning.Designer.cs":
+        child2 = etree.SubElement(child, "DependentUpon")
+        child2.text = "URLGenning.cs"
 
 ig3 = tree.find("/d:ItemGroup//d:Reference/..", ns)
 for file in inbuilt_references:
@@ -90,7 +93,7 @@ with open("MainWindow/Main.Designer.cs", "r+", encoding="utf-8") as fp:
     data=fp.read()
     prog = re.compile("this.Menu_Showdown.DropDownItems.AddRange\(.*{.*}\);\\n", re.DOTALL)
     m = prog.search(data)
-    modified = data[:m.end()] + "            this.Menu_Showdown.DropDownItems.Add(EnableAutoLegality(resources));\n            this.Menu_Showdown.DropDownItems.Add(EnablePGLRentalLegality(resources));\n            this.Menu_Showdown.DropDownItems.Add(EnableMGDBDownloader(resources, {0}));\n".format(str(latestCommit).lower()) + data[m.end():]
+    modified = data[:m.end()] + "            this.Menu_Showdown.DropDownItems.Add(EnableAutoLegality(resources));\n            this.Menu_Showdown.DropDownItems.Add(EnablePGLRentalLegality(resources));\n            this.Menu_Showdown.DropDownItems.Add(EnableMGDBDownloader(resources, {0}));\n            this.Menu_Showdown.DropDownItems.Add(EnableURLGenning(resources));\n".format(str(latestCommit).lower()) + data[m.end():]
     fp.seek(0)
     fp.truncate()
     fp.write(modified)
