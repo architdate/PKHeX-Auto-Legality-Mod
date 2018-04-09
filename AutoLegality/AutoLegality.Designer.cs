@@ -14,6 +14,16 @@ namespace PKHeX.WinForms
             this.Menu_ShowdownImportPKMModded.Click += new System.EventHandler(this.ClickShowdownImportPKMModded);
             return this.Menu_ShowdownImportPKMModded;
         }
+        public System.Windows.Forms.ToolStripMenuItem EnableMenu(System.ComponentModel.ComponentResourceManager resources)
+        {
+            this.Menu_AutoLegality = new System.Windows.Forms.ToolStripMenuItem();
+            this.Menu_AutoLegality.Image = ((System.Drawing.Image)(resources.GetObject("Menu_Showdown.Image")));
+            this.Menu_AutoLegality.Name = "Menu_AutoLegality";
+            this.Menu_AutoLegality.Size = new System.Drawing.Size(133, 22);
+            this.Menu_AutoLegality.Text = "Auto Legality Mod";
+            return this.Menu_AutoLegality;
+        }
+        private System.Windows.Forms.ToolStripMenuItem Menu_AutoLegality;
         private System.Windows.Forms.ToolStripMenuItem Menu_ShowdownImportPKMModded;
     }
 }
