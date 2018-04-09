@@ -93,7 +93,7 @@ with open("MainWindow/Main.Designer.cs", "r+", encoding="utf-8") as fp:
     data=fp.read()
     prog = re.compile("this.Menu_Showdown.DropDownItems.AddRange\(.*{.*}\);\\n", re.DOTALL)
     m = prog.search(data)
-    modified = data[:m.end()] + "            this.Menu_Showdown.DropDownItems.Add(EnableAutoLegality(resources));\n            this.Menu_Showdown.DropDownItems.Add(EnablePGLRentalLegality(resources));\n            this.Menu_Showdown.DropDownItems.Add(EnableMGDBDownloader(resources, {0}));\n            this.Menu_Showdown.DropDownItems.Add(EnableURLGenning(resources));\n".format(str(latestCommit).lower()) + data[m.end():]
+    modified = data[:m.end()] + "            this.Menu_Tools.DropDownItems.Add(EnableMenu(resources));\n            this.Menu_AutoLegality.DropDownItems.Add(EnableAutoLegality(resources));\n            this.Menu_AutoLegality.DropDownItems.Add(EnablePGLRentalLegality(resources));\n            this.Menu_AutoLegality.DropDownItems.Add(EnableMGDBDownloader(resources, {0}));\n            this.Menu_AutoLegality.DropDownItems.Add(EnableURLGenning(resources));\n".format(str(latestCommit).lower()) + data[m.end():]    
     fp.seek(0)
     fp.truncate()
     fp.write(modified)
