@@ -31,6 +31,8 @@ ig = tree.find("/d:ItemGroup//d:Compile/..", ns)
 
 mods = ["AutoLegality", "PGLRentalLegality", "MGDBDownloader", "URLGenning"]
 new_files = []
+resource_files = ["AutoLegality\\AutoLegalityMod.resx", "AutoLegality\\AutoLegalityMod.Designer.cs"]
+image_files = ["AutoLegality\\Resources\\img\\menuautolegality.png", "AutoLegality\\Resources\\img\\autolegalitymod.png", "AutoLegality\\Resources\\img\\mgdbdownload.png", "AutoLegality\\Resources\\img\\pglqrcode.png", "AutoLegality\\Resources\\img\\urlimport.png"]
 inbuilt_references = ["System.IO.Compression.FileSystem", "System.Numerics"]
 custom_references = {"BouncyCastle.CryptoExt":"..\\..\\PKHeX-Auto-Legality-Mod\\Addons (Optional)\\PGL QR Auto Legality\\BouncyCastle.CryptoExt.dll"}
 user_controls = ["AutoLegality\\ArchitMod.cs", "AutoLegality\\PKSMAutoLegality.cs", "URLGenning\\URLGenning.cs"]
@@ -50,6 +52,10 @@ for mod in mods:
 
 for file in new_files:
     if file in embedded_resources:
+        continue
+    if file in resource_files:
+        continue
+    if file in image_files:
         continue
     child = etree.SubElement(ig, "Compile")
     child.set("Include", file)
@@ -72,6 +78,10 @@ for file in new_files:
         child2 = etree.SubElement(child, "DependentUpon")
         child2.text = "URLGenning.cs"
 
+for file in image_files:
+    child = etree.SubElement(tree.find("/d:ItemGroup//d:Content/..", ns), "Content")
+    child.set("Include", file)
+
 ig3 = tree.find("/d:ItemGroup//d:Reference/..", ns)
 for file in inbuilt_references:
     child = etree.SubElement(ig3, "Reference")
@@ -87,13 +97,31 @@ for file in embedded_resources:
     child = etree.SubElement(ig2, "EmbeddedResource")
     child.set("Include", file)
 
+# Setting resources
+
+child = etree.SubElement(ig, "Compile")
+child.set("Include", "AutoLegality\\AutoLegalityMod.Designer.cs")
+child2 = etree.SubElement(child, "AutoGen")
+child2.text = "True"
+child3 = etree.SubElement(child, "DesignTime")
+child3.text = "True"
+child4 = etree.SubElement(child, "DependentUpon")
+child4.text = "AutoLegalityMod.resx"
+childB = etree.SubElement(ig, "EmbeddedResource")
+childB.set("Include", "AutoLegality\\AutoLegalityMod.resx")
+childB2 = etree.SubElement(childB, "Generator")
+childB2.text = "ResXFileCodeGenerator"
+childB3 = etree.SubElement(childB, "LastGenOutput")
+childB3.text = "AutoLegalityMod.Designer.cs"
+
+
 tree.write("PKHeX.WinForms.csproj", pretty_print=True)
 
 with open("MainWindow/Main.Designer.cs", "r+", encoding="utf-8") as fp:
     data=fp.read()
     prog = re.compile("this.Menu_Showdown.DropDownItems.AddRange\(.*{.*}\);\\n", re.DOTALL)
     m = prog.search(data)
-    modified = data[:m.end()] + "            this.Menu_Tools.DropDownItems.Add(EnableMenu(resources));\n            this.Menu_AutoLegality.DropDownItems.Add(EnableAutoLegality(resources));\n            this.Menu_AutoLegality.DropDownItems.Add(EnablePGLRentalLegality(resources));\n            this.Menu_AutoLegality.DropDownItems.Add(EnableMGDBDownloader(resources, {0}));\n            this.Menu_AutoLegality.DropDownItems.Add(EnableURLGenning(resources));\n".format(str(latestCommit).lower()) + data[m.end():]    
+    modified = data[:m.end()] + "            this.Menu_Tools.DropDownItems.Insert(0, EnableMenu(resources));\n            this.Menu_AutoLegality.DropDownItems.Add(EnableAutoLegality(resources));\n            this.Menu_AutoLegality.DropDownItems.Add(EnablePGLRentalLegality(resources));\n            this.Menu_AutoLegality.DropDownItems.Add(EnableMGDBDownloader(resources, {0}));\n            this.Menu_AutoLegality.DropDownItems.Add(EnableURLGenning(resources));\n".format(str(latestCommit).lower()) + data[m.end():]    
     fp.seek(0)
     fp.truncate()
     fp.write(modified)

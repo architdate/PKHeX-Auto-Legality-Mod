@@ -5,7 +5,7 @@ namespace PKHeX.WinForms
         public System.Windows.Forms.ToolStripMenuItem EnablePGLRentalLegality(System.ComponentModel.ComponentResourceManager resources)
         {
             this.Menu_PGLShowdownSet = new System.Windows.Forms.ToolStripMenuItem();
-            this.Menu_PGLShowdownSet.Image = ((System.Drawing.Image)(resources.GetObject("Menu_ShowdownExportPKM.Image")));
+            this.Menu_PGLShowdownSet.Image = ((System.Drawing.Image)AutoLegality.AutoLegalityMod.pglqrcode);
             this.Menu_PGLShowdownSet.Name = "Menu_PGLShowdownSet";
             this.Menu_PGLShowdownSet.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Alt | System.Windows.Forms.Keys.Q)));
             this.Menu_PGLShowdownSet.ShowShortcutKeys = false;

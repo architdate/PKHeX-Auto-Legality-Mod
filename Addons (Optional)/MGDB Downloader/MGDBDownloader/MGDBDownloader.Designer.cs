@@ -5,11 +5,8 @@ namespace PKHeX.WinForms
     {
         public System.Windows.Forms.ToolStripMenuItem EnableMGDBDownloader(System.ComponentModel.ComponentResourceManager resources, bool LatestCommit = false)
         {
-#if LATESTCOMMIT
-            LatestCommit = true;
-#endif
             this.Menu_MGDBDownloader = new System.Windows.Forms.ToolStripMenuItem();
-            this.Menu_MGDBDownloader.Image = ((System.Drawing.Image)(resources.GetObject("Menu_ShowdownImportPKM.Image")));
+            this.Menu_MGDBDownloader.Image = ((System.Drawing.Image)AutoLegality.AutoLegalityMod.mgdbdownload);
             this.Menu_MGDBDownloader.Name = "Menu_MGDBDownloader";
             this.Menu_MGDBDownloader.Size = new System.Drawing.Size(231, 22);
             this.Menu_MGDBDownloader.Text = "Download MGDB";
