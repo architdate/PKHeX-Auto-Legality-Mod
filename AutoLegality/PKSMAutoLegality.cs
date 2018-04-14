@@ -14,6 +14,7 @@ namespace PKHeX.WinForms.Controls
     public partial class Blah : UserControl
     {
         PKM backup;
+        bool returnSet = false; // Debug bool
         bool requestedShiny = false;
         public event EventHandler LegalityChanged;
         public Controls.SAVEditor C_SAV;
@@ -1307,9 +1308,22 @@ namespace PKHeX.WinForms.Controls
             return evoList;
         }
 
+        private bool NeedsHyperTraining(PKM pk)
+        {
+            int flawless = 0;
+            int minIVs = 0;
+            foreach(int i in pk.IVs)
+            {
+                if (i == 31) flawless++;
+                if (i == 0 || i == 1) minIVs++; //ignore IV value = 0/1 for intentional IV values (1 for hidden power cases)
+            }
+            if (flawless + minIVs == 6) return false;
+            return true;
+        }
+
         private void HyperTrain(PKM pk)
         {
-            if (C_SAV.SAV.Generation < 7) return;
+            if (C_SAV.SAV.Generation < 7 || !NeedsHyperTraining(pk)) return;
             if (pk.CurrentLevel != 100) pk.CurrentLevel = 100; // Set level for HT before doing HT
             if (pk.IV_HP != 0 && pk.IV_HP != 1 && pk.IV_HP != 31) pk.HT_HP = true;
             if (pk.IV_ATK != 0 && pk.IV_ATK != 1 && pk.IV_ATK != 31) pk.HT_ATK = true;
