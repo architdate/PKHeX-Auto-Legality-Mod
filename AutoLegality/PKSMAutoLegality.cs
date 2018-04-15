@@ -71,6 +71,7 @@ namespace PKHeX.WinForms.Controls
                 for (int i = 0; i < GameVersionList.Length; i++)
                 {
                     Set.Version = GameVersionList[i];
+                    RestoreIVs(Set, SSet); // Restore IVs to SSet and HT to false
                     Set.Language = 2;
                     if (trainerinfo)
                     {
@@ -143,7 +144,7 @@ namespace PKHeX.WinForms.Controls
                     catch { continue; }
                 }
             }
-
+            
             if (!new LegalityAnalysis(Set).Valid && !eventMon)
             {
                 for (int i = 0; i < GameVersionList.Length; i++)
@@ -153,6 +154,7 @@ namespace PKHeX.WinForms.Controls
                     Set.EggMetDate = null;
                     Set.Egg_Location = 0;
                     Set.Version = GameVersionList[i];
+                    RestoreIVs(Set, SSet); // Restore IVs to SSet and HT to false
                     Set.Language = 2;
                     Set.ConsoleRegion = 2;
                     if (trainerinfo)
@@ -1305,6 +1307,17 @@ namespace PKHeX.WinForms.Controls
             }
             file.Close();
             return evoList;
+        }
+
+        private void RestoreIVs(PKM pk, ShowdownSet SSet)
+        {
+            pk.IVs = SSet.IVs;
+            pk.HT_HP = false;
+            pk.HT_ATK = false;
+            pk.HT_DEF = false;
+            pk.HT_SPA = false;
+            pk.HT_SPD = false;
+            pk.HT_SPE = false;
         }
 
         private bool NeedsHyperTraining(PKM pk)
