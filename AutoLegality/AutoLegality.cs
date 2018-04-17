@@ -78,6 +78,7 @@ namespace PKHeX.WinForms
                 for (int i = 0; i < result.Length; i++)
                 {
                     ShowdownSet Set = new ShowdownSet(result[i]);
+                    bool intRegions = false;
                     if (Set.InvalidLines.Any())
                         WinFormsUtil.Alert("Invalid lines detected:", string.Join(Environment.NewLine, Set.InvalidLines));
 
@@ -99,12 +100,10 @@ namespace PKHeX.WinForms
                     if (int.TryParse(Country, out int n) && int.TryParse(SubRegion, out int m) && int.TryParse(ConsoleRegion, out int o))
                     {
                         legal = PKME_Tabs.SetPKMRegions(n, m, o, legal);
-                        Country = "";
-                        SubRegion = "";
-                        ConsoleRegion = "";
+                        intRegions = true;
                     }
                     PKME_Tabs.PopulateFields(legal);
-                    if (Country != "" && SubRegion != "" && ConsoleRegion != "")
+                    if (!intRegions)
                     {
                         PKME_Tabs.SetRegions(Country, SubRegion, ConsoleRegion);
                     }

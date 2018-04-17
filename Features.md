@@ -8,17 +8,17 @@ This markdown file is meant to contain the most up-to-date documentation when it
 
 Auto Legality is the core feature of this mod. The agenda of this feature is to make genning as easy as possible for the layman user by automatically legalizing any sort of Pokemon Showdown set which can be made easily on [this website](https://play.pokemonshowdown.com/teambuilder). A further detailed explanation of the features is given below.
 
-**NOTE:** If you wish to gen event pokemon as well, download the MGDB database latest release by going to `Tools` then `Showdown` and then `Download MGDB`. Once it is done downloading, it will give you a notification saying that the download has finished
+**NOTE:** If you wish to gen event pokemon as well, download the MGDB database latest release by going to `Tools` then `Auto Legality Mod` and then `Download MGDB`. Once it is done downloading, it will give you a notification saying that the download has finished
 
 ### Usage:
 
-- **Single Pokemon** : To legalize a single pokemon set, select the showdown set for that pokemon, Go to `Tools` then `Showdown` and then `Import with Auto-Legality Mod`. This will ask for a confirmation, just like importing a showdown set regularly. Once confirmed, it will generate a legalized Pokemon set for you. There is also a shortcut to do the following: After selecting the showdown set, click `Ctrl + I`
+- **Single Pokemon** : To legalize a single pokemon set, select the showdown set for that pokemon, Go to `Tools` then `Auto Legality Mod` and then `Import with Auto-Legality Mod`. This will ask for a confirmation, just like importing a showdown set regularly. Once confirmed, it will generate a legalized Pokemon set for you. There is also a shortcut to do the following: After selecting the showdown set, click `Ctrl + I`
 
 - **Multiple Pokemon (Upto 30 at a time)** : Copy a team or a box of Showdown pokemon sets. Make sure that your current active box in PKHeX has enough space to accomodate the number of Pokemon selected. 
 
 Now if you want the Pokemon in the box to be replaced with your new selected sets: Use the shortcut `Ctrl + I` as before. Alternatively you can click `Ctrl` while clicking `Import with Auto-Legality Mod`. A confirmation will NOT be asked in the case of multiple Pokemon, and the first n slots of the currently active box will be filled. (Here n is the number of Pokemon selected/copied in the clipboard)
 
-However if you would like the Multiple pokemon paste to just fill up empty spaces within the box, you can do that too! Just click `Import with Auto-Legality Mod` normally from the `Tools > Showdown` menu and it will fill up the empty spaces only and not erase your current Pokemon. No confirmation will be asked for as stated before.
+However if you would like the Multiple pokemon paste to just fill up empty spaces within the box, you can do that too! Just click `Import with Auto-Legality Mod` normally from the `Tools > Auto Legality Mod` menu and it will fill up the empty spaces only and not erase your current Pokemon. No confirmation will be asked for as stated before.
 
 - **Importing from a text file** : You can import Showdown sets stored in a `.txt` file as well. A dialogue box asking for the text file will trigger if there are no contents in the clipboard / if the contents in the clipboard do not correspond to a Showdown Set. Alternatively, you can trigger the dialogue box by clicking `Shift` while clicking `Import with Auto-Legality Mod` or using the shortcut `Ctrl + Shift + I`
 
@@ -75,7 +75,7 @@ This feature takes a QR Code posted on [Pokemon Global Link](https://3ds.pokemon
 - Select any team you would like.
 - View the QR code.
 - Right click and copy the QR code to your clipboard
-- Inside PKHeX, go to `Tools > Showdown > Import PGL QR Code` or use the Shortcut: `Alt + Q`
+- Inside PKHeX, go to `Tools > Auto Legality Mod > Import PGL QR Code` or use the Shortcut: `Alt + Q`
 - It will automatically gen all 6 Pokemon for you (Similar to Multiple Pokemon Importing) and copy the team to your clipboard for easy usage on websites such as Pokemon Showdown
 
 ## MGDB Updater/ Downloader:
@@ -87,6 +87,30 @@ This feature allows you to automatically download the MGDB database in the same 
 - Inside PKHeX, go to `Tools > Showdown > Download MGDB`
 - If there is no `mgdb` folder in the same location as the PKHeX executable, it will download the latest events from the latest events gallery release and make the folder for you. You will be notified once the download is done.
 - If there already exists an `mgdb` folder, it will give you an option to update it if needed or to cancel the operation. If you choose to update, it will check for the latest release and update your saved events database to the latest release.
+
+## URL Genning:
+
+This feature allows you to automatically gen the showdown set that is contained in a [pastebin](https://pastebin.com/) or [pokepast.es](http://pokepast.es/) URL
+Simply copy the URL Address and Click `Gen from URL` in the `Tools > Showdown` menu.
+
+### Usage:
+
+- Go to any pokepast.es paste or to any pastebin and copy the URL to your clipboard
+- Go to `Tools > Auto Legality Mod > Gen from URL`
+- The Mod will gen all the Pokemon sets within that URL
+- Once the genning is done, it will display the information about the Title / Author / Description or Date of the generated pastebin or pokepast.es URL for the ease of the user.
+
+## Export Trainer Data:
+
+This feature allows you to export a `trainerdata.txt` file based on the active Pokemon. (It exports the Pokemons TID, SID, OT, OT gender, Pokemon Country, Pokemon Sub Region and Pokemon 3DS Region)
+
+### Usage:
+
+- Right click on the Pokemon whose trainerdata you want to export.
+- Click on View to set it as the active Pokemon for editing
+- Go to `Tools > Auto Legality Mod > Export Trainer Data`
+- The `trainerdata.txt` file will be exported and ready to use by the auto legality mod.
+- You will recieve a confirmation once it's done.
 
 ## Shortcuts:
 
