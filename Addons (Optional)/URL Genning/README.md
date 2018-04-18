@@ -13,5 +13,5 @@ Simply copy the URL Address and Click `Gen from URL` in the `Tools > Showdown` m
 - After the semicolon (`;`) write this line of code on the next line
 
 ```csharp
-        this.Menu_Showdown.DropDownItems.Add(EnableURLGenning(resources));
+        this.Menu_AutoLegality.DropDownItems.Add(EnableURLGenning(resources));
 ```

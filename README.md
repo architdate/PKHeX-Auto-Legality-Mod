@@ -1,5 +1,7 @@
 # PKHeX Automatic Legality Mod
 
+[![Build status](https://ci.appveyor.com/api/projects/status/s3py0ymkh22sq3ok/branch/master?svg=true)](https://ci.appveyor.com/project/architdate/pkhex-auto-legality-mod/branch/master)
+
 Come join the dedicated server for this mod! Ask questions, give suggestions, get help, or just hang out. Don't be shy, we don't bite:
 
 [<img src="https://canary.discordapp.com/api/guilds/401014193211441153/widget.png?style=banner2">](https://discord.gg/9ptDkpV)
@@ -14,6 +16,10 @@ For more information on building and usage, contact me on Discord at thecommondu
 
 The teambuilder for the Pokemon templates can be found on:
 [Pokémon Showdown](http://play.pokemonshowdown.com/teambuilder)
+
+## Latest Builds Testing [May be unstable]
+
+The latest builds can be tested by users. They are available for download in the #builds channel in the [Discord](https://discord.gg/9ptDkpV) server. These builds may be unstable sometimes so there might be some bugs. For a more stable experience with tested features, use the latest releases!
 
 ## Features
 
@@ -54,7 +60,7 @@ $ git clone https://github.com/kwsch/PKHeX.git
 - After the semicolon (`;`) write this line of code on the next line
 
 ```csharp
-            this.Menu_Showdown.DropDownItems.Add(EnableAutoLegality(resources));
+            this.Menu_AutoLegality.DropDownItems.Add(EnableAutoLegality(resources));
 ```
 
 - Right click on the main PKHeX project and click Rebuild all.

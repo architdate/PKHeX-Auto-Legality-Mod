@@ -15,7 +15,7 @@ If there already exists an MGDB database, it gives you the option to update the 
 - After the semicolon (`;`) write this line of code on the next line
 
 ```csharp
-        this.Menu_Showdown.DropDownItems.Add(EnableMGDBDownloader(resources));
+        this.Menu_AutoLegality.DropDownItems.Add(EnableMGDBDownloader(resources));
 ```
 
 ## Credits

@@ -23,9 +23,9 @@ namespace PKHeX.WinForms
                 SID = pk.SID.ToString();
                 OT = pk.OT_Name;
                 if (pk.OT_Gender == 1) Gender = "F";
-                Country = PKMConverter.Country.ToString();
-                SubRegion = PKMConverter.Region.ToString();
-                ConsoleRegion = PKMConverter.ConsoleRegion.ToString();
+                Country = pk.Country.ToString();
+                SubRegion = pk.Region.ToString();
+                ConsoleRegion = pk.ConsoleRegion.ToString();
                 writeTxtFile(TID, SID, OT, Gender, Country, SubRegion, ConsoleRegion);
                 WinFormsUtil.Alert("trainerdata.txt Successfully Exported in the same directory as PKHeX");
             }

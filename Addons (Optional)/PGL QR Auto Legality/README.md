@@ -17,7 +17,7 @@ It also copies the Showdown Set for the QR team and sets it as your Clipboard te
 - After the semicolon (`;`) write this line of code on the next line
 
 ```csharp
-        this.Menu_Showdown.DropDownItems.Add(EnablePGLRentalLegality(resources));
+        this.Menu_AutoLegality.DropDownItems.Add(EnablePGLRentalLegality(resources));
 ```
 
 ## Dependencies
