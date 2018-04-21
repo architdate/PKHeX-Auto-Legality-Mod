@@ -57,6 +57,24 @@ SubRegion:Alberta
 - Country, SubRegion and 3DSRegion have to be spelt exactly as one of the options on PKHeX. Any spelling errors WILL fail.
 - To ensure proper legality in regards to Country, SubRegion and 3DSRegion, make sure that the SubRegion actually belongs to the Country, and the Country actually lies in the 3DSRegion.
 
+### Trainer Data JSON:
+- Used to create trainerdata for different games
+- Create a new JSON file called `trainerdata.json`
+- Write the json file in the following format:
+```
+{
+    <Game ID string>: {
+        "TID":"",
+        "SID":"",
+        "OT":"",
+        "Gender":"",
+        "Country":"",
+        "SubRegion":"",
+        "3DSRegion":""
+    }
+}
+```
+
 ### Features:
 
 - If you have auto on the first line of the file and then the specific details after that, then it will use the specific details as a fallback mechanism incase auto fails.

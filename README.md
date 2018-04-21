@@ -115,6 +115,79 @@ SubRegion:Alberta
 
 *Credits to the several people who requested this in GitHub Issues*
 
+**Specific trainerdata settings for specific games using trainerdata.json**
+- Create a new JSON file called `trainerdata.json`
+- Write the json file in the following format:
+```
+{
+    <Game ID string>: {
+        "TID":"",
+        "SID":"",
+        "OT":"",
+        "Gender":"",
+        "Country":"",
+        "SubRegion":"",
+        "3DSRegion":""
+    }
+}
+```
+- The game ID values are as follows:
+```
+33: Ultra Moon
+32: Ultra Sun
+31: Moon
+30: Sun
+26: Alpha Sapphire
+27: Omega Ruby
+24: X
+25: Y
+21: Black
+23: Black 2
+20: White
+22: White 2
+10: Diamond
+11: Pearl
+12: Platinum
+7: Heart Gold
+8: Soul Silver
+2: Ruby
+1: Sapphire
+3: Emerald
+4: Fire Red
+5: Leaf Green
+15: Colosseum/XD
+35: Red
+36: Green
+37: Blue
+38: Yellow
+39: Gold
+40: Silver
+41: Crystal
+```
+- Example of a `trainerdata.json` file would be (This is specific data for Ultra Sun and Omega Ruby. This JSON can be extended to include games you like. If the JSON does not have the game, it will fall back on `trainerdata.txt` or the hardcoded default values):
+```json
+{
+    "32":{
+        "TID":"12345",
+        "SID":"61234",
+        "OT":"PKHeXer",
+        "Gender":"M",
+        "Country":"Canada",
+        "SubRegion":"Alberta",
+        "3DSRegion":"Americas (NA/SA)"
+    },
+    "27":{
+        "TID":"23455",
+        "SID":"23444",
+        "OT":"ORAS",
+        "Gender":"F",
+        "Country":"Singapore",
+        "SubRegion":"Singapore",
+        "3DSRegion":"Americas (NA/SA)"
+    }
+}
+```
+
 ## [OPTIONAL] Addon Legality mods:
 
 The instructions for each one of these will be located within their own folders within the `Addons (Optional)` folder in the repository
