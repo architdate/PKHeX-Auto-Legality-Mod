@@ -268,6 +268,58 @@ namespace PKHeX.WinForms.Controls
         }
 
         /// <summary>
+        /// check if the game exists in the json file. If not handle via trainerdata.txt method
+        /// </summary>
+        /// <param name="jsonstring">Complete trainerdata.json string</param>
+        /// <param name="Game">int value of the game</param>
+        /// <param name="jsonvalue">internal json: trainerdata[Game]</param>
+        /// <returns></returns>
+        public bool checkIfGameExists(string jsonstring, int Game, out string jsonvalue)
+        {
+            jsonvalue = "";
+            if (!jsonstring.Contains("\"" + Game.ToString() + "\"")) return false;
+            foreach (string s in jsonstring.Split(new string[] { "\"" + Game.ToString() + "\"" }, StringSplitOptions.None))
+            {
+                if (s.Trim()[0] == ':')
+                {
+                    int index = jsonstring.IndexOf(s);
+                    jsonvalue = jsonstring.Substring(index).Split('{')[1].Split('}')[0].Trim();
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// String parse key to find value from final json
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="finaljson"></param>
+        /// <returns></returns>
+        public string getValueFromKey(string key, string finaljson)
+        {
+            return finaljson.Split(new string[] { key }, StringSplitOptions.None)[1].Split('"')[2].Trim();
+        }
+
+        public string[] parseTrainerJSON(SAVEditor C_SAV)
+        {
+            if (!System.IO.File.Exists(System.IO.Path.GetDirectoryName(Application.ExecutablePath) + "\\trainerdata.json"))
+            {
+                return parseTrainerData(C_SAV); // Default trainerdata.txt handling
+            }
+            string jsonstring = System.IO.File.ReadAllText(System.IO.Path.GetDirectoryName(Application.ExecutablePath) + "\\trainerdata.json", System.Text.Encoding.UTF8);
+            if(!checkIfGameExists(jsonstring, C_SAV.SAV.Game, out string finaljson)) return parseTrainerData(C_SAV);
+            string TID = getValueFromKey("TID", finaljson);
+            string SID = getValueFromKey("SID", finaljson);
+            string OT = getValueFromKey("OT", finaljson);
+            string Gender = getValueFromKey("Gender", finaljson);
+            string Country = getValueFromKey("Country", finaljson);
+            string SubRegion = getValueFromKey("SubRegion", finaljson);
+            string ConsoleRegion = getValueFromKey("3DSRegion", finaljson);
+            return new string[] { TID, SID, OT, Gender, Country, SubRegion, ConsoleRegion };
+        }
+
+        /// <summary>
         /// Parser for auto and preset trainerdata.txt files
         /// </summary>
         /// <param name="C_SAV">SAVEditor of the current save file</param>

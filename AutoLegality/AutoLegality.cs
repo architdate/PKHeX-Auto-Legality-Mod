@@ -36,7 +36,7 @@ namespace PKHeX.WinForms
             if (!Directory.Exists(MGDatabasePath)) Directory.CreateDirectory(MGDatabasePath);
 
 
-            string[] tdataVals = PKME_Tabs.parseTrainerData(C_SAV);
+            string[] tdataVals = PKME_Tabs.parseTrainerJSON(C_SAV);
 
             int TID = Convert.ToInt32(tdataVals[0]);
             int SID = Convert.ToInt32(tdataVals[1]);
