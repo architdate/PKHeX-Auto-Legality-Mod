@@ -979,7 +979,7 @@ namespace PKHeX.WinForms.Controls
                 }
 
                 if (!type.Contains(pk.EncounterType))
-                    pk.EncounterType = Convert.ToInt32(Math.Log((int)type, 2));
+                    pk.EncounterType = Convert.ToInt32(Math.Log((int)type, 2)); // Using Convert to avoid truncating by int casting a double
                 else
                     Console.WriteLine("This should never happen");
                 report = UpdateReport(pk);
