@@ -963,6 +963,27 @@ namespace PKHeX.WinForms.Controls
                 pk.FatefulEncounter = false;
                 report = UpdateReport(pk);
             }
+            if (report.Contains(V381)) //V381 = Encounter Type does not match encounter.
+            {
+                IEncounterable EncounterMatch = new LegalityAnalysis(pk).Info.EncounterMatch;
+                EncounterType type = EncounterType.None;
+                // Encounter type data is only stored for gen 4 encounters
+                // All eggs have encounter type none, even if they are from static encounters
+                if (pk.Gen4 && !pk.WasEgg)
+                {
+                    if (EncounterMatch is EncounterSlot w)
+                        // If there is more than one slot, the get wild encounter have filter for the pkm type encounter like safari/sports ball
+                        type = w.TypeEncounter;
+                    if (EncounterMatch is EncounterStaticTyped s)
+                        type = s.TypeEncounter;
+                }
+
+                if (!type.Contains(pk.EncounterType))
+                    pk.EncounterType = Convert.ToInt32(Math.Log((int)type, 2));
+                else
+                    Console.WriteLine("This should never happen");
+                report = UpdateReport(pk);
+            }
             if (report.Contains(V86)) //V86 = Evolution not valid (or level/trade evolution unsatisfied).
             {
                 pk.Met_Level = pk.Met_Level - 1;
