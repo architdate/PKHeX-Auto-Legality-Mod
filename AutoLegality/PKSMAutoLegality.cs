@@ -129,7 +129,7 @@ namespace PKHeX.WinForms.Controls
                         HyperTrain(Set);
                         if (new LegalityAnalysis(Set).Valid) legalized = true;
                         if (Set.GenNumber < 6 && !legalized) Set.EncryptionConstant = Set.PID;
-                        if (new LegalityAnalysis(Set).Valid)
+                        if (new LegalityAnalysis(Set).Valid && C_SAV.SAV.Generation >= Set.GenNumber)
                         {
                             setHappiness(Set);
                             if (shiny && !Set.IsShiny) Set.SetShinySID();
@@ -228,7 +228,7 @@ namespace PKHeX.WinForms.Controls
                         if (new LegalityAnalysis(Set).Valid) legalized = true;
                         AlternateAbilityRefresh(Set);
                         if (Set.GenNumber < 6 && !legalized) Set.EncryptionConstant = Set.PID;
-                        if (new LegalityAnalysis(Set).Valid)
+                        if (new LegalityAnalysis(Set).Valid && C_SAV.SAV.Generation >= Set.GenNumber)
                         {
                             setHappiness(Set);
                             PKM returnval = Set;
@@ -959,7 +959,6 @@ namespace PKHeX.WinForms.Controls
                 report = UpdateReport(pk);
             }
             if (report.Contains(V325)) //V325 = Fateful Encounter should not be checked.
-
             {
                 pk.FatefulEncounter = false;
                 report = UpdateReport(pk);
