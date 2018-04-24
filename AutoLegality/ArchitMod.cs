@@ -267,6 +267,31 @@ namespace PKHeX.WinForms.Controls
             return pk;
         }
 
+        public string checkMode(string jsonstring = "")
+        {
+            if(jsonstring != "")
+            {
+                string mode = "save";
+                if (jsonstring.Contains("mode")) mode = jsonstring.Split(new string[] { "\"mode\"" }, StringSplitOptions.None)[1].Split('"')[1].ToLower();
+                if (mode != "game" && mode != "save" && mode != "auto") mode = "save"; // User Mistake or for some reason this exists as a value of some other key
+                return mode;
+            }
+            else
+            {
+                if (!System.IO.File.Exists(System.IO.Path.GetDirectoryName(Application.ExecutablePath) + "\\trainerdata.json"))
+                {
+                    return "save"; // Default trainerdata.txt handling
+                }
+                jsonstring = System.IO.File.ReadAllText(System.IO.Path.GetDirectoryName(Application.ExecutablePath) + "\\trainerdata.json", System.Text.Encoding.UTF8);
+                if (jsonstring != "") return checkMode(jsonstring);
+                else
+                {
+                    WinFormsUtil.Alert("Empty trainerdata.json file");
+                    return "save";
+                }
+            }
+        }
+
         /// <summary>
         /// check if the game exists in the json file. If not handle via trainerdata.txt method
         /// </summary>
@@ -277,6 +302,11 @@ namespace PKHeX.WinForms.Controls
         public bool checkIfGameExists(string jsonstring, int Game, out string jsonvalue)
         {
             jsonvalue = "";
+            if (checkMode(jsonstring) == "auto")
+            {
+                jsonvalue = "auto";
+                return false;
+            }
             if (!jsonstring.Contains("\"" + Game.ToString() + "\"")) return false;
             foreach (string s in jsonstring.Split(new string[] { "\"" + Game.ToString() + "\"" }, StringSplitOptions.None))
             {
@@ -301,14 +331,15 @@ namespace PKHeX.WinForms.Controls
             return finaljson.Split(new string[] { key }, StringSplitOptions.None)[1].Split('"')[2].Trim();
         }
 
-        public string[] parseTrainerJSON(SAVEditor C_SAV)
+        public string[] parseTrainerJSON(SAVEditor C_SAV, int Game = -1)
         {
             if (!System.IO.File.Exists(System.IO.Path.GetDirectoryName(Application.ExecutablePath) + "\\trainerdata.json"))
             {
                 return parseTrainerData(C_SAV); // Default trainerdata.txt handling
             }
             string jsonstring = System.IO.File.ReadAllText(System.IO.Path.GetDirectoryName(Application.ExecutablePath) + "\\trainerdata.json", System.Text.Encoding.UTF8);
-            if(!checkIfGameExists(jsonstring, C_SAV.SAV.Game, out string finaljson)) return parseTrainerData(C_SAV);
+            if (Game == -1) Game = C_SAV.SAV.Game; 
+            if(!checkIfGameExists(jsonstring, Game, out string finaljson)) return parseTrainerData(C_SAV, finaljson == "auto");
             string TID = getValueFromKey("TID", finaljson);
             string SID = getValueFromKey("SID", finaljson);
             string OT = getValueFromKey("OT", finaljson);
@@ -324,7 +355,7 @@ namespace PKHeX.WinForms.Controls
         /// </summary>
         /// <param name="C_SAV">SAVEditor of the current save file</param>
         /// <returns></returns>
-        public string[] parseTrainerData(SAVEditor C_SAV)
+        public string[] parseTrainerData(SAVEditor C_SAV, bool auto = false)
         {
             // Defaults
             string TID = "23456";
@@ -359,7 +390,7 @@ namespace PKHeX.WinForms.Controls
                 else continue;
             }
             // Automatic loading
-            if (trainerdataLines[0] == "auto")
+            if (trainerdataLines[0] == "auto" || auto)
             {
                 try
                 {

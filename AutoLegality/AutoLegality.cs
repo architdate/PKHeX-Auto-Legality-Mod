@@ -35,18 +35,28 @@ namespace PKHeX.WinForms
 
             if (!Directory.Exists(MGDatabasePath)) Directory.CreateDirectory(MGDatabasePath);
 
-
-            string[] tdataVals = PKME_Tabs.parseTrainerJSON(C_SAV);
-
-            int TID = Convert.ToInt32(tdataVals[0]);
-            int SID = Convert.ToInt32(tdataVals[1]);
-            string OT = tdataVals[2];
-            if (OT == "PKHeX") OT = "Archit(TCD)"; // Avoids secondary handler error
+            bool checkPerGame = (PKME_Tabs.checkMode() == "game");
+            int TID = -1;
+            int SID = -1;
+            string OT = "";
             int gender = 0;
-            if (tdataVals[3] == "F" || tdataVals[3] == "Female") gender = 1;
-            string Country = tdataVals[4];
-            string SubRegion = tdataVals[5];
-            string ConsoleRegion = tdataVals[6];
+            string Country = "";
+            string SubRegion = "";
+            string ConsoleRegion = "";
+            if (!checkPerGame)
+            {
+                string[] tdataVals = PKME_Tabs.parseTrainerJSON(C_SAV);
+
+                TID = Convert.ToInt32(tdataVals[0]);
+                SID = Convert.ToInt32(tdataVals[1]);
+                OT = tdataVals[2];
+                if (OT == "PKHeX") OT = "Archit(TCD)"; // Avoids secondary handler error
+                gender = 0;
+                if (tdataVals[3] == "F" || tdataVals[3] == "Female") gender = 1;
+                Country = tdataVals[4];
+                SubRegion = tdataVals[5];
+                ConsoleRegion = tdataVals[6];
+            }
 
             string source = Clipboard.GetText().TrimEnd();
             string[] stringSeparators = new string[] { "\n\r" };
@@ -97,6 +107,20 @@ namespace PKHeX.WinForms
                     Blah b = new Blah();
                     b.C_SAV = C_SAV;
                     PKM legal = b.LoadShowdownSetModded_PKSM(p, Set, resetForm, TID, SID, OT, gender);
+                    if (checkPerGame)
+                    {
+                        string[] tdataVals = PKME_Tabs.parseTrainerJSON(C_SAV, legal.Version);
+
+                        TID = Convert.ToInt32(tdataVals[0]);
+                        SID = Convert.ToInt32(tdataVals[1]);
+                        OT = tdataVals[2];
+                        if (OT == "PKHeX") OT = "Archit(TCD)"; // Avoids secondary handler error
+                        gender = 0;
+                        if (tdataVals[3] == "F" || tdataVals[3] == "Female") gender = 1;
+                        Country = tdataVals[4];
+                        SubRegion = tdataVals[5];
+                        ConsoleRegion = tdataVals[6];
+                    }
                     if (int.TryParse(Country, out int n) && int.TryParse(SubRegion, out int m) && int.TryParse(ConsoleRegion, out int o))
                     {
                         legal = PKME_Tabs.SetPKMRegions(n, m, o, legal);
@@ -146,6 +170,20 @@ namespace PKHeX.WinForms
                 Blah b = new Blah();
                 b.C_SAV = C_SAV;
                 PKM legal = b.LoadShowdownSetModded_PKSM(p, Set, resetForm, TID, SID, OT, gender);
+                if (checkPerGame)
+                {
+                    string[] tdataVals = PKME_Tabs.parseTrainerJSON(C_SAV, legal.Version);
+
+                    TID = Convert.ToInt32(tdataVals[0]);
+                    SID = Convert.ToInt32(tdataVals[1]);
+                    OT = tdataVals[2];
+                    if (OT == "PKHeX") OT = "Archit(TCD)"; // Avoids secondary handler error
+                    gender = 0;
+                    if (tdataVals[3] == "F" || tdataVals[3] == "Female") gender = 1;
+                    Country = tdataVals[4];
+                    SubRegion = tdataVals[5];
+                    ConsoleRegion = tdataVals[6];
+                }
                 if (int.TryParse(Country, out int n) && int.TryParse(SubRegion, out int m) && int.TryParse(ConsoleRegion, out int o))
                 {
                     legal = PKME_Tabs.SetPKMRegions(n, m, o, legal);
