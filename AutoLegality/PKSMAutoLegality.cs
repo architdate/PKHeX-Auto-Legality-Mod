@@ -959,6 +959,7 @@ namespace PKHeX.WinForms.Controls
                 report = UpdateReport(pk);
             }
             if (report.Contains(V325)) //V325 = Fateful Encounter should not be checked.
+
             {
                 pk.FatefulEncounter = false;
                 report = UpdateReport(pk);
@@ -979,7 +980,7 @@ namespace PKHeX.WinForms.Controls
                 }
 
                 if (!type.Contains(pk.EncounterType))
-                    pk.EncounterType = Convert.ToInt32(Math.Log((int)type, 2)); // Using Convert to avoid truncating by int casting a double
+                    pk.EncounterType = Convert.ToInt32(Math.Log((int)type, 2));
                 else
                     Console.WriteLine("This should never happen");
                 report = UpdateReport(pk);
@@ -1040,6 +1041,11 @@ namespace PKHeX.WinForms.Controls
                 if (pk.IV_SPE == 31) pk.HT_SPE = false;
                 report = UpdateReport(pk);
             }
+
+            /* Uncomment to automatically override specified IVs.
+             * Default Behaviour would be to ignore this fix if IVs are specified to be of such values
+             * 
+             * 
             if (report.Contains(string.Format(V28, 3))) //V28 = Should have at least {0} IVs = 31.
             {
                 PKM temp = pk;
@@ -1059,6 +1065,8 @@ namespace PKHeX.WinForms.Controls
                     pk = temp;
                 }
             }
+            */
+
             return false;
         }
 
