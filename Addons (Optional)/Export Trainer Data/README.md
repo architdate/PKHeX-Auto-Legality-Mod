@@ -12,5 +12,5 @@ This feature allows you to export a `trainerdata.txt` file based on the active P
 - After the semicolon (`;`) write this line of code on the next line
 
 ```csharp
-        this.Menu_AutoLegality.DropDownItems.Add(EnableExportTrainerData(resources));
+        this.Menu_AutoLegality.DropDownItems.Add(EnableExportTrainingData(resources));
 ```
