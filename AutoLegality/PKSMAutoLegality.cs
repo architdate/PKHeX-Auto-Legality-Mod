@@ -950,7 +950,8 @@ namespace PKHeX.WinForms.Controls
             }
             if (report.Contains(V310)) //V310 = Form cannot exist outside of a battle.
             {
-                pk.AltForm = 0;
+                if (pk.Species == 718 && pk.Ability == 211) pk.AltForm = 3; // Zygarde Edge case
+                else pk.AltForm = 0;
                 report = UpdateReport(pk);
             }
             if (report.Contains(V324)) //V324 = Special ingame Fateful Encounter flag missing.
