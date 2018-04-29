@@ -362,9 +362,9 @@ namespace PKHeX.WinForms.Controls
             string SID = "34567";
             string OT = "Archit";
             string Gender = "M";
-            string Country = "";
-            string SubRegion = "";
-            string ConsoleRegion = "";
+            string Country = "Canada";
+            string SubRegion = "Alberta";
+            string ConsoleRegion = "Americas (NA/SA)";
             if (!System.IO.File.Exists(System.IO.Path.GetDirectoryName(Application.ExecutablePath) + "\\trainerdata.txt"))
             {
                 return new string[] { TID, SID, OT, Gender, Country, SubRegion, ConsoleRegion}; // Default No trainerdata.txt handling
