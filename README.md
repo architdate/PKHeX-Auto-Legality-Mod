@@ -60,6 +60,7 @@ $ git clone https://github.com/kwsch/PKHeX.git
 - After the semicolon (`;`) write this line of code on the next line
 
 ```csharp
+            this.Menu_Tools.DropDownItems.Insert(0, EnableMenu(resources));
             this.Menu_AutoLegality.DropDownItems.Add(EnableAutoLegality(resources));
 ```
 
