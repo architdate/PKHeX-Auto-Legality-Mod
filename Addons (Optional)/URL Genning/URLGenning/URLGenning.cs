@@ -15,12 +15,12 @@ namespace PKHeX.WinForms
             bool isUri = Uri.IsWellFormedUriString(url, UriKind.RelativeOrAbsolute);
             if (!isUri)
             {
-                WinFormsUtil.Alert("The text in the clipboard is not a valid URL");
+                WinFormsUtil.Alert("The text in the clipboard is not a valid URL.");
                 return;
             }
             if (!CheckPokePaste(url) && !CheckPasteBin(url))
             {
-                WinFormsUtil.Alert("The URL provided is not a pokepast.es or a pastebin.com URL");
+                WinFormsUtil.Alert("The URL provided is not a pokepast.es or a pastebin.com URL.");
                 return;
             }
             url = FixURL(url);
@@ -28,7 +28,7 @@ namespace PKHeX.WinForms
             if (sets.StartsWith("Error :")) return;
             Clipboard.SetText(sets);
             try { ClickShowdownImportPKMModded(sender, e); }
-            catch { WinFormsUtil.Alert("The data inside the URL are not valid Showdown Sets"); }
+            catch { WinFormsUtil.Alert("The data inside the URL are not valid Showdown Sets."); }
             Dictionary<string, string> metadata = GetMetadata(MetaDataURL(url));
             string typeOfBin = (CheckPasteBin(url)) ? "Pastebin" : "PokePaste";
             WinFormsUtil.Alert("All sets genned from the following URL: " + initURL + "\n\n"+typeOfBin+" data:\nTitle: "+metadata["Title"]+"\nAuthor: "+metadata["Author"]+"\nDescription: "+metadata["Description"]);
