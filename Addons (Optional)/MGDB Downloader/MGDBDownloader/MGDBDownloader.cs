@@ -59,7 +59,7 @@ namespace PKHeX.WinForms
             {
                 HttpWebRequest request = (HttpWebRequest)WebRequest.Create("https://api.github.com/repos/projectpokemon/EventsGallery/releases/latest");
                 request.Method = "GET";
-                request.UserAgent = "Foo";
+                request.UserAgent = "PKHeX-Auto-Legality-Mod";
                 request.Accept = "application/json";
                 WebResponse response = request.GetResponse(); //Error Here
                 Stream dataStream = response.GetResponseStream();
