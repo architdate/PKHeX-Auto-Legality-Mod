@@ -14,12 +14,6 @@ def getopts(argv):
     return opts
 
 
-cmdargs = getopts(sys.argv)
-latestCommit = False
-if '-c' in cmdargs:
-    if str(cmdargs['-c']).lower().strip() == "true":
-        latestCommit = True
-
 ns = {'d': 'http://schemas.microsoft.com/developer/msbuild/2003'}
 tree = etree.parse("PKHeX.WinForms.csproj")
 # Check if this project has already been patched
@@ -124,7 +118,7 @@ with open("MainWindow/Main.Designer.cs", "r+", encoding="utf-8") as fp:
     data=fp.read()
     prog = re.compile("this.Menu_Showdown.DropDownItems.AddRange\(.*{.*}\);\\n", re.DOTALL)
     m = prog.search(data)
-    modified = data[:m.end()] + "            this.Menu_Tools.DropDownItems.Insert(0, EnableMenu(resources));\n            this.Menu_AutoLegality.DropDownItems.Add(EnableAutoLegality(resources));\n            this.Menu_AutoLegality.DropDownItems.Add(EnablePGLRentalLegality(resources));\n            this.Menu_AutoLegality.DropDownItems.Add(EnableMGDBDownloader(resources, {0}));\n            this.Menu_AutoLegality.DropDownItems.Add(EnableURLGenning(resources));\n            this.Menu_AutoLegality.DropDownItems.Add(EnableExportTrainingData(resources));\n".format(str(latestCommit).lower()) + data[m.end():]    
+    modified = data[:m.end()] + "            this.Menu_Tools.DropDownItems.Insert(0, EnableMenu(resources));\n            this.Menu_AutoLegality.DropDownItems.Add(EnableAutoLegality(resources));\n            this.Menu_AutoLegality.DropDownItems.Add(EnablePGLRentalLegality(resources));\n            this.Menu_AutoLegality.DropDownItems.Add(EnableMGDBDownloader(resources));\n            this.Menu_AutoLegality.DropDownItems.Add(EnableURLGenning(resources));\n            this.Menu_AutoLegality.DropDownItems.Add(EnableExportTrainingData(resources));\n" + data[m.end():]    
     fp.seek(0)
     fp.truncate()
     fp.write(modified)
