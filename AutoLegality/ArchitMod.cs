@@ -331,6 +331,14 @@ namespace PKHeX.WinForms.Controls
             return finaljson.Split(new string[] { key }, StringSplitOptions.None)[1].Split('"')[2].Trim();
         }
 
+        public int[] ConvertTIDSID7toTIDSID(int tid7, int sid7)
+        {
+            var repack = (long)sid7 * 1_000_000 + tid7;
+            int sid = (ushort)(repack >> 16);
+            int tid = (ushort)repack;
+            return new int[] { tid, sid };
+        }
+
         public string[] parseTrainerJSON(SAVEditor C_SAV, int Game = -1)
         {
             if (!System.IO.File.Exists(System.IO.Path.GetDirectoryName(Application.ExecutablePath) + "\\trainerdata.json"))
@@ -347,6 +355,13 @@ namespace PKHeX.WinForms.Controls
             string Country = getValueFromKey("Country", finaljson);
             string SubRegion = getValueFromKey("SubRegion", finaljson);
             string ConsoleRegion = getValueFromKey("3DSRegion", finaljson);
+            if (TID.Length == 6 && SID.Length == 4)
+            {
+                if(new List<int> { 33, 32, 31, 30 }.IndexOf(Game) == -1) WinFormsUtil.Alert("Force Converting G7TID/G7SID to TID/SID");
+                int[] tidsid = ConvertTIDSID7toTIDSID(int.Parse(TID), int.Parse(SID));
+                TID = tidsid[0].ToString();
+                SID = tidsid[1].ToString();
+            }
             return new string[] { TID, SID, OT, Gender, Country, SubRegion, ConsoleRegion };
         }
 
@@ -406,6 +421,12 @@ namespace PKHeX.WinForms.Controls
                 {
                     return new string[] { TID, SID, OT, Gender, Country, SubRegion, ConsoleRegion };
                 }
+            }
+            if (TID.Length == 6 && SID.Length == 4)
+            {
+                int[] tidsid = ConvertTIDSID7toTIDSID(int.Parse(TID), int.Parse(SID));
+                TID = tidsid[0].ToString();
+                SID = tidsid[1].ToString();
             }
             return new string[] { TID, SID, OT, Gender, Country, SubRegion, ConsoleRegion };
         }
