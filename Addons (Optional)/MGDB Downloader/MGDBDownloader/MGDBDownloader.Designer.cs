@@ -10,7 +10,7 @@ namespace PKHeX.WinForms
             this.Menu_MGDBDownloader.Name = "Menu_MGDBDownloader";
             this.Menu_MGDBDownloader.Size = new System.Drawing.Size(231, 22);
             this.Menu_MGDBDownloader.Text = "Download MGDB";
-            this.Menu_MGDBDownloader.Click += delegate(object sender, EventArgs e) { this.DownloadMGDB(sender, e); };
+            this.Menu_MGDBDownloader.Click += new System.EventHandler(this.DownloadMGDB);
             return this.Menu_MGDBDownloader;
         }
         private System.Windows.Forms.ToolStripMenuItem Menu_MGDBDownloader;
