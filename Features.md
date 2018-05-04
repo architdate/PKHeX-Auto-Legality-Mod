@@ -130,6 +130,18 @@ This feature allows you to export a `trainerdata.txt` file based on the active P
 - The `trainerdata.txt` file will be exported and ready to use by the auto legality mod.
 - You will recieve a confirmation once it's done.
 
+## Smogon Sets Genning:
+
+This feature allows you to generate every single recommended [Smogon](https://www.smogon.com/) set for a particular pokemon.
+
+### Usage:
+
+- In the Pokemon Editor, set the Pokemon and a Form of the Pokemon if necessary.
+- Go to `Tools > Auto Legality Mod > Gen Smogon Sets`
+- It should gen all available sets in the `SM` dex
+- You will recieve a confirmation about how many sets were genned at the end
+
+
 ## Shortcuts:
 
 - **Ctrl + I** : Single Import / Mass Import with replacing Pokemon in a box
