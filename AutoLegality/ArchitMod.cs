@@ -14,7 +14,7 @@ namespace PKHeX.WinForms.Controls
     public partial class PKMEditor : UserControl
     {
         // Initialize Current Save file
-        private Controls.SAVEditor CurrentSAV;
+        private static Controls.SAVEditor CurrentSAV;
 
         /// <summary>
         /// Function to set a PKM file to a slot in the box
@@ -25,6 +25,7 @@ namespace PKHeX.WinForms.Controls
         public void ClickSet(object sender, int slot)
         {
             SlotChangeManager m = GetSenderInfo(ref sender, out SlotChange info, slot);
+            info.Type = StorageSlotType.Box;
             if (m == null)
                 return;
 
@@ -49,7 +50,8 @@ namespace PKHeX.WinForms.Controls
                 if (sav.PartyCount < info.Slot + 1 - 30)
                 {
                     info.Slot = sav.PartyCount + 30;
-                    info.Offset = m.SE.GetPKMOffset(info.Slot);
+                    info.Offset = m.SE.Box.GetSlotOffset(info.Slot);
+                    info.Type = StorageSlotType.Box;
                 }
                 m.SetPKM(pk, info, true, Resources.slotSet);
             }
@@ -230,7 +232,7 @@ namespace PKHeX.WinForms.Controls
             {
                 loc.Box = z.Box.CurrentBox;
                 loc.Slot = slot;
-                loc.Offset = z.GetPKMOffset(loc.Slot, loc.Box);
+                loc.Offset = z.Box.GetSlotOffset(loc.Slot);
                 loc.Parent = z.FindForm();
                 sender = ctrl;
                 return z.M;
