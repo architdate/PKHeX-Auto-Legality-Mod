@@ -113,6 +113,16 @@ namespace PKHeX.WinForms.AutoLegality {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap smogongenner {
+            get {
+                object obj = ResourceManager.GetObject("smogongenner", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap urlimport {
             get {
                 object obj = ResourceManager.GetObject("urlimport", resourceCulture);
