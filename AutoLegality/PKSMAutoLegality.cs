@@ -1575,6 +1575,7 @@ namespace PKHeX.WinForms.Controls
                 {108, new[]{273, 215}}, // Lickitung with Wish & Heal Bell
                 {463, new[]{273, 215}},
                 {113, new[]{273, 230}}, // Chansey with Wish & Sweet Scent
+                {242, new[]{273, 230}}, 
                 {115, new[]{273, 281}}, // Kangaskhan with Wish & Yawn
                 {054, new[]{300}}, // Psyduck with Mud Sport
                 {055, new[]{300}},
