@@ -17,9 +17,10 @@ namespace PKHeX.WinForms
             string url = "";
             if (form != null)
             {
-                if (form != "Mega" || form != "") url = String.Format("https://www.smogon.com/dex/sm/pokemon/{0}-{1}/", speciesName.ToLower(), form.ToLower());
+                string urlSpecies = ConvertSpeciesToURLSpecies(speciesName);
+                if (form != "Mega" || form != "") url = String.Format("https://www.smogon.com/dex/sm/pokemon/{0}-{1}/", urlSpecies.ToLower(), ConvertFormToURLForm(form, urlSpecies).ToLower());
             }
-            else url = String.Format("https://www.smogon.com/dex/sm/pokemon/{0}/", speciesName.ToLower());
+            else url = String.Format("https://www.smogon.com/dex/sm/pokemon/{0}/", ConvertSpeciesToURLSpecies(speciesName).ToLower());
             string smogonPage = GetSmogonPage(url);
             string[] split1 = smogonPage.Split(new string[] { "\",\"abilities\":" }, StringSplitOptions.None);
             List<string> sets = new List<string>();
@@ -60,7 +61,7 @@ namespace PKHeX.WinForms
             }
             catch (Exception e)
             {
-                WinFormsUtil.Alert("An error occured while trying to obtain the contents of the URL. This is most likely an issue with your Internet Connection. The exact error is as follows: " + e.ToString());
+                WinFormsUtil.Alert("An error occured while trying to obtain the contents of the URL. This is most likely an issue with your Internet Connection. The exact error is as follows: " + e.ToString() + "\nURL tried to access: "+ url);
                 return "Error :" + e.ToString();
             }
         }
@@ -116,6 +117,32 @@ namespace PKHeX.WinForms
             val[4] = spdstat;
             val[5] = spestat;
             return val;
+        }
+
+        // Smogon Quirks
+        private static string ConvertSpeciesToURLSpecies(string spec)
+        {
+            if (spec == "Nidoran♂") return "nidoran-m";
+            if (spec == "Nidoran♀") return "nidoran-f";
+            if (spec == "Farfetch’d") return "farfetchd";
+            if (spec == "Flabébé") return "flabebe";
+            return spec;
+        }
+
+        // Smogon Quirks
+        private static string ConvertFormToURLForm(string form, string spec)
+        {
+            switch (spec)
+            {
+                case "Necrozma" when form == "Dusk":
+                    return "dusk_mane";
+                case "Necrozma" when form == "Dawn":
+                    return "dawn_wings";
+                case "Oricorio" when form == "Pa'u":
+                    return "pau";
+                default:
+                    return form;
+            }
         }
     }
 }
