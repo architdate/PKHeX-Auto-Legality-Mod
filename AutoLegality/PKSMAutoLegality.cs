@@ -923,6 +923,19 @@ namespace PKHeX.WinForms.Controls
                 pk.OT_Feeling = Util.Rand.Next(0, 10); // 0-9
                 report = UpdateReport(pk);
             }
+            if (report.Contains(string.Format(V255, "OT")) || report.Contains(string.Format(V255, "HT"))) //V255 = {0} Memory: Invalid Feeling (0 = OT/HT)
+            {
+                pk.HT_Memory = 3;
+                pk.HT_TextVar = 9;
+                pk.HT_Intensity = 1;
+                pk.HT_Feeling = Legal.GetRandomFeeling(pk.HT_Memory);
+                pk.HT_Friendship = pk.OT_Friendship;
+                pk.OT_Memory = 3;
+                pk.OT_TextVar = 9;
+                pk.OT_Intensity = 1;
+                pk.OT_Feeling = Legal.GetRandomFeeling(pk.OT_Memory);
+                report = UpdateReport(pk);
+            }
             if (report.Contains(V130)) //V130 = Can't have any OT Memory.
             {
                 pk.OT_Memory = 0;
