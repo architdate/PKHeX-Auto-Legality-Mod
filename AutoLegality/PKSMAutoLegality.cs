@@ -119,6 +119,7 @@ namespace PKHeX.WinForms.Controls
                             Set.PID = PKX.GetRandomPID(Set.Species, Set.Gender, Set.Version, Set.Nature, Set.Format, (uint)(Set.AbilityNumber * 0x10001));
                             if (shiny) Set.SetShinyPID();
                         }
+                        Set = FixMemoriesPKM(Set);
                         if (Set.GenNumber < 6) Set.EncryptionConstant = Set.PID;
                         if (CommonErrorHandling2(Set))
                         {
@@ -217,6 +218,7 @@ namespace PKHeX.WinForms.Controls
                             if (shiny) Set.SetShinyPID();
                         }
                         Set.RefreshAbility(abilitynum);
+                        Set = FixMemoriesPKM(Set);
                         if (Set.GenNumber < 6) Set.EncryptionConstant = Set.PID;
                         if (CommonErrorHandling2(Set))
                         {
@@ -549,6 +551,19 @@ namespace PKHeX.WinForms.Controls
             {
                 pk.Version = (int)GameVersion.SN;
                 pk.IVs = new int[] { 20, 31, 20, 31, 31, 20 };
+            }
+            if (report.Contains(string.Format(V255, "OT")) || report.Contains(string.Format(V255, "HT"))) //V255 = {0} Memory: Invalid Feeling (0 = OT/HT)
+            {
+                pk.HT_Memory = 3;
+                pk.HT_TextVar = 9;
+                pk.HT_Intensity = 1;
+                pk.HT_Feeling = Legal.GetRandomFeeling(pk.HT_Memory);
+                pk.HT_Friendship = pk.OT_Friendship;
+                pk.OT_Memory = 3;
+                pk.OT_TextVar = 9;
+                pk.OT_Intensity = 1;
+                pk.OT_Feeling = Legal.GetRandomFeeling(pk.OT_Memory);
+                report = UpdateReport(pk);
             }
             if (report.Contains(V20)) // V20: Nickname does not match species name
             {
