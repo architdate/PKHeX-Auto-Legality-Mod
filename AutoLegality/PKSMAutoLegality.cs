@@ -1607,9 +1607,9 @@ namespace PKHeX.WinForms.Controls
                 {115, new[]{273, 281}}, // Kangaskhan with Wish & Yawn
                 {054, new[]{300}}, // Psyduck with Mud Sport
                 {055, new[]{300}},
-                {172, new[]{266}}, // Pichu with Follow me
-                {025, new[]{266}},
-                {026, new[]{266}},
+                {172, new[]{266, 058}}, // Pichu with Follow me
+                {025, new[]{266, 058}},
+                {026, new[]{266, 058}},
                 {174, new[]{321}}, // Igglybuff with Tickle
                 {039, new[]{321}},
                 {040, new[]{321}},
@@ -1621,8 +1621,8 @@ namespace PKHeX.WinForms.Controls
                 {293, new[]{298}}, // Whismur with Teeter Dance
                 {294, new[]{298}},
                 {295, new[]{298}},
-                {300, new[]{205}}, // Skitty with Rollout
-                {301, new[]{205}},
+                {300, new[]{205, 006}}, // Skitty with Rollout or Payday
+                {301, new[]{205, 006}},
                 {311, new[]{346}}, // Plusle with Water Sport
                 {312, new[]{300}}, // Minun with Mud Sport
                 {325, new[]{253}}, // Spoink with Uproar
@@ -1634,6 +1634,13 @@ namespace PKHeX.WinForms.Controls
                 {342, new[]{346}},
                 {360, new[]{321}}, // Wynaut with Tickle
                 {202, new[]{321}},
+                // Pokemon Box Events (M2)
+                {263, new[]{245}}, // Zigzagoon with Extreme Speed
+                {264, new[]{245}},
+                {333, new[]{206}}, // False Swipe Swablu
+                {334, new[]{206}},
+                // Pay Day Skitty and evolutions (Accounted for with Rollout Skitty)
+                // Surf Pichu and evolutions (Accounted for with Follow Me Pichu)
             },
             new Dictionary<int, int[]>()
             { // BACD_R
