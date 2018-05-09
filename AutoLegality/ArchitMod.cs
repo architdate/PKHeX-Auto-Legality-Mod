@@ -269,6 +269,22 @@ namespace PKHeX.WinForms.Controls
             return pk;
         }
 
+        /// <summary>
+        /// Set TID, SID and OT
+        /// </summary>
+        /// <param name="OT">string value of OT name</param>
+        /// <param name="TID">INT value of TID</param>
+        /// <param name="SID">INT value of SID</param>
+        /// <param name="pk"></param>
+        /// <returns></returns>
+        public PKM SetTrainerData(string OT, int TID, int SID, PKM pk)
+        {
+            pk.TID = TID;
+            pk.SID = SID;
+            pk.OT_Name = OT;
+            return pk;
+        }
+
         public string checkMode(string jsonstring = "")
         {
             if(jsonstring != "")

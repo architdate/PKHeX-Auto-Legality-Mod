@@ -120,6 +120,7 @@ namespace PKHeX.WinForms
                         Country = tdataVals[4];
                         SubRegion = tdataVals[5];
                         ConsoleRegion = tdataVals[6];
+                        legal = PKME_Tabs.SetTrainerData(OT, TID, SID, legal);
                     }
                     if (int.TryParse(Country, out int n) && int.TryParse(SubRegion, out int m) && int.TryParse(ConsoleRegion, out int o))
                     {
@@ -183,6 +184,7 @@ namespace PKHeX.WinForms
                     Country = tdataVals[4];
                     SubRegion = tdataVals[5];
                     ConsoleRegion = tdataVals[6];
+                    legal = PKME_Tabs.SetTrainerData(OT, TID, SID, legal);
                 }
                 if (int.TryParse(Country, out int n) && int.TryParse(SubRegion, out int m) && int.TryParse(ConsoleRegion, out int o))
                 {
