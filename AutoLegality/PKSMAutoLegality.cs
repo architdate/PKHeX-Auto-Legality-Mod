@@ -70,6 +70,7 @@ namespace PKHeX.WinForms.Controls
             {
                 for (int i = 0; i < GameVersionList.Length; i++)
                 {
+                    if (Set.DebutGeneration > ((GameVersion)GameVersionList[i]).GetGeneration()) continue;
                     Set.Version = GameVersionList[i];
                     RestoreIVs(Set, SSet); // Restore IVs to SSet and HT to false
                     Set.Language = 2;
@@ -150,6 +151,7 @@ namespace PKHeX.WinForms.Controls
             {
                 for (int i = 0; i < GameVersionList.Length; i++)
                 {
+                    if (Set.DebutGeneration > ((GameVersion)GameVersionList[i]).GetGeneration()) continue;
                     if (Set.Met_Level == 100) Set.Met_Level = 0;
                     Set.WasEgg = false;
                     Set.EggMetDate = null;
