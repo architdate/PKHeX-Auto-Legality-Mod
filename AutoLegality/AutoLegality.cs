@@ -15,7 +15,7 @@ namespace PKHeX.WinForms
     {        
         private void ClickShowdownImportPKMModded(object sender, EventArgs e)
         {
-            bool allowAPI = false; // Use true to allow experimental API usage
+            bool allowAPI = true; // Use true to allow experimental API usage
             if (!showdownData() || (ModifierKeys & Keys.Shift) == Keys.Shift)
             {
                 if (WinFormsUtil.OpenSAVPKMDialog(new string[] { "txt" }, out string path))
@@ -92,6 +92,8 @@ namespace PKHeX.WinForms
                         return;
                     }
                 }
+                int ctrapi = 0;
+                string setsungenned = "";
                 for (int i = 0; i < result.Length; i++)
                 {
                     ShowdownSet Set = new ShowdownSet(result[i]);
@@ -122,13 +124,14 @@ namespace PKHeX.WinForms
                         catch { satisfied = false; }
                         if (!satisfied)
                         {
+                            setsungenned += Set.Text + "\n";
                             Blah b = new Blah();
                             b.C_SAV = C_SAV;
                             legal = b.LoadShowdownSetModded_PKSM(p, Set, resetForm, TID, SID, OT, gender);
                         }
                         else
                         {
-                            Console.WriteLine(i + 1);
+                            ctrapi++;
                             legal = APIGenerated;
                         }
                     }
@@ -166,6 +169,8 @@ namespace PKHeX.WinForms
                     PKM pk = PreparePKM();
                     PKME_Tabs.ClickSet(C_SAV.Box.SlotPictureBoxes[0], emptySlots[i]);
                 }
+                Console.WriteLine("API Genned Sets: " + ctrapi);
+                Console.WriteLine(setsungenned);
             }
             else
             {
