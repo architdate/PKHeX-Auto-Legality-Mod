@@ -15,7 +15,7 @@ namespace PKHeX.WinForms
     {        
         private void ClickShowdownImportPKMModded(object sender, EventArgs e)
         {
-            bool allowAPI = true; // Use true to allow experimental API usage
+            bool allowAPI = false; // Use true to allow experimental API usage
             if (!showdownData() || (ModifierKeys & Keys.Shift) == Keys.Shift)
             {
                 if (WinFormsUtil.OpenSAVPKMDialog(new string[] { "txt" }, out string path))
