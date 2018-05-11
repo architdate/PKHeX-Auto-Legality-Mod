@@ -204,9 +204,32 @@ namespace PKHeX.WinForms
                 PKME_Tabs.LoadShowdownSet(Set);
                 PKM p = PreparePKM();
                 p.Version = (int)GameVersion.MN;
-                Blah b = new Blah();
-                b.C_SAV = C_SAV;
-                PKM legal = b.LoadShowdownSetModded_PKSM(p, Set, resetForm, TID, SID, OT, gender);
+                PKM legal;
+                if (allowAPI)
+                {
+                    AutoLegalityMod mod = new AutoLegalityMod();
+                    mod.SAV = C_SAV.SAV;
+                    bool satisfied = false;
+                    PKM APIGenerated = C_SAV.SAV.BlankPKM;
+                    try { APIGenerated = mod.APILegality(p, Set, out satisfied); }
+                    catch { satisfied = false; }
+                    if (!satisfied)
+                    {
+                        Blah b = new Blah();
+                        b.C_SAV = C_SAV;
+                        legal = b.LoadShowdownSetModded_PKSM(p, Set, resetForm, TID, SID, OT, gender);
+                    }
+                    else
+                    {
+                        legal = APIGenerated;
+                    }
+                }
+                else
+                {
+                    Blah b = new Blah();
+                    b.C_SAV = C_SAV;
+                    legal = b.LoadShowdownSetModded_PKSM(p, Set, resetForm, TID, SID, OT, gender);
+                }
                 if (checkPerGame)
                 {
                     string[] tdataVals = PKME_Tabs.parseTrainerJSON(C_SAV, legal.Version);
