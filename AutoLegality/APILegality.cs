@@ -30,6 +30,7 @@ namespace PKHeX.WinForms.Controls
                 Form = SSet.FormIndex;
                 roughPK.ApplySetDetails(SSet);
             }
+            int HPType = roughPK.HPType;
 
             // List of candidate PKM files
 
@@ -49,7 +50,7 @@ namespace PKHeX.WinForms.Controls
                     SetMovesEVsItems(pk, SSet);
                     SetTrainerDataAndMemories(pk);
                     SetNatureAbility(pk, SSet);
-                    SetIVsPID(pk, SSet, Method);
+                    SetIVsPID(pk, SSet, Method, HPType);
                     ColosseumFixes(pk);
                     pk.SetSuggestedHyperTrainingData(pk.IVs); // Hypertrain
                     SetEncryptionConstant(pk);
@@ -194,6 +195,7 @@ namespace PKHeX.WinForms.Controls
                 // Hardcoded a generic one for now, trainerdata.json implementation here later
                 pk.CurrentHandler = 1;
                 pk.HT_Name = "ARCH";
+                pk.HT_Gender = 0; // Male for Colo/XD Cases
                 pk.TID = 34567;
                 pk.SID = 0;
                 pk.OT_Name = "TCD";
@@ -256,7 +258,7 @@ namespace PKHeX.WinForms.Controls
         /// </summary>
         /// <param name="pk"></param>
         /// <param name="SSet"></param>
-        public void SetIVsPID(PKM pk, ShowdownSet SSet, PIDType Method)
+        public void SetIVsPID(PKM pk, ShowdownSet SSet, PIDType Method, int HPType)
         {
             // Useful Values for computation
             int Species = pk.Species;
@@ -272,7 +274,7 @@ namespace PKHeX.WinForms.Controls
             }
             else
             {
-                FindPIDIV(pk, Method);
+                FindPIDIV(pk, Method, HPType);
                 ValidateGender(pk);
             }
         }
@@ -280,9 +282,10 @@ namespace PKHeX.WinForms.Controls
         /// <summary>
         /// Method to set PID, IV while validating nature.
         /// </summary>
-        /// <param name="pk"></param>
-        /// <param name="Method"></param>
-        public void FindPIDIV(PKM pk, PIDType Method)
+        /// <param name="pk">PKM to modify</param>
+        /// <param name="Method">Given Method</param>
+        /// <param name="HPType">HPType INT for preserving Hidden powers</param>
+        public void FindPIDIV(PKM pk, PIDType Method, int HPType)
         {
             if (Method == PIDType.None)
             {
@@ -295,8 +298,8 @@ namespace PKHeX.WinForms.Controls
                 uint seed = Util.Rand32();
                 PIDGenerator.SetValuesFromSeed(pk, Method, seed);
                 if (!(pk.Ability == iterPKM.Ability && pk.AbilityNumber == iterPKM.AbilityNumber && pk.Nature == iterPKM.Nature)) continue;
-                if (pk.PID % 25 == iterPKM.Nature) break;
-                // Note: Hidden Power must be preserved. Fix before release. (Dunno if a Rand32 seed is the way to go though)
+                if (pk.PID % 25 == iterPKM.Nature && pk.HPType == HPType) // Util.Rand32 is the way to go
+                    break;
                 pk = iterPKM;
             }
         }
