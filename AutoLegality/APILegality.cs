@@ -55,6 +55,7 @@ namespace PKHeX.WinForms.Controls
                     pk.SetSuggestedHyperTrainingData(pk.IVs); // Hypertrain
                     SetEncryptionConstant(pk);
                     SetShinyBoolean(pk, SSet.Shiny);
+                    CheckAndSetFateful(pk);
                     FixGender(pk);
                     LegalityAnalysis la = new LegalityAnalysis(pk);
                     if (la.Valid) satisfied = true;
@@ -120,6 +121,13 @@ namespace PKHeX.WinForms.Controls
             if (pkmn.Version == (int)GameVersion.RBY) pk.Version = (int)GameVersion.RD;
             else if (pkmn.Version == (int)GameVersion.GSC) pk.Version = (int)GameVersion.C;
             else pk.Version = pkmn.Version;
+        }
+
+        public void CheckAndSetFateful(PKM pk)
+        {
+            LegalityAnalysis la = new LegalityAnalysis(pk);
+            string Report = la.Report();
+            if (Report.Contains(V322) || Report.Contains(V324)) pk.FatefulEncounter = true;
         }
 
         /// <summary>
