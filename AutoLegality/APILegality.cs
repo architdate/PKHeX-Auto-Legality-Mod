@@ -57,6 +57,7 @@ namespace PKHeX.WinForms.Controls
                     CheckAndSetFateful(pk);
                     SetShinyBoolean(pk, SSet.Shiny);
                     FixGender(pk);
+                    FixRibbons(pk);
                     LegalityAnalysis la = new LegalityAnalysis(pk);
                     if (la.Valid) satisfied = true;
                     if (satisfied)
@@ -198,7 +199,7 @@ namespace PKHeX.WinForms.Controls
         /// <param name="pk">PKM to modify</param>
         public void SetTrainerDataAndMemories(PKM pk)
         {
-            if (!pk.WasEvent)
+            if (!(pk.WasEvent || pk.WasIngameTrade))
             {
                 // Hardcoded a generic one for now, trainerdata.json implementation here later
                 pk.CurrentHandler = 1;
@@ -315,6 +316,10 @@ namespace PKHeX.WinForms.Controls
 
         public PIDType FindLikelyPIDType(PKM pk, PKM pkmn)
         {
+            Blah b = new Blah();
+            if (b.usesEventBasedMethod(pk.Species, pk.Moves, "BACD_R"))
+                return PIDType.BACD_R;
+            if (b.usesEventBasedMethod(pk.Species, pk.Moves, "M2")) return PIDType.Method_2;
             switch (pk.GenNumber)
             {
                 case 3:
@@ -330,7 +335,6 @@ namespace PKHeX.WinForms.Controls
                     }
                 default:
                     return PIDType.None;
-
             }
         }
 
@@ -382,6 +386,41 @@ namespace PKHeX.WinForms.Controls
                 pkm.Ball = 4;
                 pkm.FatefulEncounter = true;
                 pkm.OT_Gender = 0;
+            }
+        }
+
+        public void FixRibbons(PKM pk)
+        {
+            string Report = new LegalityAnalysis(pk).Report();
+            if (Report.Contains(String.Format(V600, "")))
+            {
+                string[] ribbonList = Report.Split(new string[] { String.Format(V600, "") }, StringSplitOptions.None)[1].Split(new string[] { ", " }, StringSplitOptions.None);
+                var RibbonNames = ReflectFrameworkUtil.GetPropertiesStartWithPrefix(pk.GetType(), "Ribbon");
+                List<string> missingRibbons = new List<string>();
+                foreach (var RibbonName in RibbonNames)
+                {
+                    string v = RibbonStrings.GetName(RibbonName).Replace("Ribbon", "");
+                    if (ribbonList.Contains(v)) missingRibbons.Add(RibbonName);
+                }
+                foreach (string missing in missingRibbons)
+                {
+                    ReflectUtil.SetValue(pk, missing, -1);
+                }
+            }
+            if (Report.Contains(String.Format(V601, "")))
+            {
+                string[] ribbonList = Report.Split(new string[] { String.Format(V601, "") }, StringSplitOptions.None)[1].Split(new string[] { ", " }, StringSplitOptions.None);
+                var RibbonNames = ReflectFrameworkUtil.GetPropertiesStartWithPrefix(pk.GetType(), "Ribbon");
+                List<string> invalidRibbons = new List<string>();
+                foreach (var RibbonName in RibbonNames)
+                {
+                    string v = RibbonStrings.GetName(RibbonName).Replace("Ribbon", "");
+                    if (ribbonList.Contains(v)) invalidRibbons.Add(RibbonName);
+                }
+                foreach(string invalid in invalidRibbons)
+                {
+                    ReflectUtil.SetValue(pk, invalid, 0);
+                }
             }
         }
 

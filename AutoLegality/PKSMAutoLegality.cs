@@ -113,7 +113,7 @@ namespace PKHeX.WinForms.Controls
                         Set.CurrentHandler = 1;
                         Set.HT_Name = "Archit";
                         Set = SetSuggestedRelearnMoves_PKSM(Set);
-                        Set.PID = PKX.GetRandomPID(Set.Species, Set.Gender, Set.Version, Set.Nature, Set.Format, (uint)(Set.AbilityNumber * 0x10001));
+                        Set.SetPIDNature(Set.Nature);
                         if (shiny) Set.SetShinyPID();
                         if (Set.PID == 0)
                         {
@@ -796,7 +796,7 @@ namespace PKHeX.WinForms.Controls
             }
             return pk;
         }
-        private bool CommonErrorHandling2(PKM pk)
+        public bool CommonErrorHandling2(PKM pk)
         {
             string hp = pk.IV_HP.ToString();
             string atk = pk.IV_ATK.ToString();
@@ -1296,7 +1296,7 @@ namespace PKHeX.WinForms.Controls
             return pk;
         }
 
-        private bool usesEventBasedMethod(int Species, int[] Moves, string method)
+        public bool usesEventBasedMethod(int Species, int[] Moves, string method)
         {
             Dictionary<int, int[]> RNGList = new Dictionary<int, int[]>();
             if (getRNGListIndex(method) != -1) RNGList = WC3RNGList[getRNGListIndex(method)];
@@ -1581,7 +1581,7 @@ namespace PKHeX.WinForms.Controls
             return eventpk;
         }
 
-        Dictionary<int, int[]>[] WC3RNGList = new Dictionary<int, int[]>[] {
+        public static Dictionary<int, int[]>[] WC3RNGList = new Dictionary<int, int[]>[] {
             new Dictionary<int, int[]>()
             { // M2
                 {043, new[]{073}}, // Oddish with Leech Seed
