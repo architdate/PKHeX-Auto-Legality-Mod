@@ -136,7 +136,7 @@ namespace PKHeX.WinForms.Controls
         /// </summary>
         /// <param name="SSet">Original Showdown Set</param>
         /// <param name="changedSet">Edited Showdown Set</param>
-        /// <returns></returns>
+        /// <returns>boolen that checks if a form is fixed or not</returns>
         public bool FixFormes(ShowdownSet SSet, out ShowdownSet changedSet)
         {
             changedSet = SSet;
@@ -183,7 +183,7 @@ namespace PKHeX.WinForms.Controls
         /// Check for invalid relearn moves
         /// </summary>
         /// <param name="RelearnInfo">CheckResult List of relearn moves</param>
-        /// <returns></returns>
+        /// <returns>If an invalid relearn move exists</returns>
         public bool CheckInvalidRelearn(CheckResult[] RelearnInfo)
         {
             foreach(CheckResult r in RelearnInfo)
@@ -216,7 +216,7 @@ namespace PKHeX.WinForms.Controls
         /// Memory fix if needed
         /// </summary>
         /// <param name="pk">PKM to modify</param>
-        /// <returns></returns>
+        /// <returns>Modified PKM file</returns>
         private PKM FixMemoriesPKM(PKM pk)
         {
             if (SAV.PKMType == typeof(PK7))
@@ -314,6 +314,12 @@ namespace PKHeX.WinForms.Controls
             }
         }
 
+        /// <summary>
+        /// Secondary fallback if PIDType.None to slot the PKM into its most likely type
+        /// </summary>
+        /// <param name="pk">PKM to modify</param>
+        /// <param name="pkmn">Original PKM</param>
+        /// <returns>PIDType that is likely used</returns>
         public PIDType FindLikelyPIDType(PKM pk, PKM pkmn)
         {
             Blah b = new Blah();
@@ -389,6 +395,10 @@ namespace PKHeX.WinForms.Controls
             }
         }
 
+        /// <summary>
+        /// Fix invalid and missing ribbons. (V600 and V601)
+        /// </summary>
+        /// <param name="pk">PKM whose ribbons need to be fixed</param>
         public void FixRibbons(PKM pk)
         {
             string Report = new LegalityAnalysis(pk).Report();
