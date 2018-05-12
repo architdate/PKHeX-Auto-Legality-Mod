@@ -50,12 +50,12 @@ namespace PKHeX.WinForms.Controls
                     SetMovesEVsItems(pk, SSet);
                     SetTrainerDataAndMemories(pk);
                     SetNatureAbility(pk, SSet);
-                    SetIVsPID(pk, SSet, Method, HPType);
+                    SetIVsPID(pk, SSet, Method, HPType, pkmn);
                     ColosseumFixes(pk);
                     pk.SetSuggestedHyperTrainingData(pk.IVs); // Hypertrain
                     SetEncryptionConstant(pk);
-                    SetShinyBoolean(pk, SSet.Shiny);
                     CheckAndSetFateful(pk);
+                    SetShinyBoolean(pk, SSet.Shiny);
                     FixGender(pk);
                     LegalityAnalysis la = new LegalityAnalysis(pk);
                     if (la.Valid) satisfied = true;
@@ -266,7 +266,7 @@ namespace PKHeX.WinForms.Controls
         /// </summary>
         /// <param name="pk"></param>
         /// <param name="SSet"></param>
-        public void SetIVsPID(PKM pk, ShowdownSet SSet, PIDType Method, int HPType)
+        public void SetIVsPID(PKM pk, ShowdownSet SSet, PIDType Method, int HPType, PKM originalPKMN)
         {
             // Useful Values for computation
             int Species = pk.Species;
@@ -282,7 +282,7 @@ namespace PKHeX.WinForms.Controls
             }
             else
             {
-                FindPIDIV(pk, Method, HPType);
+                FindPIDIV(pk, Method, HPType, originalPKMN);
                 ValidateGender(pk);
             }
         }
@@ -293,12 +293,13 @@ namespace PKHeX.WinForms.Controls
         /// <param name="pk">PKM to modify</param>
         /// <param name="Method">Given Method</param>
         /// <param name="HPType">HPType INT for preserving Hidden powers</param>
-        public void FindPIDIV(PKM pk, PIDType Method, int HPType)
+        public void FindPIDIV(PKM pk, PIDType Method, int HPType, PKM originalPKMN)
         {
             if (Method == PIDType.None)
             {
+                Method = FindLikelyPIDType(pk, originalPKMN);
                 if (pk.Version == 15) Method = PIDType.CXD;
-                else Method = PIDType.Method_2;
+                if (Method == PIDType.None) Method = PIDType.Method_2;
             }
             PKM iterPKM = pk;
             while (true)
@@ -309,6 +310,27 @@ namespace PKHeX.WinForms.Controls
                 if (pk.PID % 25 == iterPKM.Nature && pk.HPType == HPType) // Util.Rand32 is the way to go
                     break;
                 pk = iterPKM;
+            }
+        }
+
+        public PIDType FindLikelyPIDType(PKM pk, PKM pkmn)
+        {
+            switch (pk.GenNumber)
+            {
+                case 3:
+                    switch (pk.Version)
+                    {
+                        case (int)GameVersion.CXD: return PIDType.CXD;
+                        case (int)GameVersion.E: return PIDType.Method_1;
+                        case (int)GameVersion.FR:
+                        case (int)GameVersion.LG:
+                            return PIDType.Method_1;
+                        default:
+                            return PIDType.Method_1;
+                    }
+                default:
+                    return PIDType.None;
+
             }
         }
 
