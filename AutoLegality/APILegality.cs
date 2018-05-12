@@ -1,8 +1,10 @@
 ﻿using System.Windows.Forms;
-using System.Collections.Generic;
+using static PKHeX.Core.LegalityCheckStrings;
 
 using PKHeX.Core;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace PKHeX.WinForms.Controls
 {
@@ -32,20 +34,27 @@ namespace PKHeX.WinForms.Controls
             // List of candidate PKM files
 
             int[] moves = SSet.Moves;
-            var f = EncounterMovesetGenerator.GeneratePKMs(roughPK, SAV, moves);
+            var f = GeneratePKMs(roughPK, SAV, moves);
             foreach (PKM pkmn in f)
             {
                 if (pkmn != null)
                 {
                     PKM pk = PKMConverter.ConvertToType(pkmn, SAV.PKMType, out _); // All Possible PKM files
+                    LegalInfo info = new LegalInfo(pk);
+                    var pidiv = info.PIDIV ?? MethodFinder.Analyze(pk);
+                    PIDType Method = PIDType.None;
+                    if (pidiv != null) Method = pidiv.Type;
+                    SetVersion(pk, pkmn); // PreEmptive Version setting
                     SetSpeciesLevel(pk, SSet, Form);
                     SetMovesEVsItems(pk, SSet);
                     SetTrainerDataAndMemories(pk);
                     SetNatureAbility(pk, SSet);
-                    SetIVsPID(pk, SSet);
+                    SetIVsPID(pk, SSet, Method);
+                    ColosseumFixes(pk);
                     pk.SetSuggestedHyperTrainingData(pk.IVs); // Hypertrain
                     SetEncryptionConstant(pk);
                     SetShinyBoolean(pk, SSet.Shiny);
+                    FixGender(pk);
                     LegalityAnalysis la = new LegalityAnalysis(pk);
                     if (la.Valid) satisfied = true;
                     if (satisfied)
@@ -56,13 +65,68 @@ namespace PKHeX.WinForms.Controls
             return roughPK;
         }
 
-        public bool ValidateLegality(PKM pk, out string report)
+        /// <summary>
+        /// Validate and Set the gender if needed
+        /// </summary>
+        /// <param name="pkm">PKM to modify</param>
+        public void ValidateGender(PKM pkm)
         {
-            LegalityAnalysis la = new LegalityAnalysis(pk);
-            report = la.Report();
-            return la.Valid;
+            bool genderValid = pkm.IsGenderValid();
+            if (!genderValid)
+            {
+                if (pkm.Format == 4 && pkm.Species == 292) // Shedinja glitch
+                {
+                    // should match original gender
+                    var gender = PKX.GetGenderFromPIDAndRatio(pkm.PID, 0x7F); // 50-50
+                    if (gender == pkm.Gender)
+                        genderValid = true;
+                }
+                else if (pkm.Format > 5 && (pkm.Species == 183 || pkm.Species == 184))
+                {
+                    var gv = pkm.PID & 0xFF;
+                    if (gv > 63 && pkm.Gender == 1) // evolved from azurill after transferring to keep gender
+                        genderValid = true;
+                }
+            }
+            else
+            {
+                // check for mixed->fixed gender incompatibility by checking the gender of the original species
+                if (new HashSet<int>{290, 292, 412, 413, 414, 280, 475, 361, 478, 677, 678}.Contains(pkm.Species) && pkm.Gender != 2) // shedinja
+                {
+                    var gender = PKX.GetGenderFromPID(new LegalInfo(pkm).EncounterMatch.Species, pkm.EncryptionConstant);
+                    pkm.Gender = gender;
+                    genderValid = true;
+                }
+            }
+
+            if (genderValid)
+                return;
+            else
+            {
+                if (pkm.Gender == 0) pkm.Gender = 1;
+                else if (pkm.Gender == 1) pkm.Gender = 0;
+                else pkm.GetSaneGender();
+            }
         }
 
+        /// <summary>
+        /// Set Version override for GSC and RBY games
+        /// </summary>
+        /// <param name="pk">Return PKM</param>
+        /// <param name="pkmn">Generated PKM</param>
+        public void SetVersion(PKM pk, PKM pkmn)
+        {
+            if (pkmn.Version == (int)GameVersion.RBY) pk.Version = (int)GameVersion.RD;
+            else if (pkmn.Version == (int)GameVersion.GSC) pk.Version = (int)GameVersion.C;
+            else pk.Version = pkmn.Version;
+        }
+
+        /// <summary>
+        /// Fix Formes that are illegal outside of battle
+        /// </summary>
+        /// <param name="SSet">Original Showdown Set</param>
+        /// <param name="changedSet">Edited Showdown Set</param>
+        /// <returns></returns>
         public bool FixFormes(ShowdownSet SSet, out ShowdownSet changedSet)
         {
             changedSet = SSet;
@@ -192,7 +256,7 @@ namespace PKHeX.WinForms.Controls
         /// </summary>
         /// <param name="pk"></param>
         /// <param name="SSet"></param>
-        public void SetIVsPID(PKM pk, ShowdownSet SSet)
+        public void SetIVsPID(PKM pk, ShowdownSet SSet, PIDType Method)
         {
             // Useful Values for computation
             int Species = pk.Species;
@@ -208,8 +272,49 @@ namespace PKHeX.WinForms.Controls
             }
             else
             {
-                // Fuck My Life
+                FindPIDIV(pk, Method);
+                ValidateGender(pk);
             }
+        }
+
+        /// <summary>
+        /// Method to set PID, IV while validating nature.
+        /// </summary>
+        /// <param name="pk"></param>
+        /// <param name="Method"></param>
+        public void FindPIDIV(PKM pk, PIDType Method)
+        {
+            if (Method == PIDType.None)
+            {
+                if (pk.Version == 15) Method = PIDType.CXD;
+                else Method = PIDType.Method_2;
+            }
+            PKM iterPKM = pk;
+            while (true)
+            {
+                uint seed = Util.Rand32();
+                PIDGenerator.SetValuesFromSeed(pk, Method, seed);
+                if (!(pk.Ability == iterPKM.Ability && pk.AbilityNumber == iterPKM.AbilityNumber && pk.Nature == iterPKM.Nature)) continue;
+                if (pk.PID % 25 == iterPKM.Nature) break;
+                // Note: Hidden Power must be preserved. Fix before release. (Dunno if a Rand32 seed is the way to go though)
+                pk = iterPKM;
+            }
+        }
+
+        /// <summary>
+        /// Quick Gender Toggle
+        /// </summary>
+        /// <param name="pk">PKM whose gender needs to be toggled</param>
+        public void FixGender(PKM pk)
+        {
+            LegalityAnalysis la = new LegalityAnalysis(pk);
+            string Report = la.Report();
+            if (Report.Contains(V255))
+            {
+                if (pk.Gender == 0) pk.Gender = 1;
+                else pk.Gender = 0;
+            }
+            if (pk.Gender != 0 && pk.Gender != 1) pk.Gender = pk.GetSaneGender();
         }
 
         /// <summary>
@@ -227,5 +332,49 @@ namespace PKHeX.WinForms.Controls
             else pk.EncryptionConstant = pk.PID; // Generations 3 to 5
         }
 
+        /// <summary>
+        /// Colosseum/XD pokemon need to be fixed. Fix Gender further in logic using <see cref="FixGender(PKM)"/>
+        /// </summary>
+        /// <param name="pkm">PKM to apply the fix to</param>
+        public void ColosseumFixes(PKM pkm)
+        {
+            if(pkm.Version == 15)
+            {
+                var RibbonNames = ReflectFrameworkUtil.GetPropertiesStartWithPrefix(pkm.GetType(), "Ribbon");
+                foreach (var RibbonName in RibbonNames)
+                {
+                    ReflectUtil.SetValue(pkm, RibbonName, 0);
+                }
+                ReflectUtil.SetValue(pkm, "RibbonNational", -1);
+                pkm.Ball = 4;
+                pkm.FatefulEncounter = true;
+                pkm.OT_Gender = 0;
+            }
+        }
+
+        /// <summary>
+        /// Temporary Reimplementation of Kaphotics's Generator without the exception being thrown to avoid relying on the bruteforce mechanism
+        /// </summary>
+        /// <param name="pk">PKM to modify</param>
+        /// <param name="info">Trainer Info for TID</param>
+        /// <param name="moves">INT list of moves for the pkm</param>
+        /// <param name="versions">Versions to iterate over (All in our case)</param>
+        /// <returns></returns>
+        public static IEnumerable<PKM> GeneratePKMs(PKM pk, ITrainerInfo info, int[] moves = null, params GameVersion[] versions)
+        {
+            GameVersion[] Versions = ((GameVersion[])Enum.GetValues(typeof(GameVersion))).Where(z => z < GameVersion.RB && z > 0).OrderBy(x => x.GetGeneration()).Reverse().ToArray();
+            pk.TID = info.TID;
+            var m = moves ?? pk.Moves;
+            var vers = versions?.Length >= 1 ? versions : Versions.Where(z => z <= (GameVersion)pk.MaxGameID);
+            foreach (var ver in vers)
+            {
+                var encs = EncounterMovesetGenerator.GenerateVersionEncounters(pk, m, ver);
+                foreach (var enc in encs)
+                {
+                    var result = enc.ConvertToPKM(info);
+                    yield return result;
+                }
+            }
+        }
     }
 }
