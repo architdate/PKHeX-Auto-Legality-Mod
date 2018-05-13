@@ -24,6 +24,8 @@ namespace PKHeX.WinForms
 
         private void ClickShowdownImportPKMModded(object sender, EventArgs e)
         {
+            #region Initial Setup
+
             bool allowAPI = true; // Use true to allow experimental API usage
             APILegalized = false; // Initialize to false everytime command is used
             if (!showdownData() || (ModifierKeys & Keys.Shift) == Keys.Shift)
@@ -65,6 +67,8 @@ namespace PKHeX.WinForms
             }
             Console.WriteLine(result.Length);
 
+            #endregion
+            #region Multiple Pokemon Import
             if (result.Length > 1)
             {
                 List<int> emptySlots = new List<int> { };
@@ -85,7 +89,7 @@ namespace PKHeX.WinForms
                     }
                 }
                 int ctrapi = 0;
-                string setsungenned = "";
+                List<string> setsungenned = new List<string>();
                 for (int i = 0; i < result.Length; i++)
                 {
                     ShowdownSet Set = new ShowdownSet(result[i]);
@@ -116,7 +120,7 @@ namespace PKHeX.WinForms
                         catch { satisfied = false; }
                         if (!satisfied)
                         {
-                            setsungenned += Set.Text + "\n";
+                            setsungenned.Add(Set.Text);
                             Blah b = new Blah();
                             b.C_SAV = C_SAV;
                             legal = b.LoadShowdownSetModded_PKSM(p, Set, resetForm, TID_ALM, SID_ALM, OT_ALM, gender_ALM);
@@ -150,9 +154,13 @@ namespace PKHeX.WinForms
                     PKM pk = PreparePKM();
                     PKME_Tabs.ClickSet(C_SAV.Box.SlotPictureBoxes[0], emptySlots[i]);
                 }
-                Console.WriteLine("API Genned Sets: " + ctrapi);
-                Console.WriteLine(setsungenned);
+#if DEBUG
+                WinFormsUtil.Alert("API Genned Sets: " + ctrapi + Environment.NewLine + Environment.NewLine + "Number of sets not genned by the API: " + setsungenned.Count);
+                Console.WriteLine(String.Join("\n\n", setsungenned));
+#endif
             }
+            #endregion
+            #region Single Pokemon Import
             else
             {
                 // Get Simulator Data
@@ -200,6 +208,9 @@ namespace PKHeX.WinForms
                         b.C_SAV = C_SAV;
                         legal = b.LoadShowdownSetModded_PKSM(p, Set, resetForm, TID_ALM, SID_ALM, OT_ALM, gender_ALM);
                         APILegalized = false;
+#if DEBUG
+                        WinFormsUtil.Alert("Set was not genned by the API");
+#endif
                     }
                     else
                     {
@@ -229,6 +240,7 @@ namespace PKHeX.WinForms
                     PKME_Tabs.SetRegions(Country_ALM, SubRegion_ALM, ConsoleRegion_ALM);
                 }
             }
+            #endregion
         }
 
         private void LoadTrainerData(PKM legal = null)

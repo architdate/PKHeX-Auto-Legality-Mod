@@ -269,7 +269,8 @@ namespace PKHeX.WinForms.Controls
             }
             if (isShiny)
             {
-                if (pk.GenNumber > 5 || pk.VC) pk.SetShiny();
+                if (pk.GenNumber > 5) pk.SetShinyPID();
+                else if (pk.VC) pk.SetShinyIVs();
                 else pk.SetShinySID();
             }
         }

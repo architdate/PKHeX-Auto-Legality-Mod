@@ -283,9 +283,12 @@ namespace PKHeX.WinForms.Controls
             {
                 if ((pk.TID == 12345 && pk.OT_Name == "PKHeX") || (pk.TID == 34567 && pk.SID == 0 && pk.OT_Name == "TCD"))
                 {
+                    bool Shiny = pk.IsShiny;
                     pk.TID = TID;
                     pk.SID = SID;
                     pk.OT_Name = OT;
+                    AutoLegalityMod m = new AutoLegalityMod();
+                    m.SetShinyBoolean(pk, Shiny);
                 }
                 return pk;
             }
