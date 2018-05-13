@@ -121,6 +121,7 @@ namespace PKHeX.WinForms.Controls
         {
             if (pkmn.Version == (int)GameVersion.RBY) pk.Version = (int)GameVersion.RD;
             else if (pkmn.Version == (int)GameVersion.GSC) pk.Version = (int)GameVersion.C;
+            else if (pkmn.Species == 658 && pkmn.AltForm == 1 && (pkmn.Version == (int)GameVersion.UM) || (pkmn.Version == (int)GameVersion.US)) pk.Version = (int)GameVersion.SN; // Ash-Greninja
             else pk.Version = pkmn.Version;
         }
 
@@ -279,6 +280,8 @@ namespace PKHeX.WinForms.Controls
             if (pk.GenNumber > 4 || pk.VC)
             {
                 pk.IVs = SSet.IVs;
+                if (Species == 658 && pk.AltForm == 1)
+                    pk.IVs = new int[] { 20, 31, 20, 31, 31, 20 };
                 pk.PID = PKX.GetRandomPID(Species, Gender, pk.Version, Nature, pk.Format, (uint)(AbilityNumber * 0x10001));
             }
             else
@@ -370,7 +373,7 @@ namespace PKHeX.WinForms.Controls
             {
                 int wIndex = Array.IndexOf(Legal.WurmpleEvolutions, pk.Species);
                 uint EC = wIndex < 0 ? Util.Rand32() : PKX.GetWurmpleEC(wIndex / 2);
-                pk.EncryptionConstant = EC;
+                if (!(pk.Species == 658 && pk.AltForm == 1)) pk.EncryptionConstant = EC;
             }
             else pk.EncryptionConstant = pk.PID; // Generations 3 to 5
         }
