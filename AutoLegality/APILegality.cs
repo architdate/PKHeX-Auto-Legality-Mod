@@ -51,6 +51,7 @@ namespace PKHeX.WinForms.Controls
                     SetTrainerDataAndMemories(pk);
                     SetNatureAbility(pk, SSet);
                     SetIVsPID(pk, SSet, Method, HPType, pkmn);
+                    PrintLegality(pk);
                     ColosseumFixes(pk);
                     pk.SetSuggestedHyperTrainingData(pk.IVs); // Hypertrain
                     SetEncryptionConstant(pk);
@@ -66,6 +67,15 @@ namespace PKHeX.WinForms.Controls
                 }
             }
             return roughPK;
+        }
+
+        /// <summary>
+        /// Debugging tool
+        /// </summary>
+        /// <param name="pk">PKM whose legality must be printed</param>
+        public void PrintLegality(PKM pk)
+        {
+            Console.WriteLine(new LegalityAnalysis(pk).Report());
         }
 
         /// <summary>
@@ -329,6 +339,11 @@ namespace PKHeX.WinForms.Controls
             if (b.usesEventBasedMethod(pk.Species, pk.Moves, "BACD_R"))
                 return PIDType.BACD_R;
             if (b.usesEventBasedMethod(pk.Species, pk.Moves, "M2")) return PIDType.Method_2;
+            if (pk.Species == 490 && pk.Gen4)
+            {
+                pk.Egg_Location = 2002;
+                return PIDType.Method_1;
+            }
             switch (pk.GenNumber)
             {
                 case 3:
@@ -341,6 +356,20 @@ namespace PKHeX.WinForms.Controls
                             return PIDType.Method_1;
                         default:
                             return PIDType.Method_1;
+                    }
+                case 4:
+                    switch(new LegalInfo(pk).EncounterMatch)
+                    {
+                        case EncounterStatic s:
+                            if (s.Location == 233 && s.Gift) // Pokewalker
+                                return PIDType.Pokewalker;
+                            if (s.Shiny == Shiny.Always)
+                                return PIDType.ChainShiny;
+                            return PIDType.Method_1;
+                        case PGT _:
+                            return PIDType.Method_1;
+                        default:
+                            return PIDType.None;
                     }
                 default:
                     return PIDType.None;
