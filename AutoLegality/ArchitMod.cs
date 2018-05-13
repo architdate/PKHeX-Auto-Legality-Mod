@@ -277,8 +277,18 @@ namespace PKHeX.WinForms.Controls
         /// <param name="SID">INT value of SID</param>
         /// <param name="pk"></param>
         /// <returns></returns>
-        public PKM SetTrainerData(string OT, int TID, int SID, PKM pk)
+        public PKM SetTrainerData(string OT, int TID, int SID, PKM pk, bool APILegalized = false)
         {
+            if (APILegalized)
+            {
+                if ((pk.TID == 12345 && pk.OT_Name == "PKHeX") || (pk.TID == 34567 && pk.SID == 0 && pk.OT_Name == "TCD"))
+                {
+                    pk.TID = TID;
+                    pk.SID = SID;
+                    pk.OT_Name = OT;
+                }
+                return pk;
+            }
             pk.TID = TID;
             pk.SID = SID;
             pk.OT_Name = OT;

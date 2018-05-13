@@ -31,7 +31,8 @@ However if you would like the Multiple pokemon paste to just fill up empty space
 - Female gender is assigned by default unless specified in the Showdown Set to have the least maximum likelyhood of being attracted by Pokemon who carry attract (higher female ratio statistically)
 - IV's are smartly hypertrained. (0 IV and 1 IV stats are not hypertrained because of intentional IVing. Anything above that is hypertrained)
 - Previous Generation of Pokemon (Gen 3, Gen 4 and Gen 5) automatically get PIDIV combos assigned to them to satisfy their nature and their hidden power. The IVs are then hypertrained if needed automatically.
-- Ingame encounters of Pokemon are given priority over events to reduce the dependancy on wondercard files as much as possible
+- Ingame encounters of Pokemon and PKHeX inbuilt mystery gifts are given priority over external events to reduce the dependancy on wondercard files as much as possible
+- The priority of the games used for legality is in the descending order in which games are released.
 - In the occasion that there is no possible Ingame encounter for the Showdown Set, it checks for possible events that can generate a legal Pokemon from the `mgdb` folder in the same directory. If it finds such an event, it will automatically generate a legal Pokemon using that event and the provided Showdown Set.
 
 ## Trainer Data Preferences

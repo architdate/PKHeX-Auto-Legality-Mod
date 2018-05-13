@@ -59,6 +59,7 @@ namespace PKHeX.WinForms.Controls
                     SetShinyBoolean(pk, SSet.Shiny);
                     FixGender(pk);
                     FixRibbons(pk);
+                    FixMemoriesPKM(pk);
                     LegalityAnalysis la = new LegalityAnalysis(pk);
                     if (la.Valid) satisfied = true;
                     if (satisfied)
@@ -131,7 +132,7 @@ namespace PKHeX.WinForms.Controls
         {
             if (pkmn.Version == (int)GameVersion.RBY) pk.Version = (int)GameVersion.RD;
             else if (pkmn.Version == (int)GameVersion.GSC) pk.Version = (int)GameVersion.C;
-            else if (pkmn.Species == 658 && pkmn.AltForm == 1 && (pkmn.Version == (int)GameVersion.UM) || (pkmn.Version == (int)GameVersion.US)) pk.Version = (int)GameVersion.SN; // Ash-Greninja
+            else if (pkmn.Species == 658 && pkmn.AltForm == 1 && ((pkmn.Version == (int)GameVersion.UM) || (pkmn.Version == (int)GameVersion.US))) pk.Version = (int)GameVersion.SN; // Ash-Greninja
             else pk.Version = pkmn.Version;
         }
 
@@ -476,6 +477,7 @@ namespace PKHeX.WinForms.Controls
         /// <returns></returns>
         public static IEnumerable<PKM> GeneratePKMs(PKM pk, ITrainerInfo info, int[] moves = null, params GameVersion[] versions)
         {
+            int num = 0;
             GameVersion[] Versions = ((GameVersion[])Enum.GetValues(typeof(GameVersion))).Where(z => z < GameVersion.RB && z > 0).OrderBy(x => x.GetGeneration()).Reverse().ToArray();
             pk.TID = info.TID;
             var m = moves ?? pk.Moves;
@@ -485,6 +487,8 @@ namespace PKHeX.WinForms.Controls
                 var encs = EncounterMovesetGenerator.GenerateVersionEncounters(pk, m, ver);
                 foreach (var enc in encs)
                 {
+                    num++;
+                    Console.WriteLine(num);
                     var result = enc.ConvertToPKM(info);
                     yield return result;
                 }

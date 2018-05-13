@@ -12,10 +12,20 @@ using System.IO.Compression;
 namespace PKHeX.WinForms
 {
     public partial class Main : Form
-    {        
+    {
+        int TID_ALM = -1;
+        int SID_ALM = -1;
+        string OT_ALM = "";
+        int gender_ALM = 0;
+        string Country_ALM = "";
+        string SubRegion_ALM = "";
+        string ConsoleRegion_ALM = "";
+        bool APILegalized = false;
+
         private void ClickShowdownImportPKMModded(object sender, EventArgs e)
         {
-            bool allowAPI = false; // Use true to allow experimental API usage
+            bool allowAPI = true; // Use true to allow experimental API usage
+            APILegalized = false; // Initialize to false everytime command is used
             if (!showdownData() || (ModifierKeys & Keys.Shift) == Keys.Shift)
             {
                 if (WinFormsUtil.OpenSAVPKMDialog(new string[] { "txt" }, out string path))
@@ -35,28 +45,10 @@ namespace PKHeX.WinForms
             }
 
             if (!Directory.Exists(MGDatabasePath)) Directory.CreateDirectory(MGDatabasePath);
-
-            bool checkPerGame = (PKME_Tabs.checkMode() == "game");
-            int TID = -1;
-            int SID = -1;
-            string OT = "";
-            int gender = 0;
-            string Country = "";
-            string SubRegion = "";
-            string ConsoleRegion = "";
-            if (!checkPerGame)
+            
+            if (PKME_Tabs.checkMode() != "game")
             {
-                string[] tdataVals = PKME_Tabs.parseTrainerJSON(C_SAV);
-
-                TID = Convert.ToInt32(tdataVals[0]);
-                SID = Convert.ToInt32(tdataVals[1]);
-                OT = tdataVals[2];
-                if (OT == "PKHeX") OT = "Archit(TCD)"; // Avoids secondary handler error
-                gender = 0;
-                if (tdataVals[3] == "F" || tdataVals[3] == "Female") gender = 1;
-                Country = tdataVals[4];
-                SubRegion = tdataVals[5];
-                ConsoleRegion = tdataVals[6];
+                LoadTrainerData();
             }
 
             string source = Clipboard.GetText().TrimEnd();
@@ -127,36 +119,25 @@ namespace PKHeX.WinForms
                             setsungenned += Set.Text + "\n";
                             Blah b = new Blah();
                             b.C_SAV = C_SAV;
-                            legal = b.LoadShowdownSetModded_PKSM(p, Set, resetForm, TID, SID, OT, gender);
+                            legal = b.LoadShowdownSetModded_PKSM(p, Set, resetForm, TID_ALM, SID_ALM, OT_ALM, gender_ALM);
+                            APILegalized = false;
                         }
                         else
                         {
                             ctrapi++;
                             legal = APIGenerated;
+                            APILegalized = true;
                         }
                     }
                     else
                     {
                         Blah b = new Blah();
                         b.C_SAV = C_SAV;
-                        legal = b.LoadShowdownSetModded_PKSM(p, Set, resetForm, TID, SID, OT, gender);
+                        legal = b.LoadShowdownSetModded_PKSM(p, Set, resetForm, TID_ALM, SID_ALM, OT_ALM, gender_ALM);
+                        APILegalized = false;
                     }
-                    if (checkPerGame)
-                    {
-                        string[] tdataVals = PKME_Tabs.parseTrainerJSON(C_SAV, legal.Version);
-
-                        TID = Convert.ToInt32(tdataVals[0]);
-                        SID = Convert.ToInt32(tdataVals[1]);
-                        OT = tdataVals[2];
-                        if (OT == "PKHeX") OT = "Archit(TCD)"; // Avoids secondary handler error
-                        gender = 0;
-                        if (tdataVals[3] == "F" || tdataVals[3] == "Female") gender = 1;
-                        Country = tdataVals[4];
-                        SubRegion = tdataVals[5];
-                        ConsoleRegion = tdataVals[6];
-                        legal = PKME_Tabs.SetTrainerData(OT, TID, SID, legal);
-                    }
-                    if (int.TryParse(Country, out int n) && int.TryParse(SubRegion, out int m) && int.TryParse(ConsoleRegion, out int o))
+                    LoadTrainerData(legal);
+                    if (int.TryParse(Country_ALM, out int n) && int.TryParse(SubRegion_ALM, out int m) && int.TryParse(ConsoleRegion_ALM, out int o))
                     {
                         legal = PKME_Tabs.SetPKMRegions(n, m, o, legal);
                         intRegions = true;
@@ -164,7 +145,7 @@ namespace PKHeX.WinForms
                     PKME_Tabs.PopulateFields(legal);
                     if (!intRegions)
                     {
-                        PKME_Tabs.SetRegions(Country, SubRegion, ConsoleRegion);
+                        PKME_Tabs.SetRegions(Country_ALM, SubRegion_ALM, ConsoleRegion_ALM);
                     }
                     PKM pk = PreparePKM();
                     PKME_Tabs.ClickSet(C_SAV.Box.SlotPictureBoxes[0], emptySlots[i]);
@@ -217,48 +198,58 @@ namespace PKHeX.WinForms
                     {
                         Blah b = new Blah();
                         b.C_SAV = C_SAV;
-                        legal = b.LoadShowdownSetModded_PKSM(p, Set, resetForm, TID, SID, OT, gender);
+                        legal = b.LoadShowdownSetModded_PKSM(p, Set, resetForm, TID_ALM, SID_ALM, OT_ALM, gender_ALM);
+                        APILegalized = false;
                     }
                     else
                     {
                         legal = APIGenerated;
+                        APILegalized = true;
                     }
                 }
                 else
                 {
                     Blah b = new Blah();
                     b.C_SAV = C_SAV;
-                    legal = b.LoadShowdownSetModded_PKSM(p, Set, resetForm, TID, SID, OT, gender);
+                    legal = b.LoadShowdownSetModded_PKSM(p, Set, resetForm, TID_ALM, SID_ALM, OT_ALM, gender_ALM);
+                    APILegalized = false;
                 }
-                if (checkPerGame)
-                {
-                    string[] tdataVals = PKME_Tabs.parseTrainerJSON(C_SAV, legal.Version);
-
-                    TID = Convert.ToInt32(tdataVals[0]);
-                    SID = Convert.ToInt32(tdataVals[1]);
-                    OT = tdataVals[2];
-                    if (OT == "PKHeX") OT = "Archit(TCD)"; // Avoids secondary handler error
-                    gender = 0;
-                    if (tdataVals[3] == "F" || tdataVals[3] == "Female") gender = 1;
-                    Country = tdataVals[4];
-                    SubRegion = tdataVals[5];
-                    ConsoleRegion = tdataVals[6];
-                    legal = PKME_Tabs.SetTrainerData(OT, TID, SID, legal);
-                }
-                if (int.TryParse(Country, out int n) && int.TryParse(SubRegion, out int m) && int.TryParse(ConsoleRegion, out int o))
+                LoadTrainerData(legal);
+                if (int.TryParse(Country_ALM, out int n) && int.TryParse(SubRegion_ALM, out int m) && int.TryParse(ConsoleRegion_ALM, out int o))
                 {
                     legal = PKME_Tabs.SetPKMRegions(n, m, o, legal);
-                    Country = "";
-                    SubRegion = "";
-                    ConsoleRegion = "";
+                    Country_ALM = "";
+                    SubRegion_ALM = "";
+                    ConsoleRegion_ALM = "";
                 }
                 PKME_Tabs.PopulateFields(legal);
                 if (legal.Format < 7) PKME_Tabs.LoadFieldsFromPKM2(legal, true, false);
-                if (Country != "" && SubRegion != "" && ConsoleRegion != "")
+                if (Country_ALM != "" && SubRegion_ALM != "" && ConsoleRegion_ALM != "")
                 {
-                    PKME_Tabs.SetRegions(Country, SubRegion, ConsoleRegion);
+                    PKME_Tabs.SetRegions(Country_ALM, SubRegion_ALM, ConsoleRegion_ALM);
                 }
             }
+        }
+
+        private void LoadTrainerData(PKM legal = null)
+        {
+            bool checkPerGame = (PKME_Tabs.checkMode() == "game");
+            // If mode is not set as game: (auto or save)
+            string[] tdataVals;
+            if(!checkPerGame || legal == null) tdataVals = PKME_Tabs.parseTrainerJSON(C_SAV);
+
+            else tdataVals = PKME_Tabs.parseTrainerJSON(C_SAV, legal.Version);
+            TID_ALM = Convert.ToInt32(tdataVals[0]);
+            SID_ALM = Convert.ToInt32(tdataVals[1]);
+            OT_ALM = tdataVals[2];
+            if (OT_ALM == "PKHeX") OT_ALM = "Archit(TCD)"; // Avoids secondary handler error
+            gender_ALM = 0;
+            if (tdataVals[3] == "F" || tdataVals[3] == "Female") gender_ALM = 1;
+            Country_ALM = tdataVals[4];
+            SubRegion_ALM = tdataVals[5];
+            ConsoleRegion_ALM = tdataVals[6];
+            if((checkPerGame && legal != null) || APILegalized)
+                legal = PKME_Tabs.SetTrainerData(OT_ALM, TID_ALM, SID_ALM, legal, APILegalized);
         }
 
         private bool showdownData()
