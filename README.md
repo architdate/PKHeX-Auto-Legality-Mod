@@ -214,5 +214,5 @@ Just me right now, but if you want to contribute, feel free to contact me on Dis
 - My good friend TORNADO for helping me with Test Cases
 - Speed Improvement ideas by [Bernardo Giordano](https://github.com/BernardoGiordano)
 - [Project Pokémon](https://github.com/projectpokemon/) for their Event Gallery
-- kwsch for the original PKHeX repository.
+- kwsch for the original PKHeX repository and with plugin structures.
 - All the other users who have helped improve this via GitHub issues
