@@ -1,0 +1,52 @@
+version: 1.0.{build}
+image: Visual Studio 2017
+configuration: Release
+clone_depth: 5
+init:
+- cmd: set PATH=C:\Python35;C:\Python35\Scripts;%path%
+environment:
+  latestcommit: false
+  notifyall: true
+before_build:
+- cmd: >-
+    git clone -q --depth=5 --branch=master https://github.com/kwsch/PKHeX.git C:\projects\pkhex
+
+    cd "C:\projects\pkhex\pkhex.winforms"
+
+    mkdir AutoLegality
+
+    mkdir MGDBDownloader
+
+    mkdir PGLRentalLegality
+
+    xcopy  "C:\projects\pkhex-auto-legality-mod\AutoLegality" "C:\projects\pkhex\pkhex.winforms\AutoLegality" /e /i /h
+
+    xcopy  "C:\projects\pkhex-auto-legality-mod\Addons (Optional)\PGL QR Auto Legality\PGLRentalLegality" "C:\projects\pkhex\pkhex.winforms\PGLRentalLegality" /e /i /h
+
+    xcopy  "C:\projects\pkhex-auto-legality-mod\Addons (Optional)\MGDB Downloader\MGDBDownloader" "C:\projects\pkhex\pkhex.winforms\MGDBDownloader" /e /i /h
+
+    xcopy  C:\projects\pkhex-auto-legality-mod\build-mod.py C:\projects\pkhex\pkhex.winforms
+
+    pip3.5 install lxml
+
+    python build-mod.py -c %latestcommit%
+
+    cd "C:\projects\pkhex"
+
+    nuget restore
+build_script:
+- ps: msbuild /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll" /p:DefineConstants=UNSAFEDLL /p:Configuration=Release C:\projects\pkhex\PKHeX.sln
+before_package:
+- cmd: xcopy  C:\projects\pkhex\pkhex.winforms\bin\release C:\projects\pkhex-auto-legality-mod\bin /e /i /h
+after_build:
+- ps: >-
+    Set-Location -Path "C:\projects\pkhex"
+
+    $env:pkhex_commit = $(git rev-parse --short HEAD)
+
+    $env:mod_commit = $env:APPVEYOR_REPO_COMMIT.Substring(0,7)
+
+    Add-AppveyorMessage $env:pkhex_commit
+artifacts:
+- path: bin
+  name: PKHeX-$(pkhex_commit)-Auto-Legality-Mod-$(mod_commit)
