@@ -8,45 +8,40 @@ environment:
   latestcommit: false
   notifyall: true
 before_build:
-- cmd: >-
+- ps: |
     git clone -q --depth=5 --branch=master https://github.com/kwsch/PKHeX.git C:\projects\pkhex
-
-    cd "C:\projects\pkhex\pkhex.winforms"
-
-    mkdir AutoLegality
-
-    mkdir MGDBDownloader
-
-    mkdir PGLRentalLegality
-
-    xcopy  "C:\projects\pkhex-auto-legality-mod\AutoLegality" "C:\projects\pkhex\pkhex.winforms\AutoLegality" /e /i /h
-
-    xcopy  "C:\projects\pkhex-auto-legality-mod\Addons (Optional)\PGL QR Auto Legality\PGLRentalLegality" "C:\projects\pkhex\pkhex.winforms\PGLRentalLegality" /e /i /h
-
-    xcopy  "C:\projects\pkhex-auto-legality-mod\Addons (Optional)\MGDB Downloader\MGDBDownloader" "C:\projects\pkhex\pkhex.winforms\MGDBDownloader" /e /i /h
-
-    xcopy  C:\projects\pkhex-auto-legality-mod\build-mod.py C:\projects\pkhex\pkhex.winforms
-
-    pip3.5 install lxml
-
-    python build-mod.py -c %latestcommit%
-
-    cd "C:\projects\pkhex"
-
+    Set-Location -Path "C:\projects\pkhex\pkhex.winforms"
+    Copy-Item "C:\projects\pkhex-auto-legality-mod\AutoLegality" "C:\projects\pkhex\pkhex.winforms" -recurse
+    Copy-Item "C:\projects\pkhex-auto-legality-mod\Addons (Optional)\PGL QR Auto Legality\PGLRentalLegality" "C:\projects\pkhex\pkhex.winforms" -recurse
+    Copy-Item "C:\projects\pkhex-auto-legality-mod\Addons (Optional)\MGDB Downloader\MGDBDownloader" "C:\projects\pkhex\pkhex.winforms" -recurse
+    Copy-Item "C:\projects\pkhex-auto-legality-mod\Addons (Optional)\URL Genning\URLGenning" "C:\projects\pkhex\pkhex.winforms" -recurse
+    Copy-Item "C:\projects\pkhex-auto-legality-mod\Addons (Optional)\Export Trainer Data\ExportTrainerData" "C:\projects\pkhex\pkhex.winforms" -recurse
+    Copy-Item "C:\projects\pkhex-auto-legality-mod\Addons (Optional)\Smogon Genner\SmogonGenner" "C:\projects\pkhex\pkhex.winforms" -recurse
+    Copy-Item C:\projects\pkhex-auto-legality-mod\build-mod.py C:\projects\pkhex\pkhex.winforms
+    pip3.5 install lxml 2> $null
+    python build-mod.py
+    Set-Location -Path "C:\projects\pkhex"
+    $env:pkhex_commit = $(git rev-parse --short HEAD)
+    $env:mod_commit = $env:APPVEYOR_REPO_COMMIT.Substring(0,7)
+    Add-AppveyorMessage $env:pkhex_commit
+    Add-AppveyorMessage $env:mod_commit
+    if ($env:notifyall -eq "true") { Add-AppveyorMessage "notify" }
     nuget restore
 build_script:
-- ps: msbuild /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll" /p:DefineConstants=UNSAFEDLL /p:Configuration=Release C:\projects\pkhex\PKHeX.sln
+- ps: msbuild C:\projects\pkhex\PKHeX.sln /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll" /verbosity:minimal /p:DefineConstants=UNSAFEDLL /p:Configuration=Release
 before_package:
-- cmd: xcopy  C:\projects\pkhex\pkhex.winforms\bin\release C:\projects\pkhex-auto-legality-mod\bin /e /i /h
+- cmd: xcopy C:\projects\pkhex\pkhex.winforms\bin\release C:\projects\pkhex-auto-legality-mod\bin /e /i /h
 after_build:
-- ps: >-
-    Set-Location -Path "C:\projects\pkhex"
-
-    $env:pkhex_commit = $(git rev-parse --short HEAD)
-
-    $env:mod_commit = $env:APPVEYOR_REPO_COMMIT.Substring(0,7)
-
-    Add-AppveyorMessage $env:pkhex_commit
+- ps: |
+    nuget install ILMerge -ExcludeVersion
+    Set-Location -Path "C:\projects\pkhex\ILMerge\tools"
+    Copy-Item "C:\projects\pkhex\pkhex.winforms\bin\release\PKHeX.exe" "C:\projects\pkhex\ILMerge\tools"
+    Copy-Item "C:\projects\pkhex\pkhex.winforms\bin\release\PKHeX.Core.dll" "C:\projects\pkhex\ILMerge\tools"
+    Copy-Item "C:\projects\pkhex\pkhex.winforms\bin\release\BouncyCastle.CryptoExt.dll" "C:\projects\pkhex\ILMerge\tools"
+    ilmerge /targetplatform:v4,"C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.6" /out:PKHeX_ArchitModUSUM.exe PKHeX.exe PKHeX.Core.dll BouncyCastle.CryptoExt.dll
+    Set-Location -Path "C:\projects\pkhex-auto-legality-mod"
+    New-Item -ItemType directory -Path merged
+    Copy-Item "C:\projects\pkhex\ILMerge\tools\PKHeX_ArchitModUSUM.exe" "C:\projects\pkhex-auto-legality-mod\merged"
 artifacts:
 - path: bin
   name: PKHeX-$(pkhex_commit)-Auto-Legality-Mod-$(mod_commit)
