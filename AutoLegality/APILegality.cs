@@ -1,4 +1,5 @@
 ﻿using System.Windows.Forms;
+using System.Reflection;
 using static PKHeX.Core.LegalityCheckStrings;
 
 using PKHeX.Core;
@@ -417,7 +418,7 @@ namespace PKHeX.WinForms.Controls
         {
             if(pkm.Version == 15)
             {
-                var RibbonNames = ReflectFrameworkUtil.GetPropertiesStartWithPrefix(pkm.GetType(), "Ribbon");
+                var RibbonNames = ReflectUtil.GetPropertiesStartWithPrefix(pkm.GetType(), "Ribbon").Distinct();
                 foreach (var RibbonName in RibbonNames)
                 {
                     ReflectUtil.SetValue(pkm, RibbonName, 0);
@@ -439,7 +440,7 @@ namespace PKHeX.WinForms.Controls
             if (Report.Contains(String.Format(V600, "")))
             {
                 string[] ribbonList = Report.Split(new string[] { String.Format(V600, "") }, StringSplitOptions.None)[1].Split(new string[] { ", " }, StringSplitOptions.None);
-                var RibbonNames = ReflectFrameworkUtil.GetPropertiesStartWithPrefix(pk.GetType(), "Ribbon");
+                var RibbonNames = ReflectUtil.GetPropertiesStartWithPrefix(pk.GetType(), "Ribbon").Distinct();
                 List<string> missingRibbons = new List<string>();
                 foreach (var RibbonName in RibbonNames)
                 {
@@ -454,7 +455,7 @@ namespace PKHeX.WinForms.Controls
             if (Report.Contains(String.Format(V601, "")))
             {
                 string[] ribbonList = Report.Split(new string[] { String.Format(V601, "") }, StringSplitOptions.None)[1].Split(new string[] { ", " }, StringSplitOptions.None);
-                var RibbonNames = ReflectFrameworkUtil.GetPropertiesStartWithPrefix(pk.GetType(), "Ribbon");
+                var RibbonNames = ReflectUtil.GetPropertiesStartWithPrefix(pk.GetType(), "Ribbon").Distinct();
                 List<string> invalidRibbons = new List<string>();
                 foreach (var RibbonName in RibbonNames)
                 {
