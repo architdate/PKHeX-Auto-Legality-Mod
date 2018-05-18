@@ -33,6 +33,8 @@ before_package:
 - cmd: xcopy C:\projects\pkhex\pkhex.winforms\bin\release C:\projects\pkhex-auto-legality-mod\bin /e /i /h
 after_build:
 - cmd: >-
+    xcopy  C:\projects\pkhex\pkhex.winforms\bin\release C:\projects\pkhex-auto-legality-mod\bin /e /i /h
+    
     nuget install ILMerge -ExcludeVersion
     
     cd "C:\projects\pkhex\ILMerge\tools"
