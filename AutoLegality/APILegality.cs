@@ -61,6 +61,7 @@ namespace PKHeX.WinForms.Controls
                     FixGender(pk);
                     FixRibbons(pk);
                     FixMemoriesPKM(pk);
+                    SetSpeciesBall(pk);
                     LegalityAnalysis la = new LegalityAnalysis(pk);
                     if (la.Valid) satisfied = true;
                     if (satisfied)
@@ -69,6 +70,17 @@ namespace PKHeX.WinForms.Controls
                 }
             }
             return roughPK;
+        }
+
+        /// <summary>
+        /// Set a valid Pokeball incase of an incorrect ball issue arising with GeneratePKM
+        /// </summary>
+        /// <param name="pk"></param>
+        public void SetSpeciesBall(PKM pk)
+        {
+            if (!new LegalityAnalysis(pk).Report().Contains(V118)) return;
+            if (pk.GenNumber == 5 && pk.Met_Location == 75) pk.Ball = 25;
+            else pk.Ball = 4;
         }
 
         /// <summary>
@@ -142,6 +154,7 @@ namespace PKHeX.WinForms.Controls
             LegalityAnalysis la = new LegalityAnalysis(pk);
             string Report = la.Report();
             if (Report.Contains(V322) || Report.Contains(V324)) pk.FatefulEncounter = true;
+            if (Report.Contains(V325)) pk.FatefulEncounter = false;
         }
 
         /// <summary>
@@ -301,6 +314,7 @@ namespace PKHeX.WinForms.Controls
             {
                 FindPIDIV(pk, Method, HPType, originalPKMN);
                 ValidateGender(pk);
+                Console.WriteLine(new LegalityAnalysis(pk).Report());
             }
         }
 
@@ -421,9 +435,10 @@ namespace PKHeX.WinForms.Controls
                 var RibbonNames = ReflectUtil.GetPropertiesStartWithPrefix(pkm.GetType(), "Ribbon").Distinct();
                 foreach (var RibbonName in RibbonNames)
                 {
-                    ReflectUtil.SetValue(pkm, RibbonName, 0);
+                    if (RibbonName == "RibbonCountMemoryBattle" || RibbonName == "RibbonCountMemoryContest") ReflectUtil.SetValue(pkm, RibbonName, 0);
+                    else ReflectUtil.SetValue(pkm, RibbonName, false);
                 }
-                ReflectUtil.SetValue(pkm, "RibbonNational", -1);
+                ReflectUtil.SetValue(pkm, "RibbonNational", true);
                 pkm.Ball = 4;
                 pkm.FatefulEncounter = true;
                 pkm.OT_Gender = 0;
@@ -439,7 +454,7 @@ namespace PKHeX.WinForms.Controls
             string Report = new LegalityAnalysis(pk).Report();
             if (Report.Contains(String.Format(V600, "")))
             {
-                string[] ribbonList = Report.Split(new string[] { String.Format(V600, "") }, StringSplitOptions.None)[1].Split(new string[] { ", " }, StringSplitOptions.None);
+                string[] ribbonList = Report.Split(new string[] { String.Format(V600, "") }, StringSplitOptions.None)[1].Split(new string[] { "\r\n" }, StringSplitOptions.None)[0].Split(new string[] { ", " }, StringSplitOptions.None);
                 var RibbonNames = ReflectUtil.GetPropertiesStartWithPrefix(pk.GetType(), "Ribbon").Distinct();
                 List<string> missingRibbons = new List<string>();
                 foreach (var RibbonName in RibbonNames)
@@ -449,12 +464,13 @@ namespace PKHeX.WinForms.Controls
                 }
                 foreach (string missing in missingRibbons)
                 {
-                    ReflectUtil.SetValue(pk, missing, -1);
+                    if (missing == "RibbonCountMemoryBattle" || missing == "RibbonCountMemoryContest") ReflectUtil.SetValue(pk, missing, 0);
+                    else ReflectUtil.SetValue(pk, missing, -1);
                 }
             }
             if (Report.Contains(String.Format(V601, "")))
             {
-                string[] ribbonList = Report.Split(new string[] { String.Format(V601, "") }, StringSplitOptions.None)[1].Split(new string[] { ", " }, StringSplitOptions.None);
+                string[] ribbonList = Report.Split(new string[] { String.Format(V601, "") }, StringSplitOptions.None)[1].Split(new string[] { "\r\n" }, StringSplitOptions.None)[0].Split(new string[] { ", " }, StringSplitOptions.None);
                 var RibbonNames = ReflectUtil.GetPropertiesStartWithPrefix(pk.GetType(), "Ribbon").Distinct();
                 List<string> invalidRibbons = new List<string>();
                 foreach (var RibbonName in RibbonNames)
@@ -464,7 +480,8 @@ namespace PKHeX.WinForms.Controls
                 }
                 foreach(string invalid in invalidRibbons)
                 {
-                    ReflectUtil.SetValue(pk, invalid, 0);
+                    if (invalid == "RibbonCountMemoryBattle" || invalid == "RibbonCountMemoryContest") ReflectUtil.SetValue(pk, invalid, 0);
+                    else ReflectUtil.SetValue(pk, invalid, false);
                 }
             }
         }
