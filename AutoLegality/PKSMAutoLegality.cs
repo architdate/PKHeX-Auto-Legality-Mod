@@ -559,12 +559,12 @@ namespace PKHeX.WinForms.Controls
                 pk.HT_Memory = 3;
                 pk.HT_TextVar = 9;
                 pk.HT_Intensity = 1;
-                pk.HT_Feeling = Legal.GetRandomFeeling(pk.HT_Memory);
+                pk.HT_Feeling = Memories.GetRandomFeeling(pk.HT_Memory);
                 pk.HT_Friendship = pk.OT_Friendship;
                 pk.OT_Memory = 3;
                 pk.OT_TextVar = 9;
                 pk.OT_Intensity = 1;
-                pk.OT_Feeling = Legal.GetRandomFeeling(pk.OT_Memory);
+                pk.OT_Feeling = Memories.GetRandomFeeling(pk.OT_Memory);
                 report = UpdateReport(pk);
             }
             if (report.Contains(V20)) // V20: Nickname does not match species name
@@ -945,12 +945,12 @@ namespace PKHeX.WinForms.Controls
                 pk.HT_Memory = 3;
                 pk.HT_TextVar = 9;
                 pk.HT_Intensity = 1;
-                pk.HT_Feeling = Legal.GetRandomFeeling(pk.HT_Memory);
+                pk.HT_Feeling = Memories.GetRandomFeeling(pk.HT_Memory);
                 pk.HT_Friendship = pk.OT_Friendship;
                 pk.OT_Memory = 3;
                 pk.OT_TextVar = 9;
                 pk.OT_Intensity = 1;
-                pk.OT_Feeling = Legal.GetRandomFeeling(pk.OT_Memory);
+                pk.OT_Feeling = Memories.GetRandomFeeling(pk.OT_Memory);
                 report = UpdateReport(pk);
             }
             if (report.Contains(V130)) //V130 = Can't have any OT Memory.
