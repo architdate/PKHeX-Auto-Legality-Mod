@@ -13,7 +13,7 @@ namespace PKHeX.WinForms
         private void SmogonGenner(object sender, EventArgs e)
         {
             string speciesName = PKME_Tabs.CB_Species.Text;
-            string form = new ShowdownSet(PKME_Tabs.PreparePKM().ShowdownText).Form;
+            string form = new ShowdownSet(ShowdownSet.GetShowdownText(PKME_Tabs.PreparePKM())).Form;
             string url = "";
             if (form != null)
             {

@@ -22,7 +22,7 @@ namespace PKHeX.WinForms
         string ConsoleRegion_ALM = "";
         bool APILegalized = false;
 
-        private void ClickShowdownImportPKMModded(object sender, EventArgs e)
+        public void ClickShowdownImportPKMModded(object sender, EventArgs e)
         {
             #region Initial Setup
 
@@ -72,6 +72,7 @@ namespace PKHeX.WinForms
             if (result.Length > 1)
             {
                 List<int> emptySlots = new List<int> { };
+                IList<PKM> BoxData = C_SAV.SAV.BoxData;
                 if ((ModifierKeys & Keys.Control) == Keys.Control) // Hold Ctrl while clicking to replace
                 {
                     for (int i = 0; i < result.Length; i++) emptySlots.Add(i);
@@ -152,8 +153,10 @@ namespace PKHeX.WinForms
                         PKME_Tabs.SetRegions(Country_ALM, SubRegion_ALM, ConsoleRegion_ALM);
                     }
                     PKM pk = PreparePKM();
-                    PKME_Tabs.ClickSet(C_SAV.Box.SlotPictureBoxes[0], emptySlots[i]);
+                    BoxData[C_SAV.CurrentBox * C_SAV.SAV.BoxSlotCount + emptySlots[i]] = pk;
                 }
+                C_SAV.SAV.BoxData = BoxData;
+                C_SAV.ReloadSlots();
 #if DEBUG
                 WinFormsUtil.Alert("API Genned Sets: " + ctrapi + Environment.NewLine + Environment.NewLine + "Number of sets not genned by the API: " + setsungenned.Count);
                 Console.WriteLine(String.Join("\n\n", setsungenned));
