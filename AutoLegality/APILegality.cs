@@ -496,7 +496,6 @@ namespace PKHeX.WinForms.Controls
         /// <returns></returns>
         public static IEnumerable<PKM> GeneratePKMs(PKM pk, ITrainerInfo info, int[] moves = null, params GameVersion[] versions)
         {
-            int num = 0;
             GameVersion[] Versions = ((GameVersion[])Enum.GetValues(typeof(GameVersion))).Where(z => z < GameVersion.RB && z > 0).OrderBy(x => x.GetGeneration()).Reverse().ToArray();
             pk.TID = info.TID;
             var m = moves ?? pk.Moves;
@@ -506,8 +505,6 @@ namespace PKHeX.WinForms.Controls
                 var encs = EncounterMovesetGenerator.GenerateVersionEncounters(pk, m, ver);
                 foreach (var enc in encs)
                 {
-                    num++;
-                    Console.WriteLine(num);
                     var result = enc.ConvertToPKM(info);
                     yield return result;
                 }
