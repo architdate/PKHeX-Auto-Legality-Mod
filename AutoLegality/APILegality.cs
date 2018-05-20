@@ -312,6 +312,7 @@ namespace PKHeX.WinForms.Controls
             }
             else
             {
+                pk.IVs = SSet.IVs;
                 FindPIDIV(pk, Method, HPType, originalPKMN);
                 ValidateGender(pk);
                 Console.WriteLine(new LegalityAnalysis(pk).Report());
@@ -330,10 +331,10 @@ namespace PKHeX.WinForms.Controls
             {
                 Method = FindLikelyPIDType(pk, originalPKMN);
                 if (pk.Version == 15) Method = PIDType.CXD;
-                if (Method == PIDType.None) Method = PIDType.Method_2;
+                if (Method == PIDType.None) pk.PID = PKX.GetRandomPID(pk.Species, pk.Gender, pk.Version, pk.Nature, pk.Format, (uint)(pk.AbilityNumber * 0x10001));
             }
             PKM iterPKM = pk;
-            while (true)
+            while (true && Method != PIDType.None)
             {
                 uint seed = Util.Rand32();
                 PIDGenerator.SetValuesFromSeed(pk, Method, seed);
