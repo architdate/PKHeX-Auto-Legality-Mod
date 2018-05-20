@@ -256,6 +256,8 @@ namespace PKHeX.WinForms
             else tdataVals = PKME_Tabs.parseTrainerJSON(C_SAV, legal.Version);
             TID_ALM = Convert.ToInt32(tdataVals[0]);
             SID_ALM = Convert.ToInt32(tdataVals[1]);
+            if(legal != null)
+                SID_ALM = legal.VC ? 0 : SID_ALM;
             OT_ALM = tdataVals[2];
             if (OT_ALM == "PKHeX") OT_ALM = "Archit(TCD)"; // Avoids secondary handler error
             gender_ALM = 0;
