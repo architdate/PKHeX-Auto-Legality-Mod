@@ -247,11 +247,13 @@ namespace PKHeX.WinForms.Controls
         {
             if (SAV.PKMType == typeof(PK7))
             {
+                if (!pk.IsUntraded) ((PK7)pk).TradeMemory(true);
                 ((PK7)pk).FixMemories();
                 return pk;
             }
             else if (SAV.PKMType == typeof(PK6))
             {
+                if (!pk.IsUntraded) ((PK6)pk).TradeMemory(true);
                 ((PK6)pk).FixMemories();
                 return pk;
             }
@@ -312,10 +314,12 @@ namespace PKHeX.WinForms.Controls
             }
             else
             {
+                LegalInfo li = EncounterFinder.FindVerifiedEncounter(originalPKMN);
                 pk.IVs = SSet.IVs;
+                if (li.EncounterMatch is PCD)
+                    return;
                 FindPIDIV(pk, Method, HPType, originalPKMN);
                 ValidateGender(pk);
-                Console.WriteLine(new LegalityAnalysis(pk).Report());
             }
         }
 
