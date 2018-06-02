@@ -266,7 +266,7 @@ namespace PKHeX.WinForms
             SubRegion_ALM = tdataVals[5];
             ConsoleRegion_ALM = tdataVals[6];
             if((checkPerGame && legal != null) || APILegalized)
-                legal = PKME_Tabs.SetTrainerData(OT_ALM, TID_ALM, SID_ALM, legal, APILegalized);
+                legal = PKME_Tabs.SetTrainerData(OT_ALM, TID_ALM, SID_ALM, gender_ALM, legal, APILegalized);
         }
 
         private bool showdownData()

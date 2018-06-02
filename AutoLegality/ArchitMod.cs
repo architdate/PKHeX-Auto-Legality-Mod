@@ -183,7 +183,7 @@ namespace PKHeX.WinForms.Controls
         /// <param name="SID">INT value of SID</param>
         /// <param name="pk"></param>
         /// <returns></returns>
-        public PKM SetTrainerData(string OT, int TID, int SID, PKM pk, bool APILegalized = false)
+        public PKM SetTrainerData(string OT, int TID, int SID, int gender, PKM pk, bool APILegalized = false)
         {
             if (APILegalized)
             {
@@ -193,6 +193,7 @@ namespace PKHeX.WinForms.Controls
                     pk.TID = TID;
                     pk.SID = SID;
                     pk.OT_Name = OT;
+                    pk.OT_Gender = gender;
                     AutoLegalityMod m = new AutoLegalityMod();
                     m.SetShinyBoolean(pk, Shiny);
                 }

@@ -62,6 +62,7 @@ namespace PKHeX.WinForms.Controls
                     FixRibbons(pk);
                     FixMemoriesPKM(pk);
                     SetSpeciesBall(pk);
+                    SetHappiness(pk);
                     LegalityAnalysis la = new LegalityAnalysis(pk);
                     if (la.Valid) satisfied = true;
                     if (satisfied)
@@ -182,6 +183,7 @@ namespace PKHeX.WinForms.Controls
         public void SetSpeciesLevel(PKM pk, ShowdownSet SSet, int Form)
         {
             pk.Species = SSet.Species;
+            if (SSet.Gender != null) pk.Gender = (SSet.Gender == "M") ? 0 : 1;
             pk.SetAltForm(Form);
             pk.IsNicknamed = (SSet.Nickname != null);
             pk.Nickname = SSet.Nickname != null ? SSet.Nickname : PKX.GetSpeciesNameGeneration(pk.Species, pk.Language, SAV.Generation);
@@ -286,7 +288,7 @@ namespace PKHeX.WinForms.Controls
             if (isShiny)
             {
                 if (pk.GenNumber > 5) pk.SetShinyPID();
-                else if (pk.VC) pk.SetShinyIVs();
+                else if (pk.VC) pk.SetIsShiny(true);
                 else pk.SetShinySID();
             }
         }
@@ -489,6 +491,16 @@ namespace PKHeX.WinForms.Controls
                     else ReflectUtil.SetValue(pk, invalid, false);
                 }
             }
+        }
+
+        /// <summary>
+        /// Makes Happiness 255 unless carrying frustration in which case it is set at 0
+        /// </summary>
+        /// <param name="pk"></param>
+        private void SetHappiness(PKM pk)
+        {
+            if (pk.Moves.Contains(218)) pk.CurrentFriendship = 0;
+            else pk.CurrentFriendship = 255;
         }
 
         /// <summary>
