@@ -138,6 +138,20 @@
   <data name="exporttrainerdata" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>Resources\img\exporttrainerdata.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="legalizeboxes" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+    <value>
+        iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6
+        JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAACXBIWXMAAA3XAAAN1wFCKJt4AAAAB3RJ
+        TUUH4gYFFC0C+s0l1AAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAAF7SURBVEhL
+        tda/K4VRHMfxhyQlSgaL2UKhWCwmE6u/wh/B4N8wGg2STQwmKWWxW0hKpCQG3u/jPrfHuee5z3F1P/Wq
+        23N+PO4533OuoiFT2MA2jnDX4ucd2GafP2cYu/jEVwP72NcxWVnENVKTdeMYx3bNFj6QmiCHY50jGd/+
+        n8lLztHxTVy/XpaljnP92hM3KdUx1xWeomfOGWKZ5VRLnT0MYKnyTM4ZStharjb8xT4GYTYRtzt3ODBx
+        Q44DDMGsI1UgHtBwKuOGJscoN3EN70j1c+5w9OMGa3kGt5VnpROMwKziDXGfknN3vMCvOg3jSx5Qtp1j
+        FGYFr6iOjYUXpJboBpMwC3jGBcZ9QJbxgnhcLCxR3SZfYgxmDhM/H4t5xDVfJ2xytzI9Q7neZhaPSPVN
+        CWXadNAOYTm6H/etZznaB800XRWnSFVbN+2rwvT9sjN9va7L9PUHp4xv72W5HFP7l8dx/dyknGvcPvbt
+        WPOcWGbWco//thTFNybyj9l0RI+eAAAAAElFTkSuQmCC
+</value>
+  </data>
   <data name="menuautolegality" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>
         iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAYAAAAeP4ixAAAABGdBTUEAALGPC/xhBQAAAAlwSFlzAAAN

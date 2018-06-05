@@ -142,6 +142,17 @@ This feature allows you to generate every single recommended [Smogon](https://ww
 - It should gen all available sets in the `SM` dex
 - You will recieve a confirmation about how many sets were genned at the end
 
+## Legalize Box Pokemon:
+
+This feature allows you to legalize all the illegal Pokemon within the active box.
+
+### Usage:
+
+- Go to the box you would like to legalize.
+- Go to `Tools > Auto Legality Mod > Legalize Box Pokemon`
+- It should legalize all the Pokemon within the active box.
+- You will recieve a notification when the process is over.
+
 
 ## Shortcuts:
 
