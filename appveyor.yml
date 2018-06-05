@@ -17,6 +17,7 @@ before_build:
     Copy-Item "C:\projects\pkhex-auto-legality-mod\Addons (Optional)\URL Genning\URLGenning" "C:\projects\pkhex\pkhex.winforms" -recurse
     Copy-Item "C:\projects\pkhex-auto-legality-mod\Addons (Optional)\Export Trainer Data\ExportTrainerData" "C:\projects\pkhex\pkhex.winforms" -recurse
     Copy-Item "C:\projects\pkhex-auto-legality-mod\Addons (Optional)\Smogon Genner\SmogonGenner" "C:\projects\pkhex\pkhex.winforms" -recurse
+    Copy-Item "C:\projects\pkhex-auto-legality-mod\Addons (Optional)\Legalize Boxes\LegalizeBoxes" "C:\projects\pkhex\pkhex.winforms" -recurse
     Copy-Item C:\projects\pkhex-auto-legality-mod\build-mod.py C:\projects\pkhex\pkhex.winforms
     pip3.5 install lxml
     python build-mod.py
