@@ -15,7 +15,7 @@ namespace PKHeX.WinForms
             for (int i=0; i<30; i++)
             {
                 PKM illegalPK = BoxData[C_SAV.CurrentBox * C_SAV.SAV.BoxSlotCount + i];
-                if (illegalPK.Species > 0)
+                if (illegalPK.Species > 0 && !new LegalityAnalysis(illegalPK).Valid)
                 {
                     ShowdownSet Set = new ShowdownSet(ShowdownSet.GetShowdownText(illegalPK));
                     bool resetForm = false;
