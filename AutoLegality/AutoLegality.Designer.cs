@@ -24,6 +24,10 @@ namespace PKHeX.WinForms
         }
         public System.Windows.Forms.ToolStripMenuItem EnableMenu(System.ComponentModel.ComponentResourceManager resources)
         {
+            var Settings = Properties.Settings.Default;
+            int.TryParse(Settings.Version, out int lastrev);
+            int.TryParse(Resources.ProgramVersion, out int currrev);
+            if (lastrev <= currrev) WinFormsUtil.Alert($"Changelog: {currrev}", PKHeX.WinForms.AutoLegality.ConstData.changelog, "Keyboard Shortcuts:", PKHeX.WinForms.AutoLegality.ConstData.keyboardshortcuts, "Discord Link:", PKHeX.WinForms.AutoLegality.ConstData.discord);
             this.Menu_AutoLegality = new System.Windows.Forms.ToolStripMenuItem();
             this.Menu_AutoLegality.Image = ((System.Drawing.Image)AutoLegality.AutoLegalityMod.menuautolegality);
             this.Menu_AutoLegality.Name = "Menu_AutoLegality";
