@@ -1054,22 +1054,28 @@ namespace PKHeX.WinForms.Controls
             }
             if (report.Contains(V41)) // V41 = Can't Hyper Train a Pokémon with perfect IVs.
             {
-                pk.HT_HP = false;
-                pk.HT_ATK = false;
-                pk.HT_DEF = false;
-                pk.HT_SPA = false;
-                pk.HT_SPD = false;
-                pk.HT_SPE = false;
+                if (pk is IHyperTrain h)
+                {
+                    h.HT_HP = false;
+                    h.HT_ATK = false;
+                    h.HT_DEF = false;
+                    h.HT_SPA = false;
+                    h.HT_SPD = false;
+                    h.HT_SPE = false;
+                }
                 report = UpdateReport(pk);
             }
             if (report.Contains(V42)) // V42 = Can't Hyper Train a perfect IV.
             {
-                if (pk.IV_HP == 31) pk.HT_HP = false;
-                if (pk.IV_ATK == 31) pk.HT_ATK = false;
-                if (pk.IV_DEF == 31) pk.HT_DEF = false;
-                if (pk.IV_SPA == 31) pk.HT_SPA = false;
-                if (pk.IV_SPD == 31) pk.HT_SPD = false;
-                if (pk.IV_SPE == 31) pk.HT_SPE = false;
+                if (pk is IHyperTrain h)
+                {
+                    if (pk.IV_HP == 31) h.HT_HP = false;
+                    if (pk.IV_ATK == 31) h.HT_ATK = false;
+                    if (pk.IV_DEF == 31) h.HT_DEF = false;
+                    if (pk.IV_SPA == 31) h.HT_SPA = false;
+                    if (pk.IV_SPD == 31) h.HT_SPD = false;
+                    if (pk.IV_SPE == 31) h.HT_SPE = false;
+                }
                 report = UpdateReport(pk);
             }
 
@@ -1371,12 +1377,15 @@ namespace PKHeX.WinForms.Controls
         private void RestoreIVs(PKM pk, ShowdownSet SSet)
         {
             pk.IVs = SSet.IVs;
-            pk.HT_HP = false;
-            pk.HT_ATK = false;
-            pk.HT_DEF = false;
-            pk.HT_SPA = false;
-            pk.HT_SPD = false;
-            pk.HT_SPE = false;
+            if (pk is IHyperTrain h)
+            {
+                h.HT_HP = false;
+                h.HT_ATK = false;
+                h.HT_DEF = false;
+                h.HT_SPA = false;
+                h.HT_SPD = false;
+                h.HT_SPE = false;
+            }
         }
 
         private bool NeedsHyperTraining(PKM pk)
@@ -1396,12 +1405,15 @@ namespace PKHeX.WinForms.Controls
         {
             if (C_SAV.SAV.Generation < 7 || !NeedsHyperTraining(pk)) return;
             if (pk.CurrentLevel != 100) pk.CurrentLevel = 100; // Set level for HT before doing HT
-            if (pk.IV_HP != 0 && pk.IV_HP != 1 && pk.IV_HP != 31) pk.HT_HP = true;
-            if (pk.IV_ATK != 0 && pk.IV_ATK != 1 && pk.IV_ATK != 31) pk.HT_ATK = true;
-            if (pk.IV_DEF != 0 && pk.IV_DEF != 1 && pk.IV_DEF != 31) pk.HT_DEF = true;
-            if (pk.IV_SPA != 0 && pk.IV_SPA != 1 && pk.IV_SPA != 31) pk.HT_SPA = true;
-            if (pk.IV_SPD != 0 && pk.IV_SPD != 1 && pk.IV_SPD != 31) pk.HT_SPD = true;
-            if (pk.IV_SPE != 0 && pk.IV_SPE != 1 && pk.IV_SPE != 31) pk.HT_SPE = true;
+            if (pk is IHyperTrain h)
+            {
+                if (pk.IV_HP != 0 && pk.IV_HP != 1 && pk.IV_HP != 31) h.HT_HP = true;
+                if (pk.IV_ATK != 0 && pk.IV_ATK != 1 && pk.IV_ATK != 31) h.HT_ATK = true;
+                if (pk.IV_DEF != 0 && pk.IV_DEF != 1 && pk.IV_DEF != 31) h.HT_DEF = true;
+                if (pk.IV_SPA != 0 && pk.IV_SPA != 1 && pk.IV_SPA != 31) h.HT_SPA = true;
+                if (pk.IV_SPD != 0 && pk.IV_SPD != 1 && pk.IV_SPD != 31) h.HT_SPD = true;
+                if (pk.IV_SPE != 0 && pk.IV_SPE != 1 && pk.IV_SPE != 31) h.HT_SPE = true;
+            }
         }
 
         private void UpdateLegality(PKM pkm, bool skipMoveRepop = false)
