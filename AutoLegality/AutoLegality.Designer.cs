@@ -1,3 +1,11 @@
+using PKHeX.WinForms.Properties;
+using System;
+using System.Diagnostics;
+using System.IO;
+using System.Net;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+
 namespace PKHeX.WinForms
 {
     partial class Main
@@ -22,6 +30,50 @@ namespace PKHeX.WinForms
             this.Menu_AutoLegality.Size = new System.Drawing.Size(133, 22);
             this.Menu_AutoLegality.Text = "Auto Legality Mod";
             return this.Menu_AutoLegality;
+        }
+        public void CheckALMUpdate()
+        {
+            L_UpdateAvailable.Click += (sender, e) => Process.Start("https://github.com/architdate/PKHeX-Auto-Legality-Mod/releases/latest");
+            new Task(() =>
+            {
+                string data = GetPage("https://api.github.com/repos/architdate/pkhex-auto-legality-mod/releases/latest");
+                int latestVersion = ParseTagAsVersion(data.Split(new string[] { "\"tag_name\":\"" }, System.StringSplitOptions.None)[1].Split('"')[0]);
+                if (data == null || latestVersion == -1)
+                    return;
+                if (int.TryParse(Resources.ProgramVersion, out var cur) && latestVersion <= cur)
+                    return;
+
+                Invoke((MethodInvoker)(() =>
+                {
+                    L_UpdateAvailable.Visible = true;
+                    L_UpdateAvailable.Text = $"New Auto Legality Mod update available! {latestVersion:d}";
+                }));
+            }).Start();
+        }
+        public int ParseTagAsVersion(string v)
+        {
+            string[] date = v.Split('.');
+            if (date.Length != 3) return -1;
+            int.TryParse(date[0], out int a);
+            int.TryParse(date[1], out int b);
+            int.TryParse(date[2], out int c);
+            return (a + 2000) * 10000 + b * 100 + c;
+        }
+        private string GetPage(string url)
+        {
+            try
+            {
+                var request = (HttpWebRequest)WebRequest.Create(url);
+                request.UserAgent = "AutoLegalityMod";
+                var response = (HttpWebResponse)request.GetResponse();
+                var responseString = new StreamReader(response.GetResponseStream()).ReadToEnd();
+                return responseString;
+            }
+            catch (Exception e)
+            {
+                WinFormsUtil.Alert("An error occured while trying to obtain the contents of the URL. This is most likely an issue with your Internet Connection. The exact error is as follows: " + e.ToString() + "\nURL tried to access: " + url);
+                return "Error :" + e.ToString();
+            }
         }
         private System.Windows.Forms.ToolStripMenuItem Menu_AutoLegality;
         private System.Windows.Forms.ToolStripMenuItem Menu_ShowdownImportPKMModded;

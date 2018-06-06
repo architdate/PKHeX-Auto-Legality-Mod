@@ -24,6 +24,7 @@ namespace PKHeX.WinForms
 
         public void ClickShowdownImportPKMModded(object sender, EventArgs e)
         {
+            CheckALMUpdate();
             #region Initial Setup
 
             bool allowAPI = true; // Use true to allow experimental API usage
