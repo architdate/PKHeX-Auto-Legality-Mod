@@ -10,6 +10,16 @@ namespace PKHeX.WinForms
 {
     partial class Main
     {
+        public System.Windows.Forms.ToolStripMenuItem DiscordLink(System.ComponentModel.ComponentResourceManager resources)
+        {
+            this.Menu_DiscordLink = new System.Windows.Forms.ToolStripMenuItem();
+            this.Menu_DiscordLink.Image = ((System.Drawing.Image)AutoLegality.AutoLegalityMod.discord);
+            this.Menu_DiscordLink.Name = "Menu_DiscordLink";
+            this.Menu_DiscordLink.Size = new System.Drawing.Size(133, 22);
+            this.Menu_DiscordLink.Text = "Discord Server";
+            this.Menu_DiscordLink.Click += new System.EventHandler(this.ShowDiscordForm);
+            return this.Menu_DiscordLink;
+        }
         public System.Windows.Forms.ToolStripMenuItem EnableAutoLegality(System.ComponentModel.ComponentResourceManager resources)
         {
             this.Menu_ShowdownImportPKMModded = new System.Windows.Forms.ToolStripMenuItem();
@@ -80,6 +90,7 @@ namespace PKHeX.WinForms
             }
         }
         private System.Windows.Forms.ToolStripMenuItem Menu_AutoLegality;
+        private System.Windows.Forms.ToolStripMenuItem Menu_DiscordLink;
         private System.Windows.Forms.ToolStripMenuItem Menu_ShowdownImportPKMModded;
     }
 }

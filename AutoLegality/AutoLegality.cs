@@ -8,6 +8,7 @@ using PKHeX.Core;
 using PKHeX.WinForms.Controls;
 using System.Net;
 using System.IO.Compression;
+using System.Diagnostics;
 
 namespace PKHeX.WinForms
 {
@@ -281,6 +282,21 @@ namespace PKHeX.WinForms
             result = source.Split(stringSeparators, StringSplitOptions.None);
             if (new ShowdownSet(result[0]).Species < 0) return false;
             return true;
+        }
+
+        public void ShowDiscordForm(object sender, EventArgs e)
+        {
+            Form DiscordForm = new Form();
+            DiscordForm.Text = "Join the Discord Server";
+            DiscordForm.FormBorderStyle = FormBorderStyle.FixedDialog;
+            DiscordForm.AutoSize = true;
+            PictureBox discord = new PictureBox();
+            discord.Size = new System.Drawing.Size(320, 270);
+            discord.SizeMode = PictureBoxSizeMode.StretchImage;
+            discord.Load("https://canary.discordapp.com/api/guilds/401014193211441153/widget.png?style=banner4");
+            discord.MouseClick += new MouseEventHandler((o, a) => Process.Start(AutoLegality.ConstData.discord));
+            DiscordForm.Controls.Add(discord);
+            DiscordForm.ShowDialog();
         }
     }
 }

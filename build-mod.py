@@ -26,7 +26,7 @@ ig = tree.find("/d:ItemGroup//d:Compile/..", ns)
 mods = ["AutoLegality", "PGLRentalLegality", "MGDBDownloader", "URLGenning", "ExportTrainerData", "SmogonGenner", "LegalizeBoxes"]
 new_files = []
 resource_files = ["AutoLegality\\AutoLegalityMod.resx", "AutoLegality\\AutoLegalityMod.Designer.cs"]
-image_files = ["AutoLegality\\Resources\\img\\menuautolegality.png", "AutoLegality\\Resources\\img\\autolegalitymod.png", "AutoLegality\\Resources\\img\\mgdbdownload.png", "AutoLegality\\Resources\\img\\pglqrcode.png", "AutoLegality\\Resources\\img\\urlimport.png", "AutoLegality\\Resources\\img\\exporttrainerdata.png", "AutoLegality\\Resources\\img\\smogongenner.png", "AutoLegality\\Resources\\img\\legalizeboxes.png"]
+image_files = ["AutoLegality\\Resources\\img\\menuautolegality.png", "AutoLegality\\Resources\\img\\autolegalitymod.png", "AutoLegality\\Resources\\img\\mgdbdownload.png", "AutoLegality\\Resources\\img\\pglqrcode.png", "AutoLegality\\Resources\\img\\urlimport.png", "AutoLegality\\Resources\\img\\exporttrainerdata.png", "AutoLegality\\Resources\\img\\smogongenner.png", "AutoLegality\\Resources\\img\\legalizeboxes.png", "AutoLegality\\Resources\\img\\discord.png"]
 inbuilt_references = ["System.IO.Compression.FileSystem", "System.Numerics"]
 custom_references = {"BouncyCastle.CryptoExt":"..\\..\\PKHeX-Auto-Legality-Mod\\Addons (Optional)\\PGL QR Auto Legality\\BouncyCastle.CryptoExt.dll"}
 user_controls = ["AutoLegality\\ArchitMod.cs", "AutoLegality\\PKSMAutoLegality.cs", "URLGenning\\URLGenning.cs", "ExportTrainerData\\ExportTrainingData.cs", "SmogonGenner\\SmogonGenner.cs", "LegalizeBoxes\\LegalizeBoxes.cs"]
@@ -124,7 +124,7 @@ with open("MainWindow/Main.Designer.cs", "r+", encoding="utf-8") as fp:
     data=fp.read()
     prog = re.compile("this.Menu_Showdown.DropDownItems.AddRange\(.*{.*}\);\\n", re.DOTALL)
     m = prog.search(data)
-    modified = data[:m.end()] + "            this.Menu_Tools.DropDownItems.Insert(0, EnableMenu(resources));\n            this.Menu_AutoLegality.DropDownItems.Add(EnableAutoLegality(resources));\n            this.Menu_AutoLegality.DropDownItems.Add(EnablePGLRentalLegality(resources));\n            this.Menu_AutoLegality.DropDownItems.Add(EnableMGDBDownloader(resources));\n            this.Menu_AutoLegality.DropDownItems.Add(EnableURLGenning(resources));\n            this.Menu_AutoLegality.DropDownItems.Add(EnableExportTrainingData(resources));\n            this.Menu_AutoLegality.DropDownItems.Add(EnableSmogonGenner(resources));\n            this.Menu_AutoLegality.DropDownItems.Add(EnableLegalizeBoxes(resources));\n" + data[m.end():]    
+    modified = data[:m.end()] + "            this.Menu_Tools.DropDownItems.Insert(0, EnableMenu(resources));\n            this.Menu_AutoLegality.DropDownItems.Add(EnableAutoLegality(resources));\n            this.Menu_AutoLegality.DropDownItems.Add(EnablePGLRentalLegality(resources));\n            this.Menu_AutoLegality.DropDownItems.Add(EnableMGDBDownloader(resources));\n            this.Menu_AutoLegality.DropDownItems.Add(EnableURLGenning(resources));\n            this.Menu_AutoLegality.DropDownItems.Add(EnableExportTrainingData(resources));\n            this.Menu_AutoLegality.DropDownItems.Add(EnableSmogonGenner(resources));\n            this.Menu_AutoLegality.DropDownItems.Add(EnableLegalizeBoxes(resources));\n            this.Menu_AutoLegality.DropDownItems.Add(DiscordLink(resources));\n" + data[m.end():]    
     fp.seek(0)
     fp.truncate()
     fp.write(modified)
