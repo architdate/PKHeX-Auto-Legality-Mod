@@ -19,6 +19,17 @@ namespace PKHeX.WinForms.Controls
         public Controls.SAVEditor C_SAV;
         bool legalized = false;
 
+        /// <summary>
+        /// Try to generate every a legal PKM from a showdown set using bruteforce. This should generally never be needed.
+        /// </summary>
+        /// <param name="Set">Rough PKM Set</param>
+        /// <param name="SSet">Showdown Set</param>
+        /// <param name="resetForm">boolean to reset form back to base form</param>
+        /// <param name="TID">optional TID</param>
+        /// <param name="SID">optional SID</param>
+        /// <param name="OT">optional OT Name</param>
+        /// <param name="gender">optional Gender</param>
+        /// <returns>PKM legalized via bruteforce</returns>
         public PKM LoadShowdownSetModded_PKSM(PKM Set, ShowdownSet SSet, bool resetForm = false, int TID = -1, int SID = -1, string OT = "", int gender = 0)
         {
             backup = Set;

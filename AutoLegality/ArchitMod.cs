@@ -205,6 +205,11 @@ namespace PKHeX.WinForms.Controls
             return pk;
         }
 
+        /// <summary>
+        /// Check the mode for trainerdata.json
+        /// </summary>
+        /// <param name="jsonstring">string form of trainerdata.json</param>
+        /// <returns></returns>
         public string checkMode(string jsonstring = "")
         {
             if(jsonstring != "")
@@ -269,6 +274,12 @@ namespace PKHeX.WinForms.Controls
             return finaljson.Split(new string[] { key }, StringSplitOptions.None)[1].Split('"')[2].Trim();
         }
 
+        /// <summary>
+        /// Convert TID7 and SID7 back to the conventional TID, SID
+        /// </summary>
+        /// <param name="tid7">TID7 value</param>
+        /// <param name="sid7">SID7 value</param>
+        /// <returns></returns>
         public int[] ConvertTIDSID7toTIDSID(int tid7, int sid7)
         {
             var repack = (long)sid7 * 1_000_000 + tid7;
@@ -277,6 +288,12 @@ namespace PKHeX.WinForms.Controls
             return new int[] { tid, sid };
         }
 
+        /// <summary>
+        /// Function to extract trainerdata values from trainerdata.json
+        /// </summary>
+        /// <param name="C_SAV">Current Save Editor</param>
+        /// <param name="Game">optional Game value in case of mode being game</param>
+        /// <returns></returns>
         public string[] parseTrainerJSON(SAVEditor C_SAV, int Game = -1)
         {
             if (!System.IO.File.Exists(System.IO.Path.GetDirectoryName(Application.ExecutablePath) + "\\trainerdata.json"))
