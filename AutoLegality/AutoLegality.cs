@@ -6,14 +6,16 @@ using System.Windows.Forms;
 
 using PKHeX.Core;
 using PKHeX.WinForms.Controls;
-using System.Net;
-using System.IO.Compression;
 using System.Diagnostics;
 
 namespace PKHeX.WinForms
 {
     public partial class Main : Form
     {
+
+        /// <summary>
+        /// Global Variables for Auto Legality Mod
+        /// </summary>
         int TID_ALM = -1;
         int SID_ALM = -1;
         string OT_ALM = "";
@@ -23,13 +25,42 @@ namespace PKHeX.WinForms
         string ConsoleRegion_ALM = "";
         bool APILegalized = false;
 
+        /// <summary>
+        /// Main function to be called by the menu
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         public void ClickShowdownImportPKMModded(object sender, EventArgs e)
         {
-            CheckALMUpdate();
-            #region Initial Setup
-
+            CheckALMUpdate(); // Check for Auto Legality Mod Updates
             bool allowAPI = true; // Use true to allow experimental API usage
             APILegalized = false; // Initialize to false everytime command is used
+
+            // Check for lack of showdown data provided
+            CheckLoadFromText(out bool valid);
+            if (!valid) return;
+
+            // Make a blank MGDB directory and initialize trainerdata
+            if (!Directory.Exists(MGDatabasePath)) Directory.CreateDirectory(MGDatabasePath);
+            if (PKME_Tabs.checkMode() != "game") LoadTrainerData();
+
+            // Get Text source from clipboard and convert to ShowdownSet(s)
+            string source = Clipboard.GetText().TrimEnd();
+            List<ShowdownSet> Sets = ShowdownSets(source);
+
+            // Import Showdown Sets and alert user of any messages intended
+            ImportSets(Sets, (ModifierKeys & Keys.Control) == Keys.Control, out string message, allowAPI);
+            if (message.StartsWith("[DEBUG]")) Debug.WriteLine(message);
+            else WinFormsUtil.Alert(message);
+        }
+
+        /// <summary>
+        /// Check whether the showdown text is supposed to be loaded via a text file. If so, set the clipboard to its contents.
+        /// </summary>
+        /// <param name="valid">output boolean that tells if the data provided is valid or not</param>
+        private void CheckLoadFromText(out bool valid)
+        {
+            valid = true;
             if (!showdownData() || (ModifierKeys & Keys.Shift) == Keys.Shift)
             {
                 if (WinFormsUtil.OpenSAVPKMDialog(new string[] { "txt" }, out string path))
@@ -38,216 +69,23 @@ namespace PKHeX.WinForms
                     if (!showdownData())
                     {
                         WinFormsUtil.Alert("Text file with invalid data provided. Please provide a text file with proper Showdown data");
+                        valid = false;
                         return;
                     }
                 }
                 else
                 {
                     WinFormsUtil.Alert("No data provided.");
+                    valid = false;
                     return;
                 }
             }
-
-            if (!Directory.Exists(MGDatabasePath)) Directory.CreateDirectory(MGDatabasePath);
-            
-            if (PKME_Tabs.checkMode() != "game")
-            {
-                LoadTrainerData();
-            }
-
-            string source = Clipboard.GetText().TrimEnd();
-            string[] stringSeparators = new string[] { "\n\r" };
-            string[] result;
-
-            // ...
-            result = source.Split(stringSeparators, StringSplitOptions.None);
-            if (allowAPI)
-            {
-                List<string> resList = result.OfType<string>().ToList();
-                resList.RemoveAll(r => r.Trim() == "");
-                result = resList.ToArray();
-            }
-            Console.WriteLine(result.Length);
-
-            #endregion
-            #region Multiple Pokemon Import
-            if (result.Length > 1)
-            {
-                List<int> emptySlots = new List<int> { };
-                IList<PKM> BoxData = C_SAV.SAV.BoxData;
-                if ((ModifierKeys & Keys.Control) == Keys.Control) // Hold Ctrl while clicking to replace
-                {
-                    for (int i = 0; i < result.Length; i++) emptySlots.Add(i);
-                }
-                else
-                {
-                    for (int i = 0; i < C_SAV.Box.BoxSlotCount; i++)
-                    {
-                        if ((C_SAV.Box.SlotPictureBoxes[i] as PictureBox)?.Image == null) emptySlots.Add(i);
-                    }
-                    if (emptySlots.Count < result.Length)
-                    {
-                        WinFormsUtil.Alert("Not enough space in the box");
-                        return;
-                    }
-                }
-                int ctrapi = 0;
-                List<string> setsungenned = new List<string>();
-                for (int i = 0; i < result.Length; i++)
-                {
-                    ShowdownSet Set = new ShowdownSet(result[i]);
-                    bool intRegions = false;
-                    if (Set.InvalidLines.Any())
-                        WinFormsUtil.Alert("Invalid lines detected:", string.Join(Environment.NewLine, Set.InvalidLines));
-
-                    // Set Species & Nickname
-                    bool resetForm = false;
-                    PKME_Tabs.hardReset(C_SAV.SAV);
-                    if (Set.Form == null) { }
-                    else if (Set.Form.Contains("Mega") || Set.Form == "Primal" || Set.Form == "Busted")
-                    {
-                        resetForm = true;
-                        Console.WriteLine(Set.Species);
-                    }
-                    PKME_Tabs.LoadShowdownSet(Set);
-                    PKM p = PreparePKM();
-                    p.Version = (int)GameVersion.MN;
-                    PKM legal;
-                    if (allowAPI)
-                    {
-                        AutoLegalityMod mod = new AutoLegalityMod();
-                        mod.SAV = C_SAV.SAV;
-                        bool satisfied = false;
-                        PKM APIGenerated = C_SAV.SAV.BlankPKM;
-                        try { APIGenerated = mod.APILegality(p, Set, out satisfied); }
-                        catch { satisfied = false; }
-                        if (!satisfied)
-                        {
-                            setsungenned.Add(Set.Text);
-                            Blah b = new Blah();
-                            b.C_SAV = C_SAV;
-                            legal = b.LoadShowdownSetModded_PKSM(p, Set, resetForm, TID_ALM, SID_ALM, OT_ALM, gender_ALM);
-                            APILegalized = false;
-                        }
-                        else
-                        {
-                            ctrapi++;
-                            legal = APIGenerated;
-                            APILegalized = true;
-                        }
-                    }
-                    else
-                    {
-                        Blah b = new Blah();
-                        b.C_SAV = C_SAV;
-                        legal = b.LoadShowdownSetModded_PKSM(p, Set, resetForm, TID_ALM, SID_ALM, OT_ALM, gender_ALM);
-                        APILegalized = false;
-                    }
-                    LoadTrainerData(legal);
-                    if (int.TryParse(Country_ALM, out int n) && int.TryParse(SubRegion_ALM, out int m) && int.TryParse(ConsoleRegion_ALM, out int o))
-                    {
-                        legal = PKME_Tabs.SetPKMRegions(n, m, o, legal);
-                        intRegions = true;
-                    }
-                    PKME_Tabs.PopulateFields(legal);
-                    if (!intRegions)
-                    {
-                        PKME_Tabs.SetRegions(Country_ALM, SubRegion_ALM, ConsoleRegion_ALM);
-                    }
-                    PKM pk = PreparePKM();
-                    BoxData[C_SAV.CurrentBox * C_SAV.SAV.BoxSlotCount + emptySlots[i]] = pk;
-                }
-                C_SAV.SAV.BoxData = BoxData;
-                C_SAV.ReloadSlots();
-#if DEBUG
-                WinFormsUtil.Alert("API Genned Sets: " + ctrapi + Environment.NewLine + Environment.NewLine + "Number of sets not genned by the API: " + setsungenned.Count);
-                Console.WriteLine(String.Join("\n\n", setsungenned));
-#endif
-            }
-            #endregion
-            #region Single Pokemon Import
-            else
-            {
-                // Get Simulator Data
-                ShowdownSet Set = new ShowdownSet(Clipboard.GetText());
-
-                if (Set.Species < 0)
-                { WinFormsUtil.Alert("Set data not found in clipboard."); return; }
-
-                if (Set.Nickname?.Length > C_SAV.SAV.NickLength)
-                    Set.Nickname = Set.Nickname.Substring(0, C_SAV.SAV.NickLength);
-
-                if (DialogResult.Yes != WinFormsUtil.Prompt(MessageBoxButtons.YesNo, "Import this set?", Set.Text))
-                    return;
-
-                if (Set.InvalidLines.Any())
-                    WinFormsUtil.Alert("Invalid lines detected:", string.Join(Environment.NewLine, Set.InvalidLines));
-
-                // Set Species & Nickname
-                //PKME_Tabs.LoadShowdownSet(Set);
-                bool resetForm = false;
-                PKME_Tabs.hardReset(C_SAV.SAV);
-                
-                if (Set.Form == null) { }
-                else if (Set.Form.Contains("Mega") || Set.Form == "Primal" || Set.Form == "Busted")
-                {
-                    Set = new ShowdownSet(Set.Text.Replace("-" + Set.Form, ""));
-                    resetForm = true;
-                    Console.WriteLine(Set.Species);
-                }
-                PKME_Tabs.LoadShowdownSet(Set);
-                PKM p = PreparePKM();
-                p.Version = (int)GameVersion.MN;
-                PKM legal;
-                if (allowAPI)
-                {
-                    AutoLegalityMod mod = new AutoLegalityMod();
-                    mod.SAV = C_SAV.SAV;
-                    bool satisfied = false;
-                    PKM APIGenerated = C_SAV.SAV.BlankPKM;
-                    try { APIGenerated = mod.APILegality(p, Set, out satisfied); }
-                    catch { satisfied = false; }
-                    if (!satisfied)
-                    {
-                        Blah b = new Blah();
-                        b.C_SAV = C_SAV;
-                        legal = b.LoadShowdownSetModded_PKSM(p, Set, resetForm, TID_ALM, SID_ALM, OT_ALM, gender_ALM);
-                        APILegalized = false;
-#if DEBUG
-                        WinFormsUtil.Alert("Set was not genned by the API");
-#endif
-                    }
-                    else
-                    {
-                        legal = APIGenerated;
-                        APILegalized = true;
-                    }
-                }
-                else
-                {
-                    Blah b = new Blah();
-                    b.C_SAV = C_SAV;
-                    legal = b.LoadShowdownSetModded_PKSM(p, Set, resetForm, TID_ALM, SID_ALM, OT_ALM, gender_ALM);
-                    APILegalized = false;
-                }
-                LoadTrainerData(legal);
-                if (int.TryParse(Country_ALM, out int n) && int.TryParse(SubRegion_ALM, out int m) && int.TryParse(ConsoleRegion_ALM, out int o))
-                {
-                    legal = PKME_Tabs.SetPKMRegions(n, m, o, legal);
-                    Country_ALM = "";
-                    SubRegion_ALM = "";
-                    ConsoleRegion_ALM = "";
-                }
-                PKME_Tabs.PopulateFields(legal);
-                if (legal.Format < 7) PKME_Tabs.LoadFieldsFromPKM2(legal, true, false);
-                if (Country_ALM != "" && SubRegion_ALM != "" && ConsoleRegion_ALM != "")
-                {
-                    PKME_Tabs.SetRegions(Country_ALM, SubRegion_ALM, ConsoleRegion_ALM);
-                }
-            }
-            #endregion
         }
 
+        /// <summary>
+        /// Loads the trainerdata variables into the global variables for AutoLegalityMod
+        /// </summary>
+        /// <param name="legal">Optional legal PKM for loading trainerdata on a per game basis</param>
         private void LoadTrainerData(PKM legal = null)
         {
             bool checkPerGame = (PKME_Tabs.checkMode() == "game");
@@ -271,6 +109,141 @@ namespace PKHeX.WinForms
                 legal = PKME_Tabs.SetTrainerData(OT_ALM, TID_ALM, SID_ALM, gender_ALM, legal, APILegalized);
         }
 
+        /// <summary>
+        /// Function that generates legal PKM objects from ShowdownSets and views them/sets them in boxes
+        /// </summary>
+        /// <param name="sets">A list of ShowdownSet(s) that need to be genned</param>
+        /// <param name="replace">A boolean that determines if current pokemon will be replaced or not</param>
+        /// <param name="message">Output message to be displayed for the user</param>
+        /// <param name="allowAPI">Use of generators before bruteforcing</param>
+        private void ImportSets(List<ShowdownSet> sets, bool replace, out string message, bool allowAPI = true)
+        {
+            message = "[DEBUG] Commencing Import";
+            List<int> emptySlots = new List<int> { };
+            IList<PKM> BoxData = C_SAV.SAV.BoxData;
+            int BoxOffset = C_SAV.CurrentBox * C_SAV.SAV.BoxSlotCount;
+            if (replace) emptySlots = Enumerable.Range(0, sets.Count).ToList();
+            else emptySlots = PopulateEmptySlots(BoxData, C_SAV.CurrentBox);
+            if (emptySlots.Count < sets.Count) { message = "Not enough space in the box"; return; }
+            int apiCounter = 0;
+            List<ShowdownSet> invalidAPISets = new List<ShowdownSet>();
+            for (int i = 0; i < sets.Count; i++)
+            {
+                ShowdownSet Set = sets[i];
+                if (sets.Count == 1 && DialogResult.Yes != WinFormsUtil.Prompt(MessageBoxButtons.YesNo, "Import this set?", Set.Text))
+                    return;
+                if (Set.InvalidLines.Count > 0)
+                    WinFormsUtil.Alert("Invalid lines detected:", string.Join(Environment.NewLine, Set.InvalidLines));
+                bool resetForm = false;
+                PKME_Tabs.hardReset(C_SAV.SAV);
+                if (Set.Form != null && (Set.Form.Contains("Mega") || Set.Form == "Primal" || Set.Form == "Busted")) resetForm = true;
+                PKM roughPKM = PreparePKM();
+                roughPKM.ApplySetDetails(Set);
+                roughPKM.Version = (int)GameVersion.MN; // Avoid the blank version glitch
+                PKM legal = C_SAV.SAV.BlankPKM;
+                bool satisfied = false;
+                if (allowAPI)
+                {
+                    AutoLegalityMod mod = new AutoLegalityMod();
+                    mod.SAV = C_SAV.SAV;
+                    PKM APIGeneratedPKM = C_SAV.SAV.BlankPKM;
+                    try { APIGeneratedPKM = mod.APILegality(roughPKM, Set, out satisfied); }
+                    catch { satisfied = false; }
+                    if (satisfied) {
+                        legal = APIGeneratedPKM;
+                        apiCounter++;
+                        APILegalized = true;
+                    }
+                }
+                if (!allowAPI || !satisfied)
+                {
+                    invalidAPISets.Add(Set);
+                    Blah b = new Blah { C_SAV = C_SAV };
+                    legal = b.LoadShowdownSetModded_PKSM(roughPKM, Set, resetForm, TID_ALM, SID_ALM, OT_ALM, gender_ALM);
+                    APILegalized = false;
+                }
+                PKM pk = SetTrainerData(legal);
+                BoxData[BoxOffset + emptySlots[i]] = pk;
+            }
+            if (sets.Count > 1)
+            {
+                C_SAV.SAV.BoxData = BoxData;
+                C_SAV.ReloadSlots();
+                message = "[DEBUG] API Genned Sets: " + apiCounter + Environment.NewLine + Environment.NewLine + "Number of sets not genned by the API: " + invalidAPISets.Count;
+                foreach (ShowdownSet i in invalidAPISets) Debug.WriteLine(i.Text);
+            }
+            else message = "[DEBUG] Set Genning Complete";
+        }
+
+        /// <summary>
+        /// Set trainer data for a legal PKM
+        /// </summary>
+        /// <param name="legal">Legal PKM for setting the data</param>
+        /// <returns>PKM with the necessary values modified to reflect trainerdata changes</returns>
+        private PKM SetTrainerData(PKM legal)
+        {
+            bool intRegions = false;
+            LoadTrainerData(legal);
+            if (int.TryParse(Country_ALM, out int n) && int.TryParse(SubRegion_ALM, out int m) && int.TryParse(ConsoleRegion_ALM, out int o))
+            {
+                legal = PKME_Tabs.SetPKMRegions(n, m, o, legal);
+                intRegions = true;
+            }
+            PKME_Tabs.PopulateFields(legal);
+            if (!intRegions)
+            {
+                PKME_Tabs.SetRegions(Country_ALM, SubRegion_ALM, ConsoleRegion_ALM);
+            }
+            return PreparePKM();
+        }
+
+        /// <summary>
+        /// Method to find all empty slots in a current box
+        /// </summary>
+        /// <param name="BoxData">Box Data of the SAV file</param>
+        /// <param name="CurrentBox">Index of the current box</param>
+        /// <returns>A list of all indices in the current box that are empty</returns>
+        private List<int> PopulateEmptySlots(IList<PKM> BoxData, int CurrentBox)
+        {
+            List<int> emptySlots = new List<int>();
+            int BoxCount = C_SAV.SAV.BoxSlotCount;
+            for (int i = 0; i < BoxCount; i++)
+            {
+                if (BoxData[CurrentBox * BoxCount + i].Species < 1) emptySlots.Add(i);
+            }
+            return emptySlots;
+        }
+
+        /// <summary>
+        /// A method to get a list of ShowdownSet(s) from a string paste
+        /// Needs to be extended to hold several teams
+        /// </summary>
+        /// <param name="paste"></param>
+        /// <returns></returns>
+        private List<ShowdownSet> ShowdownSets(string paste)
+        {
+            paste = paste.Trim(); // Remove White Spaces
+            string[] lines = paste.Split(new string[] { "\n" }, StringSplitOptions.None);
+            List<ShowdownSet> Sets = new List<ShowdownSet>();
+            var setLines = new List<string>(8);
+            foreach (var line in lines)
+            {
+                if (!string.IsNullOrWhiteSpace(line))
+                {
+                    setLines.Add(line);
+                    continue;
+                }
+                Sets.Add(new ShowdownSet(setLines));
+                setLines.Clear();
+            }
+            Sets.Add(new ShowdownSet(setLines));
+            return Sets;
+        }
+
+        /// <summary>
+        /// Checks the input text is a showdown set or not
+        /// </summary>
+        /// <returns>boolean of the summary</returns>
         private bool showdownData()
         {
             if (!Clipboard.ContainsText()) return false;
@@ -284,6 +257,11 @@ namespace PKHeX.WinForms
             return true;
         }
 
+        /// <summary>
+        /// Method to show the discord invite with a banner
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         public void ShowDiscordForm(object sender, EventArgs e)
         {
             Form DiscordForm = new Form();
