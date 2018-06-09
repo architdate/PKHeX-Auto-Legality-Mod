@@ -7,6 +7,9 @@ using System.Windows.Forms;
 using PKHeX.Core;
 using PKHeX.WinForms.Controls;
 using System.Diagnostics;
+using System.Threading.Tasks;
+using System.Net;
+using PKHeX.WinForms.Properties;
 
 namespace PKHeX.WinForms
 {
@@ -224,20 +227,7 @@ namespace PKHeX.WinForms
         {
             paste = paste.Trim(); // Remove White Spaces
             string[] lines = paste.Split(new string[] { "\n" }, StringSplitOptions.None);
-            List<ShowdownSet> Sets = new List<ShowdownSet>();
-            var setLines = new List<string>(8);
-            foreach (var line in lines)
-            {
-                if (!string.IsNullOrWhiteSpace(line))
-                {
-                    setLines.Add(line);
-                    continue;
-                }
-                Sets.Add(new ShowdownSet(setLines));
-                setLines.Clear();
-            }
-            Sets.Add(new ShowdownSet(setLines));
-            return Sets;
+            return ShowdownSet.GetShowdownSets(lines).ToList();
         }
 
         /// <summary>
@@ -275,6 +265,70 @@ namespace PKHeX.WinForms
             discord.MouseClick += new MouseEventHandler((o, a) => Process.Start(AutoLegality.ConstData.discord));
             DiscordForm.Controls.Add(discord);
             DiscordForm.ShowDialog();
+        }
+
+        /// <summary>
+        /// Method to check for updates to AutoLegalityMod
+        /// </summary>
+        public void CheckALMUpdate()
+        {
+            L_UpdateAvailable.Click += (sender, e) => Process.Start("https://github.com/architdate/PKHeX-Auto-Legality-Mod/releases/latest");
+            try
+            {
+                new Task(() =>
+                {
+                    string data = GetPage("https://api.github.com/repos/architdate/pkhex-auto-legality-mod/releases/latest");
+                    int latestVersion = ParseTagAsVersion(data.Split(new string[] { "\"tag_name\":\"" }, System.StringSplitOptions.None)[1].Split('"')[0]);
+                    if (data == null || latestVersion == -1)
+                        return;
+                    if (int.TryParse(Resources.ProgramVersion, out var cur) && latestVersion <= cur)
+                        return;
+
+                    Invoke((MethodInvoker)(() =>
+                    {
+                        L_UpdateAvailable.Visible = true;
+                        L_UpdateAvailable.Text = $"New Auto Legality Mod update available! {latestVersion:d}";
+                    }));
+                }).Start();
+            }
+            catch { }
+        }
+
+        /// <summary>
+        /// Parse release GitHub tag into a PKHeX style version
+        /// </summary>
+        /// <param name="v">Tag String</param>
+        /// <returns>PKHeX style version int</returns>
+        public int ParseTagAsVersion(string v)
+        {
+            string[] date = v.Split('.');
+            if (date.Length != 3) return -1;
+            int.TryParse(date[0], out int a);
+            int.TryParse(date[1], out int b);
+            int.TryParse(date[2], out int c);
+            return (a + 2000) * 10000 + b * 100 + c;
+        }
+
+        /// <summary>
+        /// GET request to a url with UserAgent Header being AutoLegalityMod
+        /// </summary>
+        /// <param name="url">URL on which the GET request is to be executed</param>
+        /// <returns>GET Response</returns>
+        private string GetPage(string url)
+        {
+            try
+            {
+                var request = (HttpWebRequest)WebRequest.Create(url);
+                request.UserAgent = "AutoLegalityMod";
+                var response = (HttpWebResponse)request.GetResponse();
+                var responseString = new StreamReader(response.GetResponseStream()).ReadToEnd();
+                return responseString;
+            }
+            catch (Exception e)
+            {
+                WinFormsUtil.Alert("An error occured while trying to obtain the contents of the URL. This is most likely an issue with your Internet Connection. The exact error is as follows: " + e.ToString() + "\nURL tried to access: " + url);
+                return "Error :" + e.ToString();
+            }
         }
     }
 }
