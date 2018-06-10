@@ -9,7 +9,7 @@
             this.Menu_LegalizeBoxes.Name = "Menu_LegalizeBoxes";
             this.Menu_LegalizeBoxes.ShowShortcutKeys = false;
             this.Menu_LegalizeBoxes.Size = new System.Drawing.Size(231, 22);
-            this.Menu_LegalizeBoxes.Text = "Legalize Box Pokemon";
+            this.Menu_LegalizeBoxes.Text = "Legalize Active Pokemon";
             this.Menu_LegalizeBoxes.Click += new System.EventHandler(this.LegalizeBoxes);
             return this.Menu_LegalizeBoxes;
         }

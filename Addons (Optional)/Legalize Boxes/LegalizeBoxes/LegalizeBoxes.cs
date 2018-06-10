@@ -14,7 +14,12 @@ namespace PKHeX.WinForms
             IList<PKM> BoxData = C_SAV.SAV.BoxData;
             for (int i=0; i<30; i++)
             {
-                PKM illegalPK = BoxData[C_SAV.CurrentBox * C_SAV.SAV.BoxSlotCount + i];
+                PKM illegalPK = PreparePKM();
+                bool box = false;
+                if ((ModifierKeys & Keys.Control) == Keys.Control) {
+                    box = true;
+                }
+                if (box) illegalPK = BoxData[C_SAV.CurrentBox * C_SAV.SAV.BoxSlotCount + i];
                 if (illegalPK.Species > 0 && !new LegalityAnalysis(illegalPK).Valid)
                 {
                     ShowdownSet Set = new ShowdownSet(ShowdownSet.GetShowdownText(illegalPK));
@@ -38,7 +43,13 @@ namespace PKHeX.WinForms
                     }
                     else legal = APIGenerated;
                     legal = PKME_Tabs.SetTrainerData(illegalPK.OT_Name, illegalPK.TID, illegalPK.SID, illegalPK.OT_Gender, legal, satisfied);
-                    BoxData[C_SAV.CurrentBox * C_SAV.SAV.BoxSlotCount + i] = legal;
+                    if (box) BoxData[C_SAV.CurrentBox * C_SAV.SAV.BoxSlotCount + i] = legal;
+                    else
+                    {
+                        PKME_Tabs.PopulateFields(legal);
+                        WinFormsUtil.Alert("Legalized Active Pokemon.");
+                        return;
+                    }
                 }
             }
             C_SAV.SAV.BoxData = BoxData;
