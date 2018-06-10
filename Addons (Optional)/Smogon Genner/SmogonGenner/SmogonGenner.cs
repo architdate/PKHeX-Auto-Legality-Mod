@@ -36,7 +36,7 @@ namespace PKHeX.WinForms
             string showdownsets = "";
             foreach(string set in sets)
             {
-                showdownsets = showdownsets + ConvertSetToShowdown(set, showdownSpec) + "\n\r";
+                showdownsets = showdownsets + ConvertSetToShowdown(set, showdownSpec) + Environment.NewLine + Environment.NewLine;
             }
             showdownsets.TrimEnd();
             if (showdownsets == "")
