@@ -7,3 +7,4 @@ If you wish to use these mods, please consider using the source code to build th
 # List of Extra Mods
 
 - [Export Box QR Codes](https://github.com/architdate/PKHeX-Auto-Legality-Mod/tree/master/Extra%20Mods%20(Helpers)/Export%20Box%20QR%20Codes): Exports QR codes of the entire active box and places it in a directory called `qrcodes`
+- [Export Box To Showdown](https://github.com/architdate/PKHeX-Auto-Legality-Mod/tree/master/Extra%20Mods%20(Helpers)/Export%20Box%20To%20Showdown): Exports the current active box to a Showdown Importable and sets it to the clipboard
