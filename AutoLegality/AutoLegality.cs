@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Windows.Forms;
+using System.Text.RegularExpressions;
 
 using PKHeX.Core;
 using PKHeX.WinForms.Controls;
@@ -35,6 +36,7 @@ namespace PKHeX.WinForms
         /// <param name="e"></param>
         public void ClickShowdownImportPKMModded(object sender, EventArgs e)
         {
+            Stopwatch timer = Stopwatch.StartNew();
             CheckALMUpdate(); // Check for Auto Legality Mod Updates
             bool allowAPI = true; // Use true to allow experimental API usage
             APILegalized = false; // Initialize to false everytime command is used
@@ -49,10 +51,14 @@ namespace PKHeX.WinForms
 
             // Get Text source from clipboard and convert to ShowdownSet(s)
             string source = Clipboard.GetText().TrimEnd();
-            List<ShowdownSet> Sets = ShowdownSets(source);
+            List<ShowdownSet> Sets = ShowdownSets(source, out Dictionary<int, string[]> TeamData);
+            if (TeamData != null) WinFormsUtil.Alert(TeamDataAlert(TeamData));
 
             // Import Showdown Sets and alert user of any messages intended
             ImportSets(Sets, (ModifierKeys & Keys.Control) == Keys.Control, out string message, allowAPI);
+
+            // Debug Statements
+            Debug.WriteLine(LogTimer(timer));
             if (message.StartsWith("[DEBUG]")) Debug.WriteLine(message);
             else WinFormsUtil.Alert(message);
         }
@@ -127,7 +133,7 @@ namespace PKHeX.WinForms
             int BoxOffset = C_SAV.CurrentBox * C_SAV.SAV.BoxSlotCount;
             if (replace) emptySlots = Enumerable.Range(0, sets.Count).ToList();
             else emptySlots = PopulateEmptySlots(BoxData, C_SAV.CurrentBox);
-            if (emptySlots.Count < sets.Count) { message = "Not enough space in the box"; return; }
+            if (emptySlots.Count < sets.Count && sets.Count != 1) { message = "Not enough space in the box"; return; }
             int apiCounter = 0;
             List<ShowdownSet> invalidAPISets = new List<ShowdownSet>();
             for (int i = 0; i < sets.Count; i++)
@@ -165,8 +171,8 @@ namespace PKHeX.WinForms
                     legal = b.LoadShowdownSetModded_PKSM(roughPKM, Set, resetForm, TID_ALM, SID_ALM, OT_ALM, gender_ALM);
                     APILegalized = false;
                 }
-                PKM pk = SetTrainerData(legal);
-                BoxData[BoxOffset + emptySlots[i]] = pk;
+                PKM pk = SetTrainerData(legal, sets.Count == 1);
+                if (sets.Count > 1) BoxData[BoxOffset + emptySlots[i]] = pk;
             }
             if (sets.Count > 1)
             {
@@ -183,7 +189,7 @@ namespace PKHeX.WinForms
         /// </summary>
         /// <param name="legal">Legal PKM for setting the data</param>
         /// <returns>PKM with the necessary values modified to reflect trainerdata changes</returns>
-        private PKM SetTrainerData(PKM legal)
+        private PKM SetTrainerData(PKM legal, bool display)
         {
             bool intRegions = false;
             LoadTrainerData(legal);
@@ -192,12 +198,14 @@ namespace PKHeX.WinForms
                 legal = PKME_Tabs.SetPKMRegions(n, m, o, legal);
                 intRegions = true;
             }
-            PKME_Tabs.PopulateFields(legal);
+            if (display) PKME_Tabs.PopulateFields(legal);
             if (!intRegions)
             {
+                PKME_Tabs.PopulateFields(legal);
                 PKME_Tabs.SetRegions(Country_ALM, SubRegion_ALM, ConsoleRegion_ALM);
+                return PreparePKM();
             }
-            return PreparePKM();
+            return legal;
         }
 
         /// <summary>
@@ -223,11 +231,68 @@ namespace PKHeX.WinForms
         /// </summary>
         /// <param name="paste"></param>
         /// <returns></returns>
-        private List<ShowdownSet> ShowdownSets(string paste)
+        private List<ShowdownSet> ShowdownSets(string paste, out Dictionary<int, string[]> TeamData)
         {
+            TeamData = null;
             paste = paste.Trim(); // Remove White Spaces
+            if (TeamBackup(paste)) TeamData = GenerateTeamData(paste, out paste);
             string[] lines = paste.Split(new string[] { "\n" }, StringSplitOptions.None);
             return ShowdownSet.GetShowdownSets(lines).ToList();
+        }
+
+        /// <summary>
+        /// Checks whether a paste is a showdown team backup
+        /// </summary>
+        /// <param name="paste">paste to check</param>
+        /// <returns>Returns bool</returns>
+        private bool TeamBackup(string paste) => paste.StartsWith("===");
+
+        /// <summary>
+        /// Method to generate team data based on the given paste if applicable.
+        /// </summary>
+        /// <param name="paste">input paste</param>
+        /// <param name="modified">modified paste for normal importing</param>
+        /// <returns>null or dictionary with the teamdata</returns>
+        private Dictionary<int, string[]> GenerateTeamData(string paste, out string modified)
+        {
+            string[] IndividualTeams = Regex.Split(paste, @"={3} \[.+\] .+ ={3}").Select(team => team.Trim()).ToArray();
+            Dictionary<int, string[]> TeamData = new Dictionary<int, string[]>();
+            modified = string.Join(Environment.NewLine + Environment.NewLine, IndividualTeams);
+            Regex title = new Regex(@"={3} \[(?<format>.+)\] (?<teamname>.+) ={3}");
+            MatchCollection titlematches = title.Matches(paste);
+            for (int i = 0; i < titlematches.Count; i++) 
+            {
+                TeamData[i] = new string[] { titlematches[i].Groups["format"].Value, titlematches[i].Groups["teamname"].Value };
+            }
+            if (TeamData.Count == 0) return null;
+            return TeamData;
+        }
+
+        /// <summary>
+        /// Convert Team Data into an alert for the main function
+        /// </summary>
+        /// <param name="TeamData">Dictionary with format as key and team name as value</param>
+        /// <returns></returns>
+        private string TeamDataAlert(Dictionary<int, string[]> TeamData)
+        {
+            string alert = "Generating the following teams:" + Environment.NewLine + Environment.NewLine;
+            foreach(KeyValuePair<int, string[]> entry in TeamData)
+            {
+                alert += string.Format("Format: {0}, Team Name: {1}", entry.Value[0], entry.Value[1] + Environment.NewLine);
+            }
+            return alert;
+        }
+
+        /// <summary>
+        /// Debug tool to help log the time needed for a function to execute. Pass Stopwatch class
+        /// </summary>
+        /// <param name="timer">Stopwatch to stop and read time from</param>
+        /// <returns></returns>
+        private string LogTimer(Stopwatch timer)
+        {
+            timer.Stop();
+            TimeSpan timespan = timer.Elapsed;
+            return String.Format("[DEBUG] Time to complete function: {0:00} minutes {1:00} seconds {2:00} milliseconds", timespan.Minutes, timespan.Seconds, timespan.Milliseconds / 10);
         }
 
         /// <summary>
@@ -238,6 +303,7 @@ namespace PKHeX.WinForms
         {
             if (!Clipboard.ContainsText()) return false;
             string source = Clipboard.GetText().TrimEnd();
+            if (TeamBackup(source)) return true;
             string[] stringSeparators = new string[] { "\n\r" };
             string[] result;
 
@@ -278,6 +344,7 @@ namespace PKHeX.WinForms
                 new Task(() =>
                 {
                     string data = GetPage("https://api.github.com/repos/architdate/pkhex-auto-legality-mod/releases/latest");
+                    if (data.StartsWith("Error")) return;
                     int latestVersion = ParseTagAsVersion(data.Split(new string[] { "\"tag_name\":\"" }, System.StringSplitOptions.None)[1].Split('"')[0]);
                     if (data == null || latestVersion == -1)
                         return;
@@ -326,7 +393,7 @@ namespace PKHeX.WinForms
             }
             catch (Exception e)
             {
-                WinFormsUtil.Alert("An error occured while trying to obtain the contents of the URL. This is most likely an issue with your Internet Connection. The exact error is as follows: " + e.ToString() + "\nURL tried to access: " + url);
+                Debug.WriteLine("An error occured while trying to obtain the contents of the URL. This is most likely an issue with your Internet Connection. The exact error is as follows: " + e.ToString() + "\nURL tried to access: " + url);
                 return "Error :" + e.ToString();
             }
         }
