@@ -38,7 +38,7 @@ namespace PKHeX.WinForms
                     if (!satisfied)
                     {
                         Blah b = new Blah();
-                        b.C_SAV = C_SAV;
+                        b.SAV = C_SAV.SAV;
                         legal = b.LoadShowdownSetModded_PKSM(illegalPK, Set, resetForm, illegalPK.TID, illegalPK.SID, illegalPK.OT_Name, illegalPK.OT_Gender);
                     }
                     else legal = APIGenerated;
