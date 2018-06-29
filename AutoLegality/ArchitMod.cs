@@ -13,43 +13,6 @@ namespace PKHeX.WinForms.Controls
 {
     public partial class PKMEditor : UserControl
     {
-        // Initialize Current Save file
-        private static Controls.SAVEditor CurrentSAV;
-
-        /// <summary>
-        /// Reset PKM for the generation (for clean slates while moving onto new gens)
-        /// </summary>
-        /// <param name="SAV">Type of save file passed</param>
-        public void hardReset(SaveFile SAV = null)
-        {
-            SaveFile CURRSAV = new SAVEditor().SAV;
-            if (SAV != null) CURRSAV = SAV;
-            else
-            {
-                CurrentSAV = new PKHeX.WinForms.Controls.SAVEditor();
-                CurrentSAV.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-                | System.Windows.Forms.AnchorStyles.Right)));
-                CurrentSAV.Location = new System.Drawing.Point(292, 26);
-                CurrentSAV.Name = "C_SAV";
-                CurrentSAV.Size = new System.Drawing.Size(310, 326);
-                CurrentSAV.TabIndex = 104;
-                CURRSAV = CurrentSAV.SAV;
-            }
-            if (CURRSAV.USUM || CURRSAV.SM)
-            {
-                if (TryLoadPKM(new ConstData().resetpk7, "", "pk7", CURRSAV))
-                {
-                    return;
-                }
-            }
-            else if (CURRSAV.ORAS || CURRSAV.XY)
-            {
-                if (TryLoadPKM(new ConstData().resetpk6, "", "pk6", CURRSAV))
-                {
-                    return;
-                }
-            }
-        }
 
         /// <summary>
         /// Helper function to print out a byte array as a string that can be used within code
@@ -152,11 +115,11 @@ namespace PKHeX.WinForms.Controls
         /// <param name="Country">String denoting the exact country</param>
         /// <param name="SubRegion">String denoting the exact sub region</param>
         /// <param name="ConsoleRegion">String denoting the exact console region</param>
-        public void SetRegions(string Country, string SubRegion, string ConsoleRegion)
+        public void SetRegions(string Country, string SubRegion, string ConsoleRegion, PKM pk)
         {
-            CB_Country.Text = Country;
-            CB_SubRegion.Text = SubRegion;
-            CB_3DSReg.Text = ConsoleRegion;
+            pk.Country = Util.GetCBList("countries", "en").FirstOrDefault(z => z.Text == Country).Value;
+            pk.Region = Util.GetCBList($"sr_{pk.Country:000}", "en").FirstOrDefault(z => z.Text == SubRegion).Value;
+            pk.ConsoleRegion = Util.GetUnsortedCBList("regions3ds").FirstOrDefault(z => z.Text == ConsoleRegion).Value;
         }
 
         /// <summary>

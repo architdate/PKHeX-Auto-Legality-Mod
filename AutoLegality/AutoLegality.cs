@@ -144,9 +144,8 @@ namespace PKHeX.WinForms
                 if (Set.InvalidLines.Count > 0)
                     WinFormsUtil.Alert("Invalid lines detected:", string.Join(Environment.NewLine, Set.InvalidLines));
                 bool resetForm = false;
-                PKME_Tabs.hardReset(C_SAV.SAV);
                 if (Set.Form != null && (Set.Form.Contains("Mega") || Set.Form == "Primal" || Set.Form == "Busted")) resetForm = true;
-                PKM roughPKM = PreparePKM();
+                PKM roughPKM = C_SAV.SAV.BlankPKM;
                 roughPKM.ApplySetDetails(Set);
                 roughPKM.Version = (int)GameVersion.MN; // Avoid the blank version glitch
                 PKM legal = C_SAV.SAV.BlankPKM;
@@ -167,7 +166,7 @@ namespace PKHeX.WinForms
                 if (!allowAPI || !satisfied)
                 {
                     invalidAPISets.Add(Set);
-                    Blah b = new Blah { C_SAV = C_SAV };
+                    Blah b = new Blah { SAV = C_SAV.SAV };
                     legal = b.LoadShowdownSetModded_PKSM(roughPKM, Set, resetForm, TID_ALM, SID_ALM, OT_ALM, gender_ALM);
                     APILegalized = false;
                 }
@@ -201,9 +200,8 @@ namespace PKHeX.WinForms
             if (display) PKME_Tabs.PopulateFields(legal);
             if (!intRegions)
             {
-                PKME_Tabs.PopulateFields(legal);
-                PKME_Tabs.SetRegions(Country_ALM, SubRegion_ALM, ConsoleRegion_ALM);
-                return PreparePKM();
+                PKME_Tabs.SetRegions(Country_ALM, SubRegion_ALM, ConsoleRegion_ALM, legal);
+                return legal;
             }
             return legal;
         }

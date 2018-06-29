@@ -16,7 +16,7 @@ namespace PKHeX.WinForms.Controls
         PKM backup;
         bool requestedShiny = false;
         public event EventHandler LegalityChanged;
-        public Controls.SAVEditor C_SAV;
+        public SaveFile SAV;
         bool legalized = false;
 
         /// <summary>
@@ -142,7 +142,7 @@ namespace PKHeX.WinForms.Controls
                         HyperTrain(Set);
                         if (new LegalityAnalysis(Set).Valid) legalized = true;
                         if (Set.GenNumber < 6 && !legalized) Set.EncryptionConstant = Set.PID;
-                        if (new LegalityAnalysis(Set).Valid && C_SAV.SAV.Generation >= Set.GenNumber)
+                        if (new LegalityAnalysis(Set).Valid && SAV.Generation >= Set.GenNumber)
                         {
                             setHappiness(Set);
                             if (shiny && !Set.IsShiny) Set.SetShinySID();
@@ -243,7 +243,7 @@ namespace PKHeX.WinForms.Controls
                         if (new LegalityAnalysis(Set).Valid) legalized = true;
                         AlternateAbilityRefresh(Set);
                         if (Set.GenNumber < 6 && !legalized) Set.EncryptionConstant = Set.PID;
-                        if (new LegalityAnalysis(Set).Valid && C_SAV.SAV.Generation >= Set.GenNumber)
+                        if (new LegalityAnalysis(Set).Valid && SAV.Generation >= Set.GenNumber)
                         {
                             setHappiness(Set);
                             PKM returnval = Set;
@@ -331,8 +331,8 @@ namespace PKHeX.WinForms.Controls
                         Generation = 7;
                         fixedPID = mg.PID;
                         if (!ValidShiny((int)mg.PIDType, shiny)) continue;
-                        var temp = mg.ConvertToPKM(C_SAV.SAV);
-                        eventpk = PKMConverter.ConvertToType(temp, C_SAV.SAV.PKMType, out string c);
+                        var temp = mg.ConvertToPKM(SAV);
+                        eventpk = PKMConverter.ConvertToType(temp, SAV.PKMType, out string c);
                     }
                     else if (System.IO.Path.GetExtension(file) == ".wc6" || System.IO.Path.GetExtension(file) == ".wc6full")
                     {
@@ -342,8 +342,8 @@ namespace PKHeX.WinForms.Controls
                         Generation = 6;
                         fixedPID = mg.PID;
                         if (!ValidShiny((int)mg.PIDType, shiny)) continue;
-                        var temp = mg.ConvertToPKM(C_SAV.SAV);
-                        eventpk = PKMConverter.ConvertToType(temp, C_SAV.SAV.PKMType, out string c);
+                        var temp = mg.ConvertToPKM(SAV);
+                        eventpk = PKMConverter.ConvertToType(temp, SAV.PKMType, out string c);
                     }
                     else if (System.IO.Path.GetExtension(file) == ".pl6") // Pokemon Link
                     {
@@ -364,7 +364,7 @@ namespace PKHeX.WinForms.Controls
                                 break;
                             }
                         }
-                        if (ExistsEligible) eventpk = PKMConverter.ConvertToType(ConvertPL6ToPKM(Eligible), C_SAV.SAV.PKMType, out string c);
+                        if (ExistsEligible) eventpk = PKMConverter.ConvertToType(ConvertPL6ToPKM(Eligible), SAV.PKMType, out string c);
                     }
                     else if (System.IO.Path.GetExtension(file) == ".pgf")
                     {
@@ -374,8 +374,8 @@ namespace PKHeX.WinForms.Controls
                         Generation = 5;
                         fixedPID = mg.PID;
                         if (!ValidShiny(mg.PIDType, shiny)) continue;
-                        var temp = mg.ConvertToPKM(C_SAV.SAV);
-                        eventpk = PKMConverter.ConvertToType(temp, C_SAV.SAV.PKMType, out string c);
+                        var temp = mg.ConvertToPKM(SAV);
+                        eventpk = PKMConverter.ConvertToType(temp, SAV.PKMType, out string c);
                     }
                     else if (System.IO.Path.GetExtension(file) == ".pgt" || System.IO.Path.GetExtension(file) == ".pcd" || System.IO.Path.GetExtension(file) == ".wc4")
                     {
@@ -384,8 +384,8 @@ namespace PKHeX.WinForms.Controls
                             var mg = (PCD)MysteryGift.GetMysteryGift(System.IO.File.ReadAllBytes(file), System.IO.Path.GetExtension(file));
                             Generation = 4;
                             if (shiny != mg.IsShiny) continue;
-                            var temp = mg.ConvertToPKM(C_SAV.SAV);
-                            eventpk = PKMConverter.ConvertToType(temp, C_SAV.SAV.PKMType, out string c);
+                            var temp = mg.ConvertToPKM(SAV);
+                            eventpk = PKMConverter.ConvertToType(temp, SAV.PKMType, out string c);
                             fixedPID = eventpk.PID;
                         }
                         catch
@@ -393,17 +393,17 @@ namespace PKHeX.WinForms.Controls
                             var mg = (PGT)MysteryGift.GetMysteryGift(System.IO.File.ReadAllBytes(file), System.IO.Path.GetExtension(file));
                             Generation = 4;
                             if (shiny != mg.IsShiny) continue;
-                            var temp = mg.ConvertToPKM(C_SAV.SAV);
-                            eventpk = PKMConverter.ConvertToType(temp, C_SAV.SAV.PKMType, out string c);
+                            var temp = mg.ConvertToPKM(SAV);
+                            eventpk = PKMConverter.ConvertToType(temp, SAV.PKMType, out string c);
                             fixedPID = eventpk.PID;
                         }
                     }
                     else if (System.IO.Path.GetExtension(file) == ".pk3")
                     {
                         Generation = 3;
-                        var pk = PKMConverter.GetPKMfromBytes(File.ReadAllBytes(file), prefer: Path.GetExtension(file).Length > 0 ? (Path.GetExtension(file).Last() - '0') & 0xF : C_SAV.SAV.Generation);
+                        var pk = PKMConverter.GetPKMfromBytes(File.ReadAllBytes(file), prefer: Path.GetExtension(file).Length > 0 ? (Path.GetExtension(file).Last() - '0') & 0xF : SAV.Generation);
                         if (pk == null) break;
-                        eventpk = PKMConverter.ConvertToType(pk, C_SAV.SAV.PKMType, out string c);
+                        eventpk = PKMConverter.ConvertToType(pk, SAV.PKMType, out string c);
                     }
 
                     if (SSet.Form != null)
@@ -433,7 +433,7 @@ namespace PKHeX.WinForms.Controls
                         }
                         eventpk.Species = Set.Species;
                         eventpk.AltForm = form;
-                        eventpk.Nickname = eventpk.IsNicknamed ? eventpk.Nickname : PKX.GetSpeciesNameGeneration(Set.Species, eventpk.Language, C_SAV.SAV.Generation);
+                        eventpk.Nickname = eventpk.IsNicknamed ? eventpk.Nickname : PKX.GetSpeciesNameGeneration(Set.Species, eventpk.Language, SAV.Generation);
                         eventpk.HeldItem = SSet.HeldItem < 0 ? 0 : SSet.HeldItem;
                         eventpk.Nature = SSet.Nature < 0 ? 0 : Set.Nature;
                         eventpk.Ability = SSet.Ability;
@@ -795,12 +795,12 @@ namespace PKHeX.WinForms.Controls
         }
         private PKM FixMemoriesPKM(PKM pk)
         {
-            if (C_SAV.SAV.PKMType == typeof(PK7))
+            if (SAV.PKMType == typeof(PK7))
             {
                 ((PK7)pk).FixMemories();
                 return pk;
             }
-            else if (C_SAV.SAV.PKMType == typeof(PK6))
+            else if (SAV.PKMType == typeof(PK6))
             {
                 ((PK6)pk).FixMemories();
                 return pk;
@@ -1414,7 +1414,7 @@ namespace PKHeX.WinForms.Controls
 
         private void HyperTrain(PKM pk)
         {
-            if (C_SAV.SAV.Generation < 7 || !NeedsHyperTraining(pk)) return;
+            if (SAV.Generation < 7 || !NeedsHyperTraining(pk)) return;
             if (pk.CurrentLevel != 100) pk.CurrentLevel = 100; // Set level for HT before doing HT
             if (pk is IHyperTrain h)
             {
@@ -1470,11 +1470,11 @@ namespace PKHeX.WinForms.Controls
                 AltForm = pk.Form,
                 EncryptionConstant = pk.EncryptionConstant != 0 ? pk.EncryptionConstant : Util.Rand32(),
                 Version = pk.OriginGame != 0 ? pk.OriginGame : (int)GameVersion.OR,
-                Language = pk.Language != 0 ? pk.Language : C_SAV.SAV.Language,
+                Language = pk.Language != 0 ? pk.Language : SAV.Language,
                 Ball = pk.Pokéball,
-                Country = C_SAV.SAV.Country,
-                Region = C_SAV.SAV.SubRegion,
-                ConsoleRegion = C_SAV.SAV.ConsoleRegion,
+                Country = SAV.Country,
+                Region = SAV.SubRegion,
+                ConsoleRegion = SAV.ConsoleRegion,
                 Move1 = pk.Move1,
                 Move2 = pk.Move2,
                 Move3 = pk.Move3,
@@ -1492,10 +1492,10 @@ namespace PKHeX.WinForms.Controls
                 CNT_Tough = pk.CNT_Tough,
                 CNT_Sheen = pk.CNT_Sheen,
 
-                OT_Name = pk.OT.Length > 0 ? pk.OT : C_SAV.SAV.OT,
-                OT_Gender = pk.OTGender != 3 ? pk.OTGender % 2 : C_SAV.SAV.Gender,
-                HT_Name = pk.OT.Length > 0 ? C_SAV.SAV.OT : string.Empty,
-                HT_Gender = pk.OT.Length > 0 ? C_SAV.SAV.Gender : 0,
+                OT_Name = pk.OT.Length > 0 ? pk.OT : SAV.OT,
+                OT_Gender = pk.OTGender != 3 ? pk.OTGender % 2 : SAV.Gender,
+                HT_Name = pk.OT.Length > 0 ? SAV.OT : string.Empty,
+                HT_Gender = pk.OT.Length > 0 ? SAV.Gender : 0,
                 CurrentHandler = pk.OT.Length > 0 ? 1 : 0,
 
                 EXP = PKX.GetEXP(pk.Level, pk.Species),
@@ -1542,7 +1542,7 @@ namespace PKHeX.WinForms.Controls
 
             eventpk.MetDate = DateTime.Now;
 
-            if (C_SAV.SAV.Generation > 6 && pk.OriginGame == 0) // Gen7
+            if (SAV.Generation > 6 && pk.OriginGame == 0) // Gen7
             {
                 eventpk.Version = (int)GameVersion.OR;
             }
@@ -1597,7 +1597,7 @@ namespace PKHeX.WinForms.Controls
                     eventpk.HT_Friendship = eventpk.OT_Friendship;
                 }
             eventpk.IsNicknamed = false;
-            eventpk.Nickname = eventpk.IsNicknamed ? eventpk.Nickname : PKX.GetSpeciesNameGeneration(pk.Species, eventpk.Language, C_SAV.SAV.Generation);
+            eventpk.Nickname = eventpk.IsNicknamed ? eventpk.Nickname : PKX.GetSpeciesNameGeneration(pk.Species, eventpk.Language, SAV.Generation);
             eventpk.CurrentFriendship = eventpk.IsEgg ? pi.HatchCycles : pi.BaseFriendship;
 
             eventpk.RefreshChecksum();
