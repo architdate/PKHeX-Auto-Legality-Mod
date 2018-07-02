@@ -157,8 +157,7 @@ namespace PKHeX.WinForms.Controls
                     pk.SID = SID;
                     pk.OT_Name = OT;
                     pk.OT_Gender = gender;
-                    AutoLegalityMod m = new AutoLegalityMod();
-                    m.SetShinyBoolean(pk, Shiny);
+                    AutoLegalityModMain.AutoLegalityMod.SetShinyBoolean(pk, Shiny);
                 }
                 return pk;
             }

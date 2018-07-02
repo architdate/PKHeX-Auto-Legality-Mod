@@ -28,13 +28,15 @@ namespace PKHeX.WinForms
                     {
                         if (Set.Form.Contains("Mega") || Set.Form == "Primal" || Set.Form == "Busted") resetForm = true;
                     }
-                    AutoLegalityMod mod = new AutoLegalityMod();
-                    mod.SAV = C_SAV.SAV;
                     PKM legal;
                     PKM APIGenerated = C_SAV.SAV.BlankPKM;
                     bool satisfied = false;
-                    try { APIGenerated = mod.APILegality(illegalPK, Set, out satisfied); }
-                    catch { satisfied = false; }
+                    try {
+                        APIGenerated = AutoLegalityModMain.AutoLegalityMod.APILegality(illegalPK, Set, out satisfied);
+                    }
+                    catch {
+                        satisfied = false;
+                    }
                     if (!satisfied)
                     {
                         Blah b = new Blah();
