@@ -40,10 +40,7 @@ namespace AutoLegalityModMain
                 if (pkmn != null)
                 {
                     PKM pk = PKMConverter.ConvertToType(pkmn, SAV.PKMType, out _); // All Possible PKM files
-                    LegalInfo info = new LegalInfo(pk);
-                    var pidiv = info.PIDIV ?? MethodFinder.Analyze(pk);
-                    PIDType Method = PIDType.None;
-                    if (pidiv != null) Method = pidiv.Type;
+                    PIDType Method = MethodFinder.Analyze(pk).Type;
                     SetVersion(pk, pkmn); // PreEmptive Version setting
                     SetSpeciesLevel(pk, SSet, Form);
                     SetMovesEVsItems(pk, SSet);
@@ -268,7 +265,7 @@ namespace AutoLegalityModMain
         public static void SetNatureAbility(PKM pk, ShowdownSet SSet)
         {
             // Values that are must for showdown set to work, IVs should be adjusted to account for this
-            pk.Nature = SSet.Nature;
+            pk.SetGender(SSet.Gender);
             pk.SetAbility(SSet.Ability);
         }
 
