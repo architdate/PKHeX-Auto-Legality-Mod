@@ -53,7 +53,7 @@ namespace AutoLegalityModMain
                     SetEncryptionConstant(pk);
                     SetShinyBoolean(pk, SSet.Shiny);
                     CheckAndSetFateful(pk);
-                    FixGender(pk);
+                    FixGender(pk, SSet);
                     FixRibbons(pk);
                     FixMemoriesPKM(pk);
                     SetSpeciesBall(pk);
@@ -265,7 +265,7 @@ namespace AutoLegalityModMain
         public static void SetNatureAbility(PKM pk, ShowdownSet SSet)
         {
             // Values that are must for showdown set to work, IVs should be adjusted to account for this
-            pk.SetGender(SSet.Gender);
+            pk.Nature = SSet.Nature;
             pk.SetAbility(SSet.Ability);
         }
 
@@ -356,7 +356,8 @@ namespace AutoLegalityModMain
             if (Method == PIDType.None)
             {
                 Method = FindLikelyPIDType(pk, originalPKMN);
-                if (pk.Version == 15) Method = PIDType.CXD;
+                if (pk.Version == 15)
+                    Method = PIDType.CXD;
                 if (Method == PIDType.None) pk.PID = PKX.GetRandomPID(pk.Species, pk.Gender, pk.Version, pk.Nature, pk.Format, (uint)(pk.AbilityNumber * 0x10001));
             }
             PKM iterPKM = pk;
@@ -391,18 +392,30 @@ namespace AutoLegalityModMain
             switch (pk.GenNumber)
             {
                 case 3:
-                    switch (pk.Version)
+                    switch (EncounterFinder.FindVerifiedEncounter(pk).EncounterMatch)
                     {
-                        case (int)GameVersion.CXD: return PIDType.CXD;
-                        case (int)GameVersion.E: return PIDType.Method_1;
-                        case (int)GameVersion.FR:
-                        case (int)GameVersion.LG:
-                            return PIDType.Method_1;
+                        case WC3 g:
+                            return g.Method;
+                        case EncounterStatic s:
+                            switch (pk.Version)
+                            {
+                                case (int)GameVersion.CXD: return PIDType.CXD;
+                                case (int)GameVersion.E: return PIDType.Method_1;
+                                case (int)GameVersion.FR:
+                                case (int)GameVersion.LG:
+                                    return PIDType.Method_1; // roamer glitch
+                                default:
+                                    return PIDType.Method_1;
+                            }
+                        case EncounterSlot w:
+                            if (pk.Version == 15)
+                                return PIDType.PokeSpot;
+                            return (pk.Species == 201 ? PIDType.Method_1_Unown : PIDType.Method_1);
                         default:
-                            return PIDType.Method_1;
+                            return PIDType.None;
                     }
                 case 4:
-                    switch(new LegalInfo(pk).EncounterMatch)
+                    switch(EncounterFinder.FindVerifiedEncounter(pk).EncounterMatch)
                     {
                         case EncounterStatic s:
                             if (s.Location == 233 && s.Gift) // Pokewalker
@@ -424,8 +437,9 @@ namespace AutoLegalityModMain
         /// Quick Gender Toggle
         /// </summary>
         /// <param name="pk">PKM whose gender needs to be toggled</param>
-        public static void FixGender(PKM pk)
+        public static void FixGender(PKM pk, ShowdownSet SSet)
         {
+            pk.SetGender(SSet.Gender);
             LegalityAnalysis la = new LegalityAnalysis(pk);
             string Report = la.Report();
             if (Report.Contains(V255))
