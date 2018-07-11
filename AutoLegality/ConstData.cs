@@ -18,7 +18,7 @@ namespace PKHeX.WinForms.AutoLegality
 - Fix SmogonGenner issue of not reading multiple sets
 - Extreme speed improvements (Genning is 20.3x faster with the mod now)
 - Just for reference, a whole box of Pokemon gets genned in 5 milliseconds on my machine.
-- Current base PKHeX commit [e0aa193](https://github.com/kwsch/PKHeX/commit/e0aa1934e7be00955dede723c75dfc555472dc7c)
+- Current base PKHeX commit [8a83b9b](https://github.com/kwsch/PKHeX/commit/8a83b9bde89a024416f795c5f2955139f5e594b7)
 ";
         public static string keyboardshortcuts = @"
 - `Ctrl + I` : Auto Legality import from clipboard
