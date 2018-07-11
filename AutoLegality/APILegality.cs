@@ -358,7 +358,7 @@ namespace AutoLegalityModMain
                 Method = FindLikelyPIDType(pk, originalPKMN);
                 if (pk.Version == 15)
                     Method = PIDType.CXD;
-                if (Method == PIDType.None) pk.PID = PKX.GetRandomPID(pk.Species, pk.Gender, pk.Version, pk.Nature, pk.Format, (uint)(pk.AbilityNumber * 0x10001));
+                if (Method == PIDType.None) pk.SetPIDGender(originalPKMN.Gender);
             }
             PKM iterPKM = pk;
             while (true && Method != PIDType.None)
