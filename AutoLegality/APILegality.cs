@@ -179,6 +179,7 @@ namespace AutoLegalityModMain
         {
             pk.Species = SSet.Species;
             if (SSet.Gender != null) pk.Gender = (SSet.Gender == "M") ? 0 : 1;
+            else pk.Gender = pk.GetSaneGender();
             pk.SetAltForm(Form);
             pk.IsNicknamed = (SSet.Nickname != null);
             pk.Nickname = SSet.Nickname != null ? SSet.Nickname : PKX.GetSpeciesNameGeneration(pk.Species, pk.Language, SAV.Generation);
@@ -358,7 +359,7 @@ namespace AutoLegalityModMain
                 Method = FindLikelyPIDType(pk, originalPKMN);
                 if (pk.Version == 15)
                     Method = PIDType.CXD;
-                if (Method == PIDType.None) pk.SetPIDGender(originalPKMN.Gender);
+                if (Method == PIDType.None) pk.SetPIDGender(pk.Gender);
             }
             PKM iterPKM = pk;
             while (true && Method != PIDType.None)
