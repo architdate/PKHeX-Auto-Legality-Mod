@@ -931,7 +931,8 @@ namespace PKHeX.WinForms.Controls
             }
             if (report.Contains(V146))
             {
-                pk.Geo1_Country = 1; // Prev residence
+                var g = (IGeoTrack)pk;
+                g.Geo1_Country = 1;
                 report = UpdateReport(pk);
             }
             if (report.Contains(V150)) //V150 = Memory: Handling Trainer Memory missing.
@@ -974,7 +975,8 @@ namespace PKHeX.WinForms.Controls
             }
             if (report.Contains(V137)) //V137 = GeoLocation Memory: Memories should be present.
             {
-                pk.Geo1_Country = 1;
+                var g = (IGeoTrack)pk;
+                g.Geo1_Country = 1;
                 report = UpdateReport(pk);
             }
             if (report.Contains(V118)) //V118 = Can't have ball for encounter type.
