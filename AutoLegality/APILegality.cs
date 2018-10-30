@@ -290,7 +290,7 @@ namespace AutoLegalityModMain
             }
             if (isShiny)
             {
-                if (pk.GenNumber > 5) pk.SetShinyPID();
+                if (pk.GenNumber > 5) pk.SetShiny();
                 else if (pk.VC) pk.SetIsShiny(true);
                 else pk.SetShinySID();
             }
