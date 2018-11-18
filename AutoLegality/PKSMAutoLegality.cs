@@ -540,6 +540,17 @@ namespace PKHeX.WinForms.Controls
         {
             if (pk.Moves.Contains(218)) pk.CurrentFriendship = 0;
             else pk.CurrentFriendship = 255;
+            if (pk is PB7)
+            {
+                PKM set2 = pk;
+                pk = pk as PB7;
+                if (pk == null) pk = set2;
+                else
+                {
+                    ((PB7)pk).ResetCalculatedValues();
+                    ((PB7)pk).Stat_CP = ((PB7)pk).CalcCP;
+                }
+            }
         }
 
         private List<EncounterStatic> edgeMons(int Game, PKM pk)
@@ -774,11 +785,13 @@ namespace PKHeX.WinForms.Controls
 
             if (Set.RelearnMoves.SequenceEqual(m))
                 return Set;
-
-            Set.RelearnMove1 = m[0];
-            Set.RelearnMove2 = m[1];
-            Set.RelearnMove3 = m[2];
-            Set.RelearnMove4 = m[3];
+            if (m.Length > 3)
+            {
+                Set.RelearnMove1 = m[0];
+                Set.RelearnMove2 = m[1];
+                Set.RelearnMove3 = m[2];
+                Set.RelearnMove4 = m[3];
+            }
             return Set;
         }
 
