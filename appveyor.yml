@@ -38,13 +38,13 @@ after_build:
     
     nuget install ILMerge -ExcludeVersion
     
-    cd "C:\projects\pkhex\ILMerge\tools"
+    cd "C:\projects\pkhex\ILMerge\tools\net452"
     
-    xcopy "C:\projects\pkhex\pkhex.winforms\bin\release\PKHeX.exe" "C:\projects\pkhex\ILMerge\tools"
+    xcopy "C:\projects\pkhex\pkhex.winforms\bin\release\PKHeX.exe" "C:\projects\pkhex\ILMerge\tools\net452"
     
-    xcopy "C:\projects\pkhex\pkhex.winforms\bin\release\PKHeX.Core.dll" "C:\projects\pkhex\ILMerge\tools"
+    xcopy "C:\projects\pkhex\pkhex.winforms\bin\release\PKHeX.Core.dll" "C:\projects\pkhex\ILMerge\tools\net452"
     
-    xcopy "C:\projects\pkhex\pkhex.winforms\bin\release\BouncyCastle.CryptoExt.dll" "C:\projects\pkhex\ILMerge\tools"
+    xcopy "C:\projects\pkhex\pkhex.winforms\bin\release\BouncyCastle.CryptoExt.dll" "C:\projects\pkhex\ILMerge\tools\net452"
     
     ilmerge /targetplatform:v4,"C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.6" /out:PKHeX_ArchitModUSUM.exe PKHeX.exe PKHeX.Core.dll BouncyCastle.CryptoExt.dll
     
@@ -52,7 +52,7 @@ after_build:
     
     mkdir merged
     
-    xcopy "C:\projects\pkhex\ILMerge\tools\PKHeX_ArchitModUSUM.exe" "C:\projects\pkhex-auto-legality-mod\merged"
+    xcopy "C:\projects\pkhex\ILMerge\tools\net452\PKHeX_ArchitModUSUM.exe" "C:\projects\pkhex-auto-legality-mod\merged"
 artifacts:
 - path: bin
   name: PKHeX-$(pkhex_commit)-Auto-Legality-Mod-$(mod_commit)
