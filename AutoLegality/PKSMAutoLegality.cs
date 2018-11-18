@@ -53,12 +53,13 @@ namespace PKHeX.WinForms.Controls
 
             int[] eventList = new int[] { 719, 649, 720, 385, 647, 648, 721, 801, 802, 807 };
 
-            int[] GameVersionList = new int[] { (int)GameVersion.UM, (int)GameVersion.US, (int)GameVersion.MN, (int)GameVersion.SN, (int)GameVersion.AS,
-                                                (int)GameVersion.OR, (int)GameVersion.X, (int)GameVersion.Y, (int)GameVersion.B, (int)GameVersion.B2,
-                                                (int)GameVersion.W, (int)GameVersion.W2, (int)GameVersion.D, (int)GameVersion.P, (int)GameVersion.Pt,
-                                                (int)GameVersion.HG, (int)GameVersion.SS, (int)GameVersion.R, (int)GameVersion.S, (int)GameVersion.E,
-                                                (int)GameVersion.FR, (int)GameVersion.LG, (int)GameVersion.CXD, (int)GameVersion.RD, (int)GameVersion.GN,
-                                                (int)GameVersion.BU, (int)GameVersion.YW, (int)GameVersion.GD, (int)GameVersion.SV, (int)GameVersion.C };
+            int[] GameVersionList = new int[] { (int)GameVersion.GP, (int)GameVersion.GE, (int)GameVersion.UM, (int)GameVersion.US, (int)GameVersion.MN,
+                                                (int)GameVersion.SN, (int)GameVersion.AS, (int)GameVersion.OR, (int)GameVersion.X, (int)GameVersion.Y,
+                                                (int)GameVersion.B, (int)GameVersion.B2, (int)GameVersion.W, (int)GameVersion.W2, (int)GameVersion.D,
+                                                (int)GameVersion.P, (int)GameVersion.Pt, (int)GameVersion.HG, (int)GameVersion.SS, (int)GameVersion.R,
+                                                (int)GameVersion.S, (int)GameVersion.E, (int)GameVersion.FR, (int)GameVersion.LG, (int)GameVersion.CXD,
+                                                (int)GameVersion.RD, (int)GameVersion.GN, (int)GameVersion.BU, (int)GameVersion.YW, (int)GameVersion.GD,
+                                                (int)GameVersion.SV, (int)GameVersion.C, (int)GameVersion.GO};
 
             foreach (int mon in legendaryList)
             {
@@ -164,6 +165,17 @@ namespace PKHeX.WinForms.Controls
                 {
                     if (Set.DebutGeneration > ((GameVersion)GameVersionList[i]).GetGeneration()) continue;
                     if (Set.Met_Level == 100) Set.Met_Level = 0;
+                    if (Set is PB7)
+                    {
+                        PKM set2 = Set;
+                        Set = Set as PB7;
+                        if (Set == null) Set = set2;
+                        else
+                        {
+                            ((PB7)Set).ResetCalculatedValues();
+                            ((PB7)Set).Stat_CP = ((PB7)Set).CalcCP;
+                        }
+                    }
                     Set.WasEgg = false;
                     Set.EggMetDate = null;
                     Set.Egg_Location = 0;
@@ -248,15 +260,19 @@ namespace PKHeX.WinForms.Controls
                             setHappiness(Set);
                             PKM returnval = Set;
                             if (shiny && Set.IsShiny) return Set;
-                            if (shiny && !Set.IsShiny)
-                            {
-                                Set.SetShinySID();
-                                if (new LegalityAnalysis(Set).Valid) return Set;
-                                Set = returnval;
-                                Set.SetShiny();
-                                if (new LegalityAnalysis(Set).Valid) return Set;
-                            }
-                            else return returnval;
+                            if (!requestedShiny || Set.IsShiny)
+                                return returnval;
+ 
+                            Set.SetShinySID();
+                            if (new LegalityAnalysis(Set).Valid)
+                                return Set;
+ 
+                            Set = returnval;
+                            Set.SetShiny();
+ 
+                            if (new LegalityAnalysis(Set).Valid)
+                                return Set;
+ 
                         }
                         else
                         {
@@ -285,7 +301,7 @@ namespace PKHeX.WinForms.Controls
 
             if (!new LegalityAnalysis(Set).Valid)
             {
-                string fpath = System.IO.Path.GetDirectoryName(Application.ExecutablePath) + "\\mgdb";
+                string fpath = Path.Combine(Directory.GetCurrentDirectory(), "mgdb");
                 List<string> fileList = new List<string>();
                 string[] PKMNList = Util.GetSpeciesList("en");
                 List<string> chain = new List<string>();
@@ -303,11 +319,11 @@ namespace PKHeX.WinForms.Controls
                     }
                 }
                 if (chain.Count == 0 && Set.Species != 0) chain.Add(PKMNList[Set.Species]);
-                foreach (string file in System.IO.Directory.GetFiles(fpath, "*.*", System.IO.SearchOption.AllDirectories))
+                foreach (string file in Directory.GetFiles(fpath, "*.*", SearchOption.AllDirectories))
                 {
                     foreach (string mon in chain)
                     {
-                        if (file.ToLower().Contains(mon.ToLower()) || Path.GetExtension(file) == ".pl6")
+                        if (file.IndexOf(mon, StringComparison.OrdinalIgnoreCase) >= 0 || Path.GetExtension(file) == ".pl6")
                         {
                             fileList.Add(file);
                             Console.WriteLine(file);
@@ -323,9 +339,9 @@ namespace PKHeX.WinForms.Controls
                     int AbilityType = -1;
                     uint fixedPID = 0;
                     int form = Set.AltForm;
-                    if (System.IO.Path.GetExtension(file) == ".wc7" || System.IO.Path.GetExtension(file) == ".wc7full")
+                    if (Path.GetExtension(file) == ".wc7" || Path.GetExtension(file) == ".wc7full")
                     {
-                        var mg = (WC7)MysteryGift.GetMysteryGift(System.IO.File.ReadAllBytes(file), System.IO.Path.GetExtension(file));
+                        var mg = (WC7)MysteryGift.GetMysteryGift(File.ReadAllBytes(file), Path.GetExtension(file));
                         PIDType = (int)mg.PIDType;
                         AbilityType = mg.AbilityType;
                         Generation = 7;
@@ -334,9 +350,9 @@ namespace PKHeX.WinForms.Controls
                         var temp = mg.ConvertToPKM(SAV);
                         eventpk = PKMConverter.ConvertToType(temp, SAV.PKMType, out string c);
                     }
-                    else if (System.IO.Path.GetExtension(file) == ".wc6" || System.IO.Path.GetExtension(file) == ".wc6full")
+                    else if (Path.GetExtension(file) == ".wc6" || Path.GetExtension(file) == ".wc6full")
                     {
-                        var mg = (WC6)MysteryGift.GetMysteryGift(System.IO.File.ReadAllBytes(file), System.IO.Path.GetExtension(file));
+                        var mg = (WC6)MysteryGift.GetMysteryGift(File.ReadAllBytes(file), Path.GetExtension(file));
                         PIDType = (int)mg.PIDType;
                         AbilityType = mg.AbilityType;
                         Generation = 6;
@@ -345,7 +361,7 @@ namespace PKHeX.WinForms.Controls
                         var temp = mg.ConvertToPKM(SAV);
                         eventpk = PKMConverter.ConvertToType(temp, SAV.PKMType, out string c);
                     }
-                    else if (System.IO.Path.GetExtension(file) == ".pl6") // Pokemon Link
+                    else if (Path.GetExtension(file) == ".pl6") // Pokemon Link
                     {
                         PL6_PKM[] LinkPokemon = new PL6(File.ReadAllBytes(file)).Pokes;
                         bool ExistsEligible = false;
@@ -353,22 +369,19 @@ namespace PKHeX.WinForms.Controls
                         foreach (PL6_PKM i in LinkPokemon)
                         {
                             if (i.Species != Set.Species) continue;
-                            else
-                            {
-                                Eligible = i;
-                                ExistsEligible = true;
-                                PIDType = i.PIDType;
-                                AbilityType = i.AbilityType;
-                                Generation = 6;
-                                fixedPID = i.PID;
-                                break;
-                            }
+                            Eligible = i;
+                            ExistsEligible = true;
+                            PIDType = i.PIDType;
+                            AbilityType = i.AbilityType;
+                            Generation = 6;
+                            fixedPID = i.PID;
+                            break;
                         }
                         if (ExistsEligible) eventpk = PKMConverter.ConvertToType(ConvertPL6ToPKM(Eligible), SAV.PKMType, out string c);
                     }
-                    else if (System.IO.Path.GetExtension(file) == ".pgf")
+                    else if (Path.GetExtension(file) == ".pgf")
                     {
-                        var mg = (PGF)MysteryGift.GetMysteryGift(System.IO.File.ReadAllBytes(file), System.IO.Path.GetExtension(file));
+                        var mg = (PGF)MysteryGift.GetMysteryGift(File.ReadAllBytes(file), Path.GetExtension(file));
                         PIDType = mg.PIDType;
                         AbilityType = mg.AbilityType;
                         Generation = 5;
@@ -831,6 +844,17 @@ namespace PKHeX.WinForms.Controls
                 report = UpdateReport(pk);
             }
 
+            if (report.Contains(LNickMatchLanguageFail))
+            {
+                pk.Nickname = PKX.GetSpeciesNameGeneration(pk.Species, pk.Language, SAV.Generation); // failsafe to reset nick
+                report = UpdateReport(pk);
+            }
+            if (report.Contains(LStatIncorrectCP))
+            {
+                ((PB7)pk).ResetCP();
+                report = UpdateReport(pk);
+            }
+
             if (report.Contains(LAbilityMismatch)) //V223 = Ability mismatch for encounter.
             {
                 pk.RefreshAbility(pk.AbilityNumber < 6 ? pk.AbilityNumber >> 1 : 0);
@@ -889,14 +913,7 @@ namespace PKHeX.WinForms.Controls
             }
             if (report.Contains(LPIDGenderMismatch)) //V251 = PID-Gender mismatch.
             {
-                if (pk.Gender == 0)
-                {
-                    pk.Gender = 1;
-                }
-                else
-                {
-                    pk.Gender = 0;
-                }
+                pk.Gender = pk.Gender == 0 ? 1 : 0;
                 report = UpdateReport(pk);
             }
             if (report.Contains(LG3OTGender) || report.Contains(LG1OTGender)) //V407 = OT from Colosseum/XD cannot be female. V408 = Female OT from Generation 1 / 2 is invalid.
@@ -1050,14 +1067,7 @@ namespace PKHeX.WinForms.Controls
                 }
                 else if (report.Contains(LPIDGenderMismatch)) // V251 = PID-Gender mismatch.
                 {
-                    if (pk.Gender == 0)
-                    {
-                        pk.Gender = 1;
-                    }
-                    else
-                    {
-                        pk.Gender = 0;
-                    }
+                    pk.Gender = pk.Gender == 0 ? 1 : 0;
                     report = UpdateReport(pk);
                     if (new LegalityAnalysis(pk).Valid)
                     {
@@ -1190,14 +1200,7 @@ namespace PKHeX.WinForms.Controls
                 updatedReport = recheckLA.Report(false);
                 if (updatedReport.Contains("PID-Gender mismatch."))
                 {
-                    if (pk.Gender == 0)
-                    {
-                        pk.Gender = 1;
-                    }
-                    else
-                    {
-                        pk.Gender = 0;
-                    }
+                    pk.Gender = pk.Gender == 0 ? 1 : 0;
                     LegalityAnalysis recheckLA2 = new LegalityAnalysis(pk);
                     updatedReport = recheckLA2.Report(false);
                 }
@@ -1256,14 +1259,7 @@ namespace PKHeX.WinForms.Controls
             string updatedReport = recheckLA.Report(false);
             if (updatedReport.Contains("PID-Gender mismatch"))
             {
-                if (pk.Gender == 0)
-                {
-                    pk.Gender = 1;
-                }
-                else
-                {
-                    pk.Gender = 0;
-                }
+                pk.Gender = pk.Gender == 0 ? 1 : 0;
                 LegalityAnalysis recheckLA2 = new LegalityAnalysis(pk);
                 updatedReport = recheckLA2.Report(false);
             }
@@ -1297,14 +1293,7 @@ namespace PKHeX.WinForms.Controls
             string updatedReport = recheckLA.Report(false);
             if (updatedReport.Contains("PID-Gender mismatch"))
             {
-                if (pk.Gender == 0)
-                {
-                    pk.Gender = 1;
-                }
-                else
-                {
-                    pk.Gender = 0;
-                }
+                pk.Gender = pk.Gender == 0 ? 1 : 0;
                 LegalityAnalysis recheckLA2 = new LegalityAnalysis(pk);
                 updatedReport = recheckLA2.Report(false);
             }
