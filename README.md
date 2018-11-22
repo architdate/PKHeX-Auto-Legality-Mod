@@ -1,5 +1,11 @@
 # PKHeX Automatic Legality Mod
 
+**DISCONTINUATION NOTICE (MOD MOVED TO [THIS REPOSITORY](https://github.com/architdate/PKHeX-Plugins))**
+The development on this repository has been discontinued since 23/11/2018.
+The project is being continued in the form of plugins, which is a much more elegant way of handling mods. It is also easier to build and distribute to users.
+The plugins are being developed and released in the [PKHeX-Plugins](https://github.com/architdate/PKHeX-Plugins) repository
+Thank you for your continued support with this mod.
+
 [![Build status](https://ci.appveyor.com/api/projects/status/s3py0ymkh22sq3ok/branch/master?svg=true)](https://ci.appveyor.com/project/architdate/pkhex-auto-legality-mod/branch/master)
 
 Come join the dedicated server for this mod! Ask questions, give suggestions, get help, or just hang out. Don't be shy, we don't bite:
