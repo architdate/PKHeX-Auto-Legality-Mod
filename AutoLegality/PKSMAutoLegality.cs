@@ -1502,7 +1502,7 @@ namespace PKHeX.WinForms.Controls
                 HT_Gender = pk.OT.Length > 0 ? SAV.Gender : 0,
                 CurrentHandler = pk.OT.Length > 0 ? 1 : 0,
 
-                EXP = PKX.GetEXP(pk.Level, pk.Species),
+                EXP = PKX.GetEXP(pk.Level, pk.Species, pk.Form),
 
                 IV_HP = pk.IV_HP,
                 IV_ATK = pk.IV_ATK,
