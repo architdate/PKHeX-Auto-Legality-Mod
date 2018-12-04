@@ -60,7 +60,7 @@ namespace PKHeX.WinForms.Controls
 
             if (HaX) // Load original values from pk not pkm
             {
-                MT_Level.Text = (pk.Stat_HPMax != 0 ? pk.Stat_Level : PKX.GetLevel(pk.Species, pk.EXP)).ToString();
+                MT_Level.Text = (pk.Stat_HPMax != 0 ? pk.Stat_Level : PKX.GetLevel(pk.EXP, pk.Species, pk.AltForm)).ToString();
                 TB_EXP.Text = pk.EXP.ToString();
                 MT_Form.Text = pk.AltForm.ToString();
                 if (pk.Stat_HPMax != 0) // stats present
