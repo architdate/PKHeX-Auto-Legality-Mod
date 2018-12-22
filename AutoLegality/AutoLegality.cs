@@ -59,7 +59,7 @@ namespace PKHeX.WinForms
                     int latestVersion = AutomaticLegality.ParseTagAsVersion(data.Split(new string[] { "\"tag_name\":\"" }, System.StringSplitOptions.None)[1].Split('"')[0]);
                     if (data == null || latestVersion == -1)
                         return;
-                    if (int.TryParse(Resources.ProgramVersion, out var cur) && latestVersion <= cur)
+                    if (int.TryParse(CurrentProgramVersion.ToString(), out var cur) && latestVersion <= cur)
                         return;
 
                     Invoke((MethodInvoker)(() =>
